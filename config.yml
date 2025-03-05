@@ -1,0 +1,26 @@
+default:
+  variables: !expr file.path(getwd(), "worksheets/variables/huiport-variables.csv")
+  cchsflow_variable_details: !expr file.path(getwd(), "worksheets/variable-details/cchsflow-variable-details.csv")
+  huiport_variable_details: !expr file.path(getwd(), "worksheets/variable-details/huiport-variable-details.csv")
+  roles_sheet: !expr file.path(getwd(), "worksheets/roles.csv")
+  modules: NULL
+  data_type: ".RData"
+  testing_data_cycle: cchs2013_2014_p
+  data:
+    cchs2001_p: !expr file.path(getwd(), "data/dev/cchs2001_p.RData")
+    cchs2003_p: !expr file.path(getwd(), "data/dev/cchs2003_p.RData")
+    cchs2005_p: !expr file.path(getwd(), "data/dev/cchs2005_p.RData")
+    cchs2007_2008_p: !expr file.path(getwd(), "data/dev/cchs2007_2008_p.RData")
+    cchs2009_2010_p: !expr file.path(getwd(), "data/dev/cchs2009_2010_p.RData")
+    cchs2012_p: !expr file.path(getwd(), "data/dev/cchs2012_p.RData")
+    cchs2013_2014_p: !expr file.path(getwd(), "data/dev/cchs2013_2014_p.RData")
+  exclude_age_category: 1
+prod:
+  data:
+    cchs2001_p: !expr file.path(getwd(), "data/prod/cchs2001_p.RData")
+    cchs2003_p: !expr file.path(getwd(), "data/prod/cchs2003_p.RData")
+    cchs2005_p: !expr file.path(getwd(), "data/prod/cchs2005_p.RData")
+    cchs2007_2008_p: !expr file.path(getwd(), "data/prod/cchs2007_2008_p.RData")
+    cchs2009_2010_p: !expr file.path(getwd(), "data/prod/cchs2009_2010_p.RData")
+    cchs2012_p: !expr file.path(getwd(), "data/prod/cchs2012_p.RData")
+    cchs2013_2014_p: !expr file.path(getwd(), "data/prod/cchs2013_2014_p.RData")

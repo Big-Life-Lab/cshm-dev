@@ -1,0 +1,28 @@
+# Define smoking status
+
+Each Canadian Community Health Survey respondent is classified into three groups: never smoker, current smoker, and former smoker based on smoking intensity variables (2.1: smkc_01a, smkc_202, smkc_204, smkc_05d, smkc_06a, smkc_208).
+
+
+
+Age at initiation, age at daily smoking start, age at daily smoking stop, and age at final cessation (where appropriate), along with smoking intensity responses,  are taken from the survey responses (2.1: smkc_01b, smkc_203, smkc_06a-c, smkc_10a-c, smkc_204, smkc_208), and used to create life-histories of smoking for all survey respondents. Any missing ages are imputed through multiple imputation using birth year, sex, race, immigration status, and prior age measures as covariates (2.1: dhhc_yob, dhhc_sex, sdccdrac, sdccfimm). The MPoRT model is applied to the life-histories to calculate one-year mortality probabilities. These mortality probabilities were scaled to published Statistics Canada mortality probabilities, and the product of the scaled mortality probabilities become cumulative survival probabilities from each age to survey age.
+
+
+1) review smoking variables (above)
+2) Label which variables are included and which are not.
+3) create a R code to list the variables in this QMD.
+4) connect with Caitlin re: ICES variables. Where are they? Was only up to 2018 harmonized?
+5) ask Rafiel to check the variables.
+6) add folks to this repo.
+
+
+smkc_01a    'In lifetime, smoked 100 or more cigarettes' 
+smkc_01b    'Ever smoked whole cigarette' - missing in cchsflow
+smkc_203
+smkc_06a-c
+smkc_10a-c
+smkc_204
+smkc_208
+dhhc_yob
+dhhc_sex
+sdccdrac
+sdccfimm
