@@ -1,0 +1,433 @@
+---
+title: "Canadian Smoking History Generator Model: Project specifications"
+subtitle: "Scope, structure, and implementation plan"
+author: "CSHGM Development Team"
+date: "Last Updated: `r Sys.Date()`"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    theme: cosmo
+    code-fold: show
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Executive summary
+
+This document outlines the scope, specifications, and implementation plan for the Canadian Smoking History Generator Model (CSHGM) project. The project aims to modernize and extend the existing smoking history generation methodology developed in the Ontario SHGM study (2020) and the Age-Period-Cohort modelling approach pioneered by Holford. By implementing this methodology in R, we seek to improve accessibility, transparency, and extensibility while preserving the scientific integrity of the original work.
+
+This specification document will serve as a reference for all project contributors, helping to ensure consistency across development efforts and provide clear guidance for implementation decisions.
+
+# Project goals and scope
+
+## Primary goals
+
+1.  Implement the Canadian Smoking History Generator Model in R
+2.  Provide a well-documented, reproducible workflow for smoking history modelling
+3.  Create flexible, modular components that can be adapted to different contexts
+4.  Ensure compatibility with secure computing environments
+5.  Follow open science principles and best practices
+
+## Project scope
+
+### In scope
+
+-   R implementation of the Age-Period-Cohort (APC) modelling approach
+-   Processing of Canadian Community Health Survey (CCHS) data
+-   Derivation of smoking initiation and cessation probabilities
+-   Generation of complete smoking histories
+-   Validation against historical data
+-   Documentation for users and developers
+
+### Out of scope (for initial release)
+
+-   Integration with specific disease models
+-   Implementation of alternative smoking behaviour models
+-   Web application or interactive user interface
+-   Incorporation of e-cigarette or vaping behaviours
+-   Integration with non-Canadian health surveys
+
+## Legacy recognition
+
+This project builds upon the foundational work of Dr. Ted Holford at Yale University. As Dr. Holford transitions toward retirement, this project will serve as a legacy implementation of his APC methodology applied to smoking behaviour. We will work with Dr. Holford to determine appropriate recognition and attribution.
+
+# Project structure and approach
+
+## Folder structure
+
+We will adopt a structure that balances R package conventions with a more accessible Quarto project organization:
+
+```         
+cshgm/
+├── .github/             # GitHub Actions and templates
+├── R/                   # R functions in separate files
+├── data-raw/            # Scripts to process raw data
+├── data/                # Processed data objects (for non-secure environments)
+├── docs/                # Documentation as Quarto files
+│   ├── reference/       # Technical reference for the codebase
+│   ├── explanation/     # Conceptual explanations
+│   ├── how-to/          # Task-oriented guides
+│   └── tutorials/       # Learning-oriented tutorials
+├── tests/               # Test files
+│   └── testthat/        # Unit tests using testthat
+├── config/              # Configuration files and variable definitions
+│   ├── default.yml      # Default configuration
+│   ├── secure.yml       # Template for secure environments
+│   ├── variables.csv    # Variable definitions
+│   └── variable_details.csv # Variable value details
+├── worksheets/          # Working files for variable harmonization
+├── resources/           # Active project resources (e.g., CCHS smoking question trees)
+├── references/          # Historical reference materials and legacy code (e.g., SAS code)
+├── _quarto.yml          # Quarto site configuration
+├── index.qmd            # Main landing page
+└── README.md            # Project overview
+```
+
+The distinction between folders:
+- `resources/`: Contains active reference materials that are regularly consulted during development, such as CCHS question trees, variable mappings, and other supporting documentation that directly informs current work
+- `references/`: Contains historical or legacy materials like the original SAS implementation, previous studies, and other background materials that provide context but aren't actively used in day-to-day development
+
+## Documentation approach
+
+We will follow the [Divio documentation system](https://documentation.divio.com/) with four types of documentation:
+
+1.  **Tutorials**: Step-by-step lessons to get started
+2.  **How-to guides**: Practical instructions for specific tasks
+3.  **Explanation**: Conceptual discussions of methodology
+4.  **Reference**: Technical details of functions and data
+
+This approach ensures we meet the needs of different users, from beginners to advanced researchers.
+
+## Development philosophy
+
+### Tidyverse design principles
+
+We will follow tidyverse design principles:
+
+-   Create composable functions that do one thing well
+-   Use consistent function naming and argument conventions
+-   Embrace the pipe (`|>` or `%>%`) for readable data manipulation
+-   Prioritize data frames as the primary data structure
+-   Use tidy evaluation for metaprogramming when needed
+
+### Open science principles
+
+The project will adhere to FAIR principles:
+
+-   **Findable**: Clear metadata, permanent DOI
+-   **Accessible**: Open source, clear installation instructions
+-   **Interoperable**: Standard data formats, well-documented APIs
+-   **Reusable**: Comprehensive documentation, permissive license
+
+### Modular design
+
+The implementation will be modular with these key components:
+
+1.  **Data processing**: Functions to process and harmonize CCHS data
+2.  **APC modelling**: Implementation of the APC modelling methodology
+3.  **Simulation**: Functions to generate smoking histories
+4.  **Validation**: Tools to validate against reference data
+5.  **Visualization**: Components to visualize results
+
+## Technology stack
+
+### Core technologies
+
+-   **R**: Primary programming language
+-   **Quarto**: Documentation and website generation
+-   **GitHub**: Version control and collaboration
+-   **GitHub Actions**: Continuous integration and deployment
+
+### Key R packages
+
+-   **tidyverse**: Data manipulation and visualization
+-   **splines**: Spline modelling functionality
+-   **cchsflow**: CCHS data harmonization
+-   **config**: Configuration management
+-   **logger**: Logging functionality
+-   **testthat**: Unit testing
+-   **roxygen2**: Documentation generation
+
+# Implementation plan
+
+## Phase 1: Project setup and core infrastructure
+
+1.  Set up GitHub repository with initial structure
+2.  Configure GitHub Actions for CI/CD
+3.  Create initial documentation framework
+4.  Implement configuration management system
+5.  Establish coding standards and contributor guidelines
+
+## Phase 2: Data processing implementation
+
+1.  Develop functions for CCHS data harmonization
+2.  Implement smoking status variable processing
+3.  Create data preprocessing workflow
+4.  Write documentation and tests for data processing
+
+## Phase 3: APC model implementation
+
+1.  Implement natural cubic spline generation
+2.  Develop APC modelling functions
+3.  Create initiation probability estimation
+4.  Create cessation probability estimation
+5.  Write documentation and tests for APC components
+
+## Phase 4: Simulation and validation
+
+1.  Develop smoking history generation functions
+2.  Implement validation methodology
+3.  Create calibration procedures
+4.  Generate validation datasets
+5.  Write documentation and tests for simulation components
+
+## Phase 5: Integration and documentation
+
+1.  Ensure component integration
+2.  Finalize documentation
+3.  Create example workflows
+4.  Develop tutorials and how-to guides
+5.  Prepare for initial release
+
+# Specific implementation considerations
+
+## Configuration management
+
+We will use the `config` package with YAML files to manage environment-specific settings:
+
+``` yaml
+# Example config.yml
+default:
+  data_path: "data/"
+  output_path: "output/"
+  log_level: "INFO"
+  variables_path: "config/variables.csv"
+  variable_details_path: "config/variable_details.csv"
+
+secure:
+  data_path: "/secure/data/"
+  output_path: "/secure/output/"
+  log_level: "WARN"
+  variables_path: "/secure/config/variables.csv"
+  variable_details_path: "/secure/config/variable_details.csv"
+```
+
+This approach allows for seamless transitions between different computing environments.
+
+## Documentation breakdown
+
+We propose organizing documentation into the following Quarto files:
+
+### Reference documentation
+
+-   `reference-variables.qmd`: Complete reference of all variables
+-   `reference-functions.qmd`: Technical documentation of all functions
+-   `reference-model.qmd`: Details of the APC model implementation
+
+### Explanation documentation
+
+-   `explanation-smoking-history.qmd`: Conceptual overview of smoking history modelling
+-   `explanation-apc-method.qmd`: Explanation of the APC methodology
+-   `explanation-validation.qmd`: Discussion of validation approaches
+
+### How-to guides
+
+-   `howto-setup.qmd`: Setting up the environment
+-   `howto-process-cchs.qmd`: Processing CCHS data
+-   `howto-run-apc.qmd`: Running the APC model
+-   `howto-generate-histories.qmd`: Generating smoking histories
+-   `howto-validate.qmd`: Validating results
+
+### Tutorials
+
+-   `tutorial-basic.qmd`: Step-by-step tutorial for basic usage
+-   `tutorial-advanced.qmd`: Advanced tutorial for customization
+
+## Testing strategy
+
+We will implement a comprehensive testing strategy:
+
+1.  **Unit tests**: For individual functions
+2.  **Integration tests**: For component interactions
+3.  **Regression tests**: To ensure consistency with previous results
+4.  **Validation tests**: Against reference data
+
+Tests will be organized to mirror the structure of the code, with separate test files for each module.
+
+## Considerations for secure environments
+
+To ensure compatibility with secure environments like Statistics Canada's Regional Data Centres:
+
+1.  No hard-coded file paths
+2.  Configuration-driven data access
+3.  Minimal external dependencies
+4.  Well-documented installation procedures
+5.  Alternative output formats for environments with restrictions
+
+## International adaptability
+
+To facilitate adoption by teams in other countries:
+
+1.  Clear separation between data processing and modelling
+2.  Documented variable mapping procedures
+3.  Configurable parameters for country-specific variations
+4.  Example workflows for adapting to different survey structures
+
+# Collaboration and contribution
+
+## Team roles and responsibilities
+
+-   **Project coordination**: CSHGM Consortium
+-   **Statistical methodology**: Colleagues from Statistics Canada, BCDCDC
+-   **APC modelling expert**: Ted Holford
+-   **R development**: To be determined
+-   **Documentation**: To be determined
+-   **Testing and validation**: To be determined
+
+## Contribution workflow
+
+1.  Issues created for specific tasks
+2.  Branches created for feature development
+3.  Pull requests submitted for review
+4.  Code review by at least one team member
+5.  Automated testing via GitHub Actions
+6.  Merge to main branch after approval
+
+## Communication channels
+
+-   GitHub Issues for task tracking
+-   Regular video meetings for team coordination
+-   Email for broader announcements
+-   Shared documentation for long-term knowledge preservation
+
+# Potential challenges and mitigation strategies
+
+| Challenge | Mitigation strategy |
+|-----------|---------------------|
+| Secure environment limitations | Develop with minimal dependencies, provide alternative implementation paths |
+| Compatibility across CCHS cycles | Robust variable harmonization, comprehensive testing with multiple cycles |
+| Statistical complexity | Clear documentation, code review by statistical experts |
+| Balancing accessibility vs. complexity | Modular design with multiple entry points for different user levels |
+| Long-term sustainability | Comprehensive documentation, clear contribution guidelines, active community building |
+
+# Timeline and milestones
+
+| Milestone | Target date | Deliverables |
+|-----------|-------------|--------------|
+| Project setup | Month 1 | Repository, documentation framework, contribution guidelines |
+| Data processing implementation | Month 3 | Functions for CCHS data processing, documentation |
+| APC model implementation | Month 6 | Complete APC modelling functions, tests, documentation |
+| Simulation and validation | Month 9 | History generation, validation functions, documentation |
+| Integration and documentation | Month 12 | Complete documentation, examples, initial release |
+
+# Conclusion
+
+This project specification outlines the approach for implementing the Canadian Smoking History Generator Model in R. By adhering to open science principles, following tidyverse design guidelines, and creating comprehensive documentation, we aim to create a valuable resource for researchers studying smoking behaviour and its health impacts.
+
+The modular, configurable design will ensure the codebase can be used in various environments and adapted to different contexts, preserving the scientific methodology while improving accessibility and usability.
+
+# Next steps
+
+1.  Finalize project specification based on team feedback
+2.  Set up initial repository structure
+3.  Implement configuration management system
+4.  Begin work on data processing functions
+5.  Develop initial documentation framework
+
+# References
+
+Ontario SHGM study (2020). Current and future mortality probabilities in Ontario, 2002 to 2032. *Health Reports*, Statistics Canada.
+
+Holford, T.R. (1991). Understanding the effects of age, period, and cohort on incidence and mortality rates. *Annual Review of Public Health*, 12, 425-457. doi:10.1146/annurev.pu.12.050191.002233
+
+Wickham, H. (2015). R packages: organize, test, document, and share your code. O'Reilly Media, Inc.
+
+Wilkinson, M.D. et al. (2016). The FAIR Guiding Principles for scientific data management and stewardship. *Scientific Data*, 3(1), 1-9. doi:10.1038/sdata.2016.18
+
+# Appendix A: Glossary of terms
+
+| Term | Definition |
+|------|------------|
+| APC | Age-Period-Cohort modelling approach |
+| CCHS | Canadian Community Health Survey |
+| CSHGM | Canadian Smoking History Generator Model |
+| FAIR | Findable, Accessible, Interoperable, Reusable |
+| RDC | Research Data Centre (Statistics Canada secure environment) |
+
+# Appendix B: Example configuration file
+
+```yaml
+default:
+  # Data paths
+  raw_data_path: "data-raw/"
+  processed_data_path: "data/"
+  output_path: "output/"
+  
+  # Variable definition files
+  variables_path: "config/variables.csv"
+  variable_details_path: "config/variable_details.csv"
+  
+  # Logging configuration
+  log_level: "INFO"
+  log_file: "logs/cshgm.log"
+  
+  # Model parameters
+  min_age: 8
+  max_age: 99
+  min_cohort: 1920
+  max_cohort: 2020
+  
+  # CCHS cycles to include
+  cchs_cycles: ["2001", "2003", "2005", "2007-2008", "2009-2010", 
+                "2011-2012", "2013-2014", "2015-2016", "2017-2018"]
+  
+  # APC model specifications
+  age_knots: [10, 15, 20, 50, 60]
+  period_knots: [1940, 1950, 1960, 1970, 1980]
+  cohort_knots: [1930, 1940, 1945, 1950, 1955, 1960, 1965, 1970, 1975, 1980]
+```
+
+# Appendix C: Recommended license
+
+We recommend using the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)** license for this project. This license ensures:
+
+1. **Attribution** - Users must give appropriate credit to the CSHGM Consortium
+2. **Non-commercial use** - The material cannot be used for commercial purposes
+3. **Share-alike** - Adaptations must be shared under the same terms
+
+This license is appropriate for Statistics Canada and other partners who need to maintain the project for non-profit uses, while still allowing academic and research adaptation. It ensures that any modified versions will maintain attribution to the original project and cannot be commercialized.
+
+The license should attribute copyright to "CSHGM Consortium" rather than specific individuals, to emphasize the collaborative nature of the project.
+
+For code specifically, we recommend the **GNU General Public License v3.0 (GPL-3.0)**, which is a strong copyleft license ensuring that derivative works also remain open source. This license is compatible with R's ecosystem, as many R packages use GPL licensing.
+
+A brief summary of the CC BY-NC-SA 4.0 license:
+
+```
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License
+
+Copyright (c) 2025 CSHGM Consortium
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 
+International License. To view a copy of this license, visit:
+http://creativecommons.org/licenses/by-nc-sa/4.0/
+
+You are free to:
+- Share — copy and redistribute the material in any medium or format
+- Adapt — remix, transform, and build upon the material
+
+Under the following terms:
+- Attribution — You must give appropriate credit, provide a link to the license, 
+  and indicate if changes were made.
+- NonCommercial — You may not use the material for commercial purposes.
+- ShareAlike — If you remix, transform, or build upon the material, you must 
+  distribute your contributions under the same license as the original.
+```
