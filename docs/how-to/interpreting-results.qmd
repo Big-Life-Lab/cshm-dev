@@ -1,0 +1,44 @@
+---
+title: "Interpreting APC model results"
+subtitle: "Understanding the output of Age-Period-Cohort models"
+---
+
+# Interpreting APC model results
+
+This guide explains how to interpret the results from the Age-Period-Cohort model.
+
+*This page is under development. Content coming soon.*
+
+## Overview
+
+After fitting the APC model, you'll need to interpret various coefficients and visualize the results to understand smoking patterns.
+
+## Key metrics
+
+The key metrics from the APC model include:
+
+1. Age effects - how smoking behavior varies with age
+2. Period effects - how smoking behavior changes over time
+3. Cohort effects - how birth cohorts differ in smoking patterns
+
+## Visualizing results
+
+Creating visualizations can help with interpretation:
+
+```r
+# Example plot (placeholder)
+# ggplot(apc_results, aes(x = age, y = age_effect)) +
+#   geom_line() +
+#   theme_minimal() +
+#   labs(title = "Age Effect on Smoking Initiation",
+#        x = "Age",
+#        y = "Log-odds of Initiation")
+```
+
+## Common interpretation challenges
+
+Some challenges in interpreting APC models include:
+
+1. The identification problem (linear dependency)
+2. Distinguishing between the three temporal effects
+3. Interpreting interaction effects

@@ -1,0 +1,72 @@
+---
+title: "Basic usage of CSHGM"
+---
+
+This tutorial provides basic usage examples for the Canadian Smoking History Generator Model (CSHGM).
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- Completed the [Getting Started](getting-started.qmd) guide
+- Prepared your CCHS data as described in [Processing CCHS Data](../how-to/processing-cchs-data.qmd)
+
+## Basic workflow
+
+The typical CSHGM workflow consists of four main steps:
+
+1. **Data preparation**: Load and harmonize CCHS data
+2. **Smoking behavior analysis**: Extract smoking initiation and cessation data
+3. **APC modeling**: Apply the Age-Period-Cohort model
+4. **Generating smoking histories**: Create complete smoking histories
+
+## Example: Analyzing smoking initiation
+
+```r
+# Load the required packages
+library(cshgm)
+library(dplyr)
+library(ggplot2)
+
+# Load preprocessed CCHS data (see "Processing CCHS Data" guide)
+data <- readRDS("path/to/harmonized_cchs_data.rds")
+
+# Process smoking initiation data by sex
+init_male <- process_smoking_initiation(data, sex = "M")
+init_female <- process_smoking_initiation(data, sex = "F")
+
+# Examine the results
+summary(init_male)
+summary(init_female)
+
+# Visualize initiation ages by birth cohort
+ggplot(init_male, aes(x = cohort, y = age)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "loess") +
+  labs(
+    title = "Age of Smoking Initiation by Birth Cohort (Males)",
+    x = "Birth Year",
+    y = "Age of Initiation"
+  ) +
+  theme_minimal()
+```
+
+## Example: Running the full model
+
+```r
+# Full model example (to be implemented)
+# model_results <- run_apc_model(data)
+# 
+# # Generate smoking histories for a simulated population
+# simulated_histories <- generate_smoking_histories(
+#   n = 10000,             # Number of individuals to simulate
+#   birth_years = 1920:2000,  # Birth years to include
+#   model = model_results  # APC model results
+# )
+```
+
+## Next steps
+
+- Learn how to interpret the results in [Understanding CSHGM Output](../how-to/interpreting-results.qmd)
+- Explore [advanced usage options](advanced-usage.qmd) for customizing the model
+- See how to [validate your results](../how-to/validating-results.qmd) against reference data

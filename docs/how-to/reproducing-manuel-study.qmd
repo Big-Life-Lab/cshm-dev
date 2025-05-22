@@ -1,0 +1,316 @@
+---
+title: "Reproducing the Canadian Smoking History Generator Model"
+subtitle: "A Guide to Variable Derivation and Analysis"
+author: "CSHGM Development Team"
+date: "Last Updated: `r Sys.Date()`"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    theme: cosmo
+    code-fold: show
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Load required packages
+library(dplyr)
+library(ggplot2)
+# If you have installed the cshgm package, uncomment this:
+# library(cshgm)
+```
+
+# Introduction
+
+This document provides a guide to reproducing the Canadian Smoking History Generator Model as described in Manuel et al. (2002) "Current and future mortality probabilities in Ontario, 2002 to 2032". The model uses Age-Period-Cohort (APC) analysis to estimate smoking initiation and cessation probabilities across different birth cohorts, which are then used to generate complete smoking histories.
+
+## Purpose of This Guide
+
+This guide aims to:
+
+1. Describe the key variables needed from the Canadian Community Health Survey (CCHS)
+2. Show how to derive the necessary variables for the model
+3. Provide R code implementations of the original SAS procedures
+4. Explain how to interpret and validate the results
+
+## Original Study Overview
+
+The original study by Manuel et al. (2002) developed a model to:
+
+- Generate individual smoking histories for a simulated population
+- Estimate smoking prevalence across different time periods and birth cohorts
+- Model both smoking initiation and cessation probabilities
+- Account for age, period, and cohort effects in smoking behavior
+
+The approach used data from the Canadian Community Health Survey to construct smoking histories and applied statistical modeling to estimate probabilities of starting and quitting smoking.
+
+# Required Data Sources
+
+## Canadian Community Health Survey (CCHS)
+
+The CCHS is the primary data source for this analysis. Multiple cycles have been conducted:
+
+- CCHS 2001 (Cycle 1.1)
+- CCHS 2003 (Cycle 2.1)
+- CCHS 2005 (Cycle 3.1)
+- CCHS 2007-2008
+- CCHS 2009-2010
+- CCHS 2011-2012
+- CCHS 2013-2014
+- CCHS 2015-2016
+- CCHS 2017-2018
+
+## Variable Harmonization Across Cycles
+
+CCHS variable names have changed across cycles. We use the cchsflow package for variable harmonization:
+
+```{r harmonization-example, eval=FALSE}
+# Example of harmonizing CCHS data using cchsflow
+# library(cchsflow)
+# harmonized_data <- rec_with_table(
+#   cchs_data,
+#   c("SMK_01A", "SMKG01C_cont", "SMKG203_cont", "SMK_204") 
+# )
+```
+
+# Key Variables for Smoking History
+
+## Core Smoking Status Variables
+
+The following variables are critical for determining smoking status:
+
+| Harmonized Variable | Description | Values |
+|---------------------|-------------|--------|
+| SMK_01A | In lifetime, smoked 100 or more cigarettes | 1=Yes, 2=No |
+| SMK_202 | Current smoking status | 1=Daily, 2=Occasional, 3=Not at all |
+| SMKDSTY | Type of smoker | 1=Daily, 2=Occasional, 3=Former daily, 4=Former occasional, 5=Never |
+
+## Smoking Initiation Variables
+
+Variables measuring when someone started smoking:
+
+| Harmonized Variable | Description | Type |
+|---------------------|-------------|------|
+| SMKG01C_cont | Age smoked first cigarette | Continuous |
+| SMKG203_cont | Age started smoking daily (daily smokers) | Continuous |
+| SMKG207_cont | Age started smoking daily (former daily smokers) | Continuous |
+
+## Smoking Cessation Variables
+
+Variables measuring when someone quit smoking:
+
+| Harmonized Variable | Description | Type |
+|---------------------|-------------|------|
+| SMK_09A_cont | When stopped smoking daily (former daily) | Continuous |
+| SMKG09C | Years since stopped smoking daily (former daily) | Categorical |
+
+## Smoking Intensity Variables
+
+Variables measuring how much someone smokes/smoked:
+
+| Harmonized Variable | Description | Type |
+|---------------------|-------------|------|
+| SMK_204 | Number of cigarettes smoked daily (daily smokers) | Continuous |
+| SMK_208 | Number of cigarettes smoked daily (former daily smokers) | Continuous |
+| SMK_05B | Number of cigarettes smoked daily (occasional smokers) | Continuous |
+| SMK_05C | Number of days smoked in past month (occasional smokers) | Continuous |
+
+## Demographic Variables
+
+Variables used for cohort assignment and stratification:
+
+| Harmonized Variable | Description | Type |
+|---------------------|-------------|------|
+| DHH_SEX | Sex of respondent | Categorical |
+| cchsbdate | CCHS survey date | Date |
+
+# Variable Derivation for Age-Period-Cohort Analysis
+
+## Smoking Initiation Process
+
+### Step 1: Identify Smoking Initiators
+
+The first step is to identify individuals who have initiated smoking, defined as having smoked at least 100 cigarettes in their lifetime.
+
+```{r smoking-initiators, eval=FALSE}
+# Using our process_smoking_initiation function
+inits_male <- process_smoking_initiation(harmonized_data, sex = "M")
+inits_female <- process_smoking_initiation(harmonized_data, sex = "F")
+```
+
+The function shown above performs the following steps:
+
+1. Filters respondents by sex
+2. Identifies never-smokers (SMK_01A = 2) and sets their initiation age to 101 (a flag value)
+3. Creates an initiation indicator (init=1 for smokers, init=0 for never-smokers)
+4. Filters to include only those born in 1920 or later
+5. Creates a subset containing only those who initiated smoking
+6. Applies age filter (age >= 8)
+7. Calculates period (year of initiation) as cohort + age
+8. Returns a dataset with ont_id, weighting, age, cohort, period, and init variables
+
+### Step 2: Create Population Denominators
+
+To calculate initiation rates, we need the population at risk of initiation at each age, period, and cohort combination.
+
+```{r denominator-example, eval=FALSE}
+# Example function for creating denominators (not fully implemented yet)
+create_initiation_denominators <- function(dataset, sex = "M") {
+  # Function implementation would go here
+  # This creates population counts by age, period, and cohort
+}
+```
+
+## Smoking Cessation Process
+
+### Step 1: Identify Smoking Cessation
+
+Similarly, we identify individuals who have quit smoking and when they quit.
+
+```{r cessation-example, eval=FALSE}
+# Example function for processing cessation data
+process_smoking_cessation <- function(dataset, sex = "M") {
+  # Function implementation would follow similar steps to initiation
+  # but with cessation-specific criteria
+}
+```
+
+## Age-Period-Cohort Modeling
+
+The APC modeling approach uses splines to model age, period, and cohort effects:
+
+1. Natural cubic splines are constructed for age, period, and cohort
+2. These splines are used in a generalized linear model with binomial errors
+3. Survival probabilities are used to adjust for differential mortality
+4. Separate models are fit for males and females
+
+```{r apc-splines, eval=FALSE}
+# Example of creating splines for APC modeling
+create_age_splines <- function(ages, knots) {
+  # Function to create natural cubic splines for ages
+  # Implementation would go here
+}
+```
+
+# Applying the Model
+
+## Estimating Smoking Probabilities
+
+Once the APC models are fitted, they can be used to predict:
+
+1. Initiation probabilities by age, period, and cohort
+2. Cessation probabilities by age, period, and cohort
+
+```{r predict-example, eval=FALSE}
+# Example of predicting initiation probabilities
+predict_initiation <- function(age, period, cohort, sex) {
+  # Implementation would use fitted coefficients from APC model
+}
+```
+
+## Generating Smoking Histories
+
+Complete smoking histories can be generated using:
+
+1. A microsimulation approach based on the estimated probabilities
+2. Monte Carlo methods to introduce appropriate stochasticity
+
+```{r history-example, eval=FALSE}
+# Example of generating a smoking history
+generate_smoking_history <- function(birth_year, sex) {
+  # Simulation implementation would go here
+}
+```
+
+# Validation and Calibration
+
+## Comparing to Historical Data
+
+Model validation involves comparing the generated smoking histories to:
+
+1. Historical smoking prevalence data
+2. Known patterns in smoking behavior by birth cohort
+3. Other published estimates of smoking trends
+
+```{r validation-example, eval=FALSE}
+# Example of validating model results
+validate_smoking_prevalence <- function(simulated_data, reference_data) {
+  # Validation code would go here
+}
+```
+
+## Calibration Procedures
+
+If necessary, model calibration can be performed by:
+
+1. Adjusting the baseline rates
+2. Modifying the period effects
+3. Fine-tuning cohort-specific parameters
+
+# Implementation Example
+
+Below is a simplified example of processing smoking initiation data using the function we've developed:
+
+```{r implementation-example, eval=FALSE}
+# Create simulated data for testing
+test_data <- data.frame(
+  ont_id = 1001:1010,
+  sex = rep(c("M", "F"), 5),
+  SMK_01A = c(1, 2, 1, 1, 1, 2, 1, 2, 1, 1),  # 1=Yes, 2=No to 100+ cigarettes
+  agefirst = c(16, NA, 12, 21, 7, NA, 18, NA, 15, 22),
+  cchsbdate = as.Date(c("2001-06-15", "2001-07-20", "2001-08-10", 
+                      "2001-09-05", "2001-10-25", "2002-01-15",
+                      "2002-02-20", "2002-03-10", "2002-04-15", "2002-05-20")),
+  weighting = round(runif(10, 100, 300))
+)
+
+# Process the initiation data
+male_init <- process_smoking_initiation(test_data, sex = "M")
+female_init <- process_smoking_initiation(test_data, sex = "F")
+
+# Examine the results
+print(male_init)
+print(female_init)
+```
+
+# Conclusion
+
+This guide has provided an overview of how to:
+
+1. Prepare CCHS data for smoking history analysis
+2. Derive the key variables needed for APC modeling
+3. Implement the core components of the Canadian Smoking History Generator Model
+4. Apply and validate the model
+
+Further development is ongoing to complete the full implementation of the model in R, including additional validation against historical data and extensions to incorporate more recent survey cycles.
+
+# References
+
+Manuel, D.G. et al. (2002). Current and future mortality probabilities in Ontario, 2002 to 2032. *Health Reports*, Statistics Canada.
+
+Holford, T.R. (1991). Understanding the effects of age, period, and cohort on incidence and mortality rates. *Annual Review of Public Health*, 12, 425-457.
+
+Canadian Community Health Survey (CCHS) - Annual Component. Statistics Canada.
+
+# Appendix: Additional Resources
+
+## SAS to R Translation Notes
+
+The original model was implemented in SAS. Key translation considerations include:
+
+1. SAS `PROC GENMOD` is equivalent to R's `glm()` function
+2. SAS natural cubic splines can be created with R's `splines::ns()`
+3. SAS data steps are translated to R's data.frame operations
+4. SAS `%macro` functions are converted to R functions
+
+## Complete Variable Crosswalk
+
+For a complete mapping of variables across CCHS cycles, refer to the included variable sheets:
+
+- `worksheets/cshgm-variables.csv`
+- `worksheets/cshgm-variable-details.csv`

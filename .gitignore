@@ -6,11 +6,25 @@
 # Built
 _targets
 dist
+_site/
+
+# renv library files (large)
+renv/library/
 
 # Mac
 .DS_Store
 
+# Data
 data/prod
-.prettierrc
 
+# Editor configs
+.prettierrc
 .vscode/
+
+# Generated files
+*.html
+*.pdf
+*.log
+*.aux
+
+/.quarto/

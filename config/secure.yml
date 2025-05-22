@@ -1,0 +1,43 @@
+secure:
+
+# This file is an example of how a configuration file can be created to run the project in a 
+# secure data envirnoment such as Statscan Regional Data Centre. The site-specific.yml would
+# not be publicly shared or appear on Github. 
+
+  # Variable definitions
+  variables_path: !expr file.path(getwd(), "config/variables/variables.csv")
+  variable_details_path: !expr file.path(getwd(), "config/variables/variable_details.csv")
+  
+  # Working sheets
+  worksheets:
+    variables: !expr file.path(getwd(), "worksheets/cshgm-variables-working-copy.csv")
+    variable_details: !expr file.path(getwd(), "worksheets/cshgm-variable-details.csv")
+  
+  # Data configuration
+  data_type: ".RData"
+  
+  # Data paths for secure environment
+  # These should be replaced with actual paths in the secure environment
+  data:
+    cchs2001_p: "/secure/data/cchs2001_p.RData"
+    cchs2003_p: "/secure/data/cchs2003_p.RData"
+    cchs2005_p: "/secure/data/cchs2005_p.RData"
+    cchs2007_2008_p: "/secure/data/cchs2007_2008_p.RData"
+    cchs2009_2010_p: "/secure/data/cchs2009_2010_p.RData"
+    cchs2012_p: "/secure/data/cchs2012_p.RData"
+    cchs2013_2014_p: "/secure/data/cchs2013_2014_p.RData"
+  
+  # Model parameters
+  exclude_age_category: 1
+  
+  # Logging configuration
+  log_level: "WARN"
+  log_file: "/secure/logs/cshgm.log"
+  
+  # Output configuration
+  output_path: "/secure/output/"
+  
+  # APC model specifications (same as default)
+  age_knots: [10, 15, 20, 50, 60]
+  period_knots: [1940, 1950, 1960, 1970, 1980]
+  cohort_knots: [1930, 1940, 1945, 1950, 1955, 1960, 1965, 1970, 1975, 1980]

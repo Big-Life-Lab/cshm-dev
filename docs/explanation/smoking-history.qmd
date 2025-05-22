@@ -1,0 +1,41 @@
+---
+title: "Smoking history modeling"
+subtitle: "Conceptual overview of smoking behavior modeling approaches"
+---
+
+# Smoking history modeling
+
+This document provides a conceptual overview of smoking history modeling approaches.
+
+*This page is under development. Content coming soon.*
+
+## Overview
+
+Smoking history modeling is a method to understand and predict patterns of smoking behavior in populations over time.
+
+## Key concepts
+
+Important concepts in smoking history modeling include:
+
+1. **Smoking states**: Different states individuals can occupy (never, current, former smoker)
+2. **Transition probabilities**: The likelihood of moving between smoking states
+3. **Temporal effects**: How age, time period, and birth cohort influence smoking behavior
+4. **Population heterogeneity**: Different patterns across demographic groups
+
+## Modeling approaches
+
+Different approaches to smoking history modeling include:
+
+1. **Descriptive approaches**: Using survey data to directly estimate prevalence
+2. **Statistical approaches**: Using regression models to identify patterns and trends
+3. **Microsimulation approaches**: Simulating individual smoking histories
+4. **Age-Period-Cohort models**: Separating three temporal effects on smoking behavior
+
+## Applications
+
+Smoking history models have various applications:
+
+1. Projecting future smoking prevalence
+2. Estimating disease burden attributable to smoking
+3. Evaluating tobacco control policies
+4. Understanding smoking behavior dynamics

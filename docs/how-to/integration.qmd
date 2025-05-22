@@ -1,0 +1,36 @@
+---
+title: "Integrating with other models"
+subtitle: "Using CSHGM outputs in broader health and policy models"
+---
+
+# Integrating with other models
+
+This guide explains how to integrate the CSHGM with other health and policy models.
+
+*This page is under development. Content coming soon.*
+
+## Overview
+
+The CSHGM can serve as an input to various health policy and disease models, providing realistic smoking histories for population simulations.
+
+## Integration scenarios
+
+Common integration scenarios include:
+
+1. **Disease risk models**: Using smoking histories to predict cancer, cardiovascular, and respiratory disease risks
+2. **Health economic evaluations**: Assessing the cost-effectiveness of tobacco control policies
+3. **Population health forecasting**: Projecting future health outcomes based on smoking trends
+4. **Policy simulations**: Modeling the impact of tobacco control interventions
+
+## Data exchange formats
+
+```r
+# Example integration code (placeholder)
+# export_smoking_histories <- function(histories, format = "csv") {
+#   # Export code would go here
+# }
+```
+
+## Case studies
+
+*This section will include examples of successful integration with other models.*

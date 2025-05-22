@@ -1,0 +1,12 @@
+---
+title: "How-to guides"
+---
+
+This section provides practical instructions for specific tasks with CSHGM:
+
+- [Processing CCHS data](processing-cchs-data.qmd): How to process and prepare CCHS data
+- [Running the APC model](running-apc-model.qmd): How to set up and run the APC model
+- [Generating smoking histories](generating-histories.qmd): How to generate complete smoking histories
+- [Validating results](validating-results.qmd): How to validate model results against reference data
+
+Use this section when you need to accomplish specific tasks with CSHGM.

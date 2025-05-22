@@ -1,0 +1,86 @@
+---
+title: "Frequently asked questions"
+---
+
+## General questions
+
+### What is the Canadian Smoking History Generator Model?
+
+The Canadian Smoking History Generator Model (CSHGM) is an R implementation of an Age-Period-Cohort model for analyzing smoking behavior patterns across different generations and time periods. It builds on the original work developed for the Ontario SHGM study (2020) and the methodological approach pioneered by Holford.
+
+### Who should use CSHGM?
+
+CSHGM is primarily designed for:
+
+- Epidemiologists studying smoking trends
+- Health policy researchers
+- Public health analysts
+- Population health modelers
+- Researchers interested in age-period-cohort effects
+
+### Is CSHGM specific to Canadian data?
+
+While CSHGM was designed for use with Canadian Community Health Survey data, the methodology can be adapted for use with other survey data sources that contain similar smoking history information.
+
+## Technical questions
+
+### What R version is required?
+
+CSHGM requires R version 4.1.0 or higher.
+
+### Can I use CSHGM in secure environments?
+
+Yes, CSHGM is designed to work in secure computing environments like Statistics Canada's Research Data Centres (RDCs). The package uses configuration files to manage paths and dependencies, making it adaptable to different environments.
+
+### How does CSHGM handle missing data?
+
+CSHGM has built-in strategies for handling missing data in smoking variables, including:
+
+- Filtering out cases with missing key variables
+- Imputation options for less critical variables
+- Clear documentation of data limitations
+
+### Can I extend CSHGM with my own models?
+
+Yes, CSHGM is designed to be modular. You can:
+
+- Modify the spline specifications for the APC model
+- Add additional covariates to the models
+- Implement alternative statistical approaches
+- Extend the generated smoking histories with additional variables
+
+## Methodological questions
+
+### What is Age-Period-Cohort (APC) analysis?
+
+APC analysis is a statistical approach that attempts to disentangle three time-related effects:
+
+- **Age effects**: How behavior changes as individuals age
+- **Period effects**: How external factors affect everyone at a specific point in time
+- **Cohort effects**: How being born in a specific generation influences behavior
+
+### How does CSHGM handle the identification problem in APC models?
+
+The APC identification problem arises because age, period, and cohort have a linear relationship (period = age + cohort). CSHGM addresses this by:
+
+1. Using natural cubic splines to model non-linear effects
+2. Applying constraints to the spline coefficients
+3. Following the approach developed by Holford for identifiability
+
+### How accurate are the generated smoking histories?
+
+The generated smoking histories are based on statistical models fitted to survey data. Their accuracy depends on:
+
+1. The quality and representativeness of the input survey data
+2. The appropriateness of the APC modeling approach
+3. The validity of assumptions about smoking behavior
+
+CSHGM includes validation procedures to compare the generated histories against historical data and reference studies.
+
+## Getting help
+
+If your question isn't answered here, please:
+
+1. Check the [documentation](../index.qmd)
+2. Submit an issue on [GitHub](https://github.com/cshgm/cshgm/issues)
+3. Contact the project maintainers directly

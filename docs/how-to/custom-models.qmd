@@ -1,0 +1,41 @@
+---
+title: "Creating custom models"
+subtitle: "Extending the CSHGM for specialized analyses"
+---
+
+# Creating custom models
+
+This guide explains how to create custom models that extend the core functionality of the CSHGM.
+
+*This page is under development. Content coming soon.*
+
+## Overview
+
+The CSHGM can be extended in various ways to address specific research questions or incorporate additional factors.
+
+## Customization approaches
+
+Common customization approaches include:
+
+1. **Adding covariates**: Including additional variables like education or income
+2. **Alternative spline specifications**: Using different knot placements or spline types
+3. **Interaction terms**: Modeling interactions between temporal components
+4. **Stratified analyses**: Creating separate models for specific subpopulations
+
+## Example extensions
+
+```r
+# Example custom model code (placeholder)
+# custom_apc_model <- function(data, covariates = NULL) {
+#   # Custom model implementation would go here
+# }
+```
+
+## Best practices
+
+When creating custom models:
+
+1. Document model specifications clearly
+2. Validate custom models against baseline models
+3. Perform sensitivity analyses
+4. Consider computational efficiency for complex models

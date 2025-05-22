@@ -1,0 +1,40 @@
+---
+title: "Generating smoking histories"
+subtitle: "Creating synthetic smoking histories from APC model results"
+---
+
+# Generating smoking histories
+
+This guide explains how to generate synthetic smoking histories using the results from the Age-Period-Cohort model.
+
+*This page is under development. Content coming soon.*
+
+## Overview
+
+After fitting the APC model, you can generate complete smoking histories for simulated individuals. These histories can then be used in microsimulation models of smoking-related diseases.
+
+## Simulation process
+
+The simulation process involves:
+
+1. Creating a population with defined birth cohorts
+2. Simulating smoking initiation based on age-specific probabilities
+3. Simulating cessation for those who initiate
+4. Recording complete lifetime smoking histories
+
+## Example code
+
+```r
+# Example code (placeholder)
+# generate_smoking_histories <- function(n_people = 10000, birth_cohort_range = 1920:2000) {
+#   # Simulation code would go here
+# }
+```
+
+## Validation
+
+It's important to validate the generated smoking histories against:
+
+1. Historical smoking prevalence data
+2. Age-specific initiation patterns
+3. Duration of smoking patterns

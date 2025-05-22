@@ -1,0 +1,51 @@
+---
+title: "Validation approaches"
+subtitle: "Methods for assessing model accuracy and reliability"
+---
+
+# Validation approaches
+
+This document explains the validation approaches used in the CSHGM.
+
+*This page is under development. Content coming soon.*
+
+## Overview
+
+Validation is a critical step in ensuring that the CSHGM produces accurate and reliable results that reflect real-world smoking patterns.
+
+## Validation goals
+
+The primary goals of validation are to ensure:
+
+1. **Internal validity**: The model produces results that are consistent with the data used to build it
+2. **External validity**: The model can generalize to new data and scenarios
+3. **Face validity**: The results align with expert knowledge and historical trends
+4. **Predictive validity**: The model can make accurate predictions about future smoking patterns
+
+## Validation methods
+
+The CSHGM employs several validation methods:
+
+1. **Historical comparison**: Comparing model-generated prevalence with historical survey data
+2. **Cross-validation**: Testing the model on different subsets of data
+3. **Sensitivity analysis**: Examining how results change when model parameters are varied
+4. **Expert review**: Engaging subject matter experts to review the results
+
+## Validation metrics
+
+Key metrics used for validation include:
+
+1. Smoking prevalence by age, sex, and calendar year
+2. Age-specific initiation rates
+3. Age-specific cessation rates
+4. Duration of smoking distributions
+5. Cigarettes per day distributions
+
+## Validation challenges
+
+Common challenges in validating smoking history models include:
+
+1. Limited historical data for some time periods
+2. Changes in smoking behavior definitions over time
+3. Recall bias in self-reported smoking histories
+4. Underreporting of smoking in surveys

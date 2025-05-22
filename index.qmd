@@ -1,0 +1,54 @@
+---
+title: "Canadian Smoking History Generator Model"
+---
+
+:::{.column-screen}
+![](resources/banner.svg)
+:::
+
+## Welcome to CSHGM
+
+The Canadian Smoking History Generator Model (CSHGM) is an R implementation of the Age-Period-Cohort (APC) modelling approach to generate smoking histories based on Canadian Community Health Survey (CCHS) data.
+
+This project modernizes and extends the existing smoking history generation methodology developed in the Ontario SHGM study (2020) and the APC modelling approach pioneered by Holford.
+
+## Getting started
+
+:::{.grid}
+
+:::{.g-col-6}
+### For users
+
+If you're interested in using CSHGM:
+
+- [Getting started tutorial](docs/tutorials/getting-started.qmd)
+- [Basic usage examples](docs/tutorials/basic-usage.qmd)
+- [How to process CCHS data](docs/how-to/processing-cchs-data.qmd)
+:::
+
+:::{.g-col-6}
+### For developers
+
+If you want to contribute to CSHGM:
+
+- [Project specifications](docs/project-specifications.qmd)
+- [Contribution guide](CONTRIBUTING.md)
+- [Function reference](docs/reference/functions.qmd)
+:::
+
+:::
+
+## Key features
+
+- Process CCHS data for smoking initiation and cessation analysis
+- Implement Age-Period-Cohort (APC) modelling for smoking behaviors
+- Generate complete smoking histories for simulated populations
+- Validate against historical data
+- Works in secure computing environments like Statistics Canada's Regional Data Centres
+
+## License
+
+This project is licensed under:
+
+- **Code**: [GNU General Public License v3.0](LICENSE)
+- **Documentation and non-code assets**: [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/)

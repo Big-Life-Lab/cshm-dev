@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1200" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="200" fill="#f8f9fa"/>
+  <text x="600" y="110" font-family="Arial" font-size="48" text-anchor="middle" fill="#1a5276">Canadian Smoking History Generator Model</text>
+  <text x="600" y="150" font-family="Arial" font-size="24" text-anchor="middle" fill="#5d6d7e">Age-Period-Cohort Analysis for Smoking Behaviors</text>
+</svg>

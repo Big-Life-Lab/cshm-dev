@@ -1,0 +1,76 @@
+project:
+  type: website
+  output-dir: _site
+  
+website:
+  title: "Canadian Smoking History Generator Model"
+  site-url: https://cshgm.github.io/
+  repo-url: https://github.com/cshgm/cshgm
+  repo-actions: [edit, issue]
+  page-navigation: true
+  
+  navbar:
+    background: primary
+    search: true
+    left:
+      - text: "Home"
+        file: index.qmd
+      - text: "Getting Started"
+        file: docs/tutorials/getting-started.qmd
+      - text: "Reference"
+        file: docs/reference/index.qmd
+      - text: "How-To Guides"
+        file: docs/how-to/index.qmd
+      - text: "Explanations"
+        file: docs/explanation/index.qmd
+    right:
+      - icon: github
+        href: https://github.com/cshgm/cshgm
+        aria-label: GitHub
+
+  sidebar:
+    - title: "Tutorials"
+      style: "docked"
+      contents:
+        - docs/tutorials/getting-started.qmd
+        - docs/tutorials/basic-usage.qmd
+        - docs/tutorials/advanced-usage.qmd
+    
+    - title: "How-To Guides"
+      contents:
+        - docs/how-to/index.qmd
+        - docs/how-to/data-loading-and-harmonizing.qmd
+        - docs/how-to/processing-cchs-data.qmd
+        - docs/how-to/running-apc-model.qmd
+        - docs/how-to/generating-histories.qmd
+        - docs/how-to/interpreting-results.qmd
+        - docs/how-to/validating-results.qmd
+        - docs/how-to/custom-models.qmd
+        - docs/how-to/integration.qmd
+    
+    - title: "Explanations"
+      contents:
+        - docs/explanation/index.qmd
+        - docs/explanation/smoking-history.qmd
+        - docs/explanation/apc-method.qmd
+        - docs/explanation/validation.qmd
+        - docs/explanation/research-applications.qmd
+    
+    - title: "Reference"
+      contents:
+        - docs/reference/index.qmd
+        - docs/reference/variables.qmd
+        - docs/reference/functions.qmd
+        - docs/reference/model.qmd
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+    code-copy: true
+    code-tools: true
+    highlight-style: github
+
+execute:
+  freeze: auto

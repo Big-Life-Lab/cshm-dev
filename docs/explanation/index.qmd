@@ -1,0 +1,12 @@
+---
+title: "Explanation"
+---
+
+This section provides conceptual explanations of the methodology and approach used in CSHGM:
+
+- [Smoking history modelling](smoking-history.qmd): Conceptual overview of smoking history modelling
+- [APC methodology](apc-method.qmd): Explanation of the Age-Period-Cohort methodology
+- [Validation approaches](validation.qmd): Discussion of validation approaches and considerations
+- [Research applications](research-applications.qmd): Use cases in population health research
+
+Use this section when you want to understand the concepts and theory behind the project.

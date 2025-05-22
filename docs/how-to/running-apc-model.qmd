@@ -1,0 +1,36 @@
+---
+title: "Running the APC model"
+subtitle: "Applying Age-Period-Cohort modeling to smoking data"
+---
+
+# Running the APC model
+
+This guide explains how to run the Age-Period-Cohort model on processed CCHS data.
+
+*This page is under development. Content coming soon.*
+
+## Overview
+
+The Age-Period-Cohort (APC) model is a statistical approach used to disentangle the effects of age, time period, and birth cohort on health behaviors like smoking.
+
+## Prerequisites
+
+Before running the APC model, make sure you have:
+
+1. Harmonized and processed CCHS data
+2. Derived all necessary variables for smoking initiation and cessation
+
+## Implementation steps
+
+The basic workflow includes:
+
+1. Preparing spline terms for age, period, and cohort
+2. Fitting generalized linear models
+3. Predicting probabilities for all age-period-cohort combinations
+
+## Next steps
+
+For more information on interpreting and using the model results, see:
+
+- [Interpreting APC results](interpreting-results.qmd)
+- [Generating smoking histories](generating-histories.qmd)

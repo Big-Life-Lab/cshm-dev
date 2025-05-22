@@ -1,0 +1,56 @@
+---
+title: "Variable reference"
+---
+
+This page provides detailed technical documentation for the variables used in the CSHGM package.
+
+## Core smoking status variables
+
+| Variable | Description | Values |
+|----------|-------------|--------|
+| SMK_01A | In lifetime, smoked 100 or more cigarettes | 1=Yes, 2=No |
+| SMK_202 | Current smoking status | 1=Daily, 2=Occasional, 3=Not at all |
+| SMKDSTY | Type of smoker | 1=Daily, 2=Occasional, 3=Former daily, 4=Former occasional, 5=Never |
+
+## Smoking initiation variables
+
+| Variable | Description | Type |
+|----------|-------------|------|
+| SMKG01C_cont | Age smoked first cigarette | Continuous |
+| SMKG203_cont | Age started smoking daily (daily smokers) | Continuous |
+| SMKG207_cont | Age started smoking daily (former daily smokers) | Continuous |
+
+## Smoking cessation variables
+
+| Variable | Description | Type |
+|----------|-------------|------|
+| SMK_09A_cont | When stopped smoking daily (former daily) | Continuous |
+| SMKG09C | Years since stopped smoking daily (former daily) | Categorical |
+
+## Smoking intensity variables
+
+| Variable | Description | Type |
+|----------|-------------|------|
+| SMK_204 | Number of cigarettes smoked daily (daily smokers) | Continuous |
+| SMK_208 | Number of cigarettes smoked daily (former daily smokers) | Continuous |
+| SMK_05B | Number of cigarettes smoked daily (occasional smokers) | Continuous |
+| SMK_05C | Number of days smoked in past month (occasional smokers) | Continuous |
+
+## Demographic variables
+
+| Variable | Description | Type |
+|----------|-------------|------|
+| DHH_SEX | Sex of respondent | Categorical |
+| cchsbdate | CCHS survey date | Date |
+
+## Age-period-cohort variables
+
+| Variable | Description | Type |
+|----------|-------------|------|
+| age | Age at smoking initiation or cessation | Continuous |
+| period | Calendar year of smoking initiation or cessation | Continuous |
+| cohort | Birth year | Continuous |
+| init | Smoking initiation indicator | Binary (0/1) |
+| cess | Smoking cessation indicator | Binary (0/1) |
+
+For a complete mapping of variables across CCHS cycles, refer to the included variable sheets in the `config/variables` directory.

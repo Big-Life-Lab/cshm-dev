@@ -1,0 +1,41 @@
+---
+title: "Validating model results"
+subtitle: "Assessing the accuracy of CSHGM predictions"
+---
+
+# Validating model results
+
+This guide explains how to validate the results from the Canadian Smoking History Generator Model.
+
+*This page is under development. Content coming soon.*
+
+## Overview
+
+Validation is a critical step in ensuring that the CSHGM accurately reflects historical smoking patterns and can generate plausible future scenarios.
+
+## Validation approaches
+
+Several approaches can be used for validation:
+
+1. **Historical comparison**: Comparing model-generated prevalence with historical survey data
+2. **Out-of-sample testing**: Reserving some data for validation
+3. **Cross-validation**: Testing the model on different subsets of data
+4. **Expert review**: Having subject matter experts review the results
+
+## Example validation
+
+```r
+# Example validation code (placeholder)
+# compare_prevalence <- function(simulated_data, reference_data) {
+#   # Validation code would go here
+# }
+```
+
+## Interpreting validation results
+
+When interpreting validation results, consider:
+
+1. Absolute and relative differences between model and reference data
+2. Systematic patterns in discrepancies
+3. Sensitivity to key parameters
+4. Validation across different demographic groups
