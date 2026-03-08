@@ -3,9 +3,9 @@ project:
   output-dir: _site
   
 website:
-  title: "Canadian Smoking History Generator Model"
-  site-url: https://cshgm.github.io/
-  repo-url: https://github.com/cshgm/cshgm
+  title: "Canadian Smoking Histories Model"
+  site-url: https://big-life-lab.github.io/cshm-dev/
+  repo-url: https://github.com/Big-Life-Lab/cshm-dev
   repo-actions: [edit, issue]
   page-navigation: true
   
@@ -25,7 +25,7 @@ website:
         file: docs/explanation/index.qmd
     right:
       - icon: github
-        href: https://github.com/cshgm/cshgm
+        href: https://github.com/Big-Life-Lab/cshm-dev
         aria-label: GitHub
 
   sidebar:
@@ -62,6 +62,8 @@ website:
         - docs/reference/variables.qmd
         - docs/reference/functions.qmd
         - docs/reference/model.qmd
+
+bibliography: references.bib
 
 format:
   html:

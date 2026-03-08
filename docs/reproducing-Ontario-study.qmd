@@ -1,7 +1,7 @@
 ---
-title: "Reproducing the Canadian Smoking History Generator Model"
+title: "Reproducing the Canadian Smoking Histories Model"
 subtitle: "A Guide to Variable Derivation and Analysis"
-author: "CSHGM Development Team"
+author: "CSHM Development Team"
 date: "Last Updated: `r Sys.Date()`"
 format:
   html:
@@ -22,12 +22,12 @@ knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(ggplot2)
 # If you have installed the cshgm package, uncomment this:
-# library(cshgm)
+# library(cshm)
 ```
 
 # Introduction
 
-This document provides a guide to reproducing the Canadian Smoking History Generator Model as described in Manuel et al. (2002) "Current and future mortality probabilities in Ontario, 2002 to 2032". The model uses Age-Period-Cohort (APC) analysis to estimate smoking initiation and cessation probabilities across different birth cohorts, which are then used to generate complete smoking histories.
+This document provides a guide to reproducing the Canadian Smoking Histories Model as described in @Manuel_HR_2020. The model uses Age-Period-Cohort (APC) analysis to estimate smoking initiation and cessation probabilities across different birth cohorts, which are then used to generate complete smoking histories.
 
 ## Purpose of This Guide
 
@@ -40,7 +40,7 @@ This guide aims to:
 
 ## Original Study Overview
 
-The original study by Manuel et al. (2002) developed a model to:
+The original study [@Manuel_HR_2020] developed a model to:
 
 -   Generate individual smoking histories for a simulated population
 -   Estimate smoking prevalence across different time periods and birth cohorts
@@ -284,18 +284,15 @@ This guide has provided an overview of how to:
 
 1.  Prepare CCHS data for smoking history analysis
 2.  Derive the key variables needed for APC modeling
-3.  Implement the core components of the Canadian Smoking History Generator Model
+3.  Implement the core components of the Canadian Smoking Histories Model
 4.  Apply and validate the model
 
 Further development is ongoing to complete the full implementation of the model in R, including additional validation against historical data and extensions to incorporate more recent survey cycles.
 
 # References
 
-Manuel, D.G. et al. (2002). Current and future mortality probabilities in Ontario, 2002 to 2032. *Health Reports*, Statistics Canada.
-
-Holford, T.R. (1991). Understanding the effects of age, period, and cohort on incidence and mortality rates. *Annual Review of Public Health*, 12, 425-457.
-
-Canadian Community Health Survey (CCHS) - Annual Component. Statistics Canada.
+::: {#refs}
+:::
 
 # Appendix: Additional Resources
 
@@ -312,5 +309,5 @@ The original model was implemented in SAS. Key translation considerations includ
 
 For a complete mapping of variables across CCHS cycles, refer to the included variable sheets:
 
--   `worksheets/cshgm-variables.csv`
--   `worksheets/cshgm-variable-details.csv`
+-   `worksheets/cshm-variables.csv`
+-   `worksheets/cshm-variable-details.csv`

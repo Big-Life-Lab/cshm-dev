@@ -2,11 +2,11 @@
 title: "APC model reference"
 ---
 
-This page provides detailed technical documentation for the Age-Period-Cohort (APC) model implementation in the CSHGM package.
+This page provides detailed technical documentation for the Age-Period-Cohort (APC) model implementation in the CSHM package.
 
 ## Overview
 
-The APC model is used to separate the effects of age, time period, and birth cohort on smoking initiation and cessation rates. This implementation follows the approach developed by Holford, using natural cubic splines to model these effects.
+The APC model is used to separate the effects of age, time period, and birth cohort on smoking initiation and cessation rates. This implementation follows the approach developed by Holford, using natural cubic splines to model these effects, as applied to Canadian smoking patterns in @Manuel_HR_2020.
 
 ## Mathematical formulation
 
@@ -74,3 +74,8 @@ The APC model is implemented using the following steps:
 4. Separate models are fit for males and females
 
 Additional technical documentation will be added as the implementation progresses.
+
+## References
+
+::: {#refs}
+:::
