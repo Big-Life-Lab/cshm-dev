@@ -1,34 +1,48 @@
-# A Canadian Smoking History Generator Model: A Study Protocol for a Simulation Model
+# A Canadian Smoking Histories Model: a study protocol
 
-Version 0.1.0
+Version 0.1.1
 
-Date: 2025-03-27
+Date: 2025-05-22
 
 ## Abstract
 
--   Brief summary of the project (150-200 words)
--   Include background, objectives, methods, and expected outcomes
--   Highlight the novelty and significance of developing a Canadian Smoking History Generator \[\[STROBE: Clear summary of study components; ISPOR-SMDM: Overview of model purpose\]\]
+<!-- STROBE: Clear summary of study components; ISPOR-SMDM: Overview of model purpose -->
+
+**Background**
+
+Understanding historical and projected smoking behaviour across Canadian populations is essential for evaluating tobacco control policies and estimating smoking-attributable disease burden. While the U.S. Smoking History Generator (SHG) has been widely used in cancer risk modelling, a pan-Canadian equivalent does not yet exist. Canada’s unique smoking trends and provincial policies necessitate a tailored approach.
+
+**Objectives**
+
+This study aims to develop a Canadian Smoking Histories Model that reconstructs smoking patterns by birth cohort, sex, and province from 1965 to 2023, with projections to 2050. It will (1) estimate historical and current smoking behaviours; (2) assess regional and temporal variations; (3) project future trends under status quo policies; and (4) provide an open-access model for widespread use.
+
+**Methods**
+
+Using harmonized data from over one million respondents in the Canadian Community Health Survey (2001–2023), we will apply age-period-cohort models to estimate smoking initiation, cessation, and intensity. Mortality-adjusted estimates using the MPoRT algorithm will address survival bias. Provincial estimates will be derived using small-area methods, and projections will extend to 2050.
+
+**Expected Outcomes**
+
+The resulting model will be publicly accessible and enable tailored policy evaluation and disease modelling in Canada. Its development represents a novel, policy-relevant advancement in population health modelling.
 
 ## Table of Contents
 
 ## 1. Background
 
-Understanding the patterns of smoking behaviour across different birth cohorts is crucial for evaluating tobacco control policies and predicting smoking-related health outcomes in Canada. Previous work by Holford et al. (2014) and Manuel et al. (2020) demonstrated how birth-cohort-specific smoking histories can be generated using cross-sectional health surveys in the United States and Ontario, respectively. These models support evaluating the impact of tobacco control interventions, projecting smoking prevalence, and estimating related health outcomes. The Smoking History Generator (SHG) developed by the National Cancer Institute in the US has been instrumental in cancer risk modelling, but a comprehensive Canadian equivalent covering all provinces has not yet been developed. Given Canada's distinct tobacco control policies and smoking patterns, developing a Canadian Smoking History Generator Model helps inform future public health planning, evaluate past interventions, and project the smoking-attributable disease burden nationwide.
+Understanding the patterns of smoking behaviour across different birth cohorts is crucial for evaluating tobacco control policies and predicting smoking-related health outcomes in Canada. The Smoking History Generator (SHG) model developed by the National Cancer Institute in the US has been instrumental in cancer risk modelling. The approach was replicated in Ontario, but a comprehensive Canadian equivalent covering all provinces has not yet been developed. Given Canada's distinct tobacco control policies and smoking patterns, developing a Canadian Smoking Histories Model helps inform future public health planning, evaluate past interventions, and project the smoking-attributable disease burden nationwide.
 
--   Expand on the public health significance of smoking in Canada, including current prevalence and trends \[\[STROBE: Context/rationale; GATHER: Relevance\]\]
+-   Expand on the public health significance of smoking in Canada, including current prevalence and trends [[STROBE: Context/rationale; GATHER: Relevance]]
 
--   Provide more detailed description of previous modelling efforts by Holford, Manuel, and others \[\[ISPOR-SMDM: Review of existing approaches\]\]
+-   Provide more detailed description of previous modelling efforts by Holford, Manuel, and others [[ISPOR-SMDM: Review of existing approaches]]
 
--   Describe key policy initiatives in Canadian tobacco control and how a model would help evaluate them \[\[CHEERS: Policy context; ISPOR-SMDM: Decision context\]\]
+-   Describe key policy initiatives in Canadian tobacco control and how a model would help evaluate them [[CHEERS: Policy context; ISPOR-SMDM: Decision context]]
 
--   Explain the differences between US and Canadian smoking patterns and policies that justify a Canada-specific model \[\[ISPOR-SMDM: Justification of model approach\]\]
+-   Explain the differences between US and Canadian smoking patterns and policies that justify a Canada-specific model [[ISPOR-SMDM: Justification of model approach]]
 
--   Discuss current gaps in Canadian smoking history modelling, particularly at the provincial level \[\[GATHER: Gaps in existing knowledge; STROBE: Objectives\]\]
+-   Discuss current gaps in Canadian smoking history modelling, particularly at the provincial level [[GATHER: Gaps in existing knowledge; STROBE: Objectives]]
 
 ## 2. Objectives
 
-This study will develop a comprehensive Canadian Smoking History Generator Model that characterizes smoking patterns by birth cohort, sex, and province from 1965 to 2023, with projections to 2050. Specifically, this study will:
+This study will develop a comprehensive Canadian Smoking Histories Model that characterizes smoking patterns by birth cohort, sex, and province from 1965 to 2023, with projections to 2050. Specifically, this study will:
 
 1.  Estimate historical and current smoking prevalence, initiation, cessation, and intensity by birth cohort for each province and territory;
 
@@ -38,37 +52,37 @@ This study will develop a comprehensive Canadian Smoking History Generator Model
 
 4.  Create a publicly-accessible open model that can be used and updated by policy actors, researchers, and others.
 
--   Expand each objective with more specific sub-objectives (e.g., specific parameters to be estimated) \[\[STROBE: Specific objectives; ISPOR-SMDM: Model scope\]\]
+-   Expand each objective with more specific sub-objectives (e.g., specific parameters to be estimated) [[STROBE: Specific objectives; ISPOR-SMDM: Model scope]]
 
--   Define the precise time periods for historical reconstruction (1965-2023) and future projections (2024-2050) \[\[GATHER: Time period; ISPOR-SMDM: Time horizon\]\]
+-   Define the precise time periods for historical reconstruction (1965-2023) and future projections (2024-2050) [[GATHER: Time period; ISPOR-SMDM: Time horizon]]
 
--   Specify the demographic and geographic resolution of the model (age groups, provinces, etc.) \[\[ISPOR-SMDM: Target population; STRESS: System and population detail\]\]
+-   Specify the demographic and geographic resolution of the model (age groups, provinces, etc.) [[ISPOR-SMDM: Target population; STRESS: System and population detail]]
 
--   Explain how the model will interface with existing health policy models in Canada \[\[CHEERS: Study perspective; ISPOR-SMDM: Model purpose\]\]
+-   Explain how the model will interface with existing health policy models in Canada [[CHEERS: Study perspective; ISPOR-SMDM: Model purpose]]
 
 ## 3. Methods
 
 ### 3.1 Overall study design
 
--   Describe the overall approach as a retrospective modelling study using cross-sectional survey data \[\[STROBE: Study design; ISPOR-SMDM: Model type\]\]
+-   Describe the overall approach as a retrospective modelling study using cross-sectional survey data [[STROBE: Study design; ISPOR-SMDM: Model type]]
 
--   Outline the conceptual framework for the smoking history generator, including key compartments and transitions \[\[ISPOR-SMDM: Model structure; STRESS: Conceptualization\]\]
+-   Outline the conceptual framework for the smoking history generator, including key compartments and transitions [[ISPOR-SMDM: Model structure; STRESS: Conceptualization]]
 
--   Explain how the age-period-cohort framework will be implemented, with justification \[\[ISPOR-SMDM: Analytical approach; GATHER: Methods overview\]\]
+-   Explain how the age-period-cohort framework will be implemented, with justification [[ISPOR-SMDM: Analytical approach; GATHER: Methods overview]]
 
 ### 3.2 Data sources
 
 The primary data source will be the Canadian Community Health Survey (CCHS) conducted from 2001 to 2023, which provides nationally representative cross-sectional information on smoking behaviours. We will use all available cycles of the CCHS, with a combined sample size exceeding 1 million respondents. From these surveys, we will extract information on current smoking status, age at smoking initiation, age at cessation, and smoking intensity (cigarettes per day).
 
--   Provide a detailed description of each CCHS cycle to be used, including sample sizes and response rates \[\[STROBE: Setting/participants; GATHER: Data sources\]\]
+-   Provide a detailed description of each CCHS cycle to be used, including sample sizes and response rates [[STROBE: Setting/participants; GATHER: Data sources]]
 
--   List secondary data sources for model validation (previous national surveys, etc.) \[\[GATHER: Input data; STRESS: Input data\]\]
+-   List secondary data sources for model validation (previous national surveys, etc.) [[GATHER: Input data; STRESS: Input data]]
 
--   Describe data sources for mortality adjustments (Statistics Canada life tables, etc.) \[\[GATHER: Input data; ISPOR-SMDM: Data identification\]\]
+-   Describe data sources for mortality adjustments (Statistics Canada life tables, etc.) [[GATHER: Input data; ISPOR-SMDM: Data identification]]
 
--   Discuss the representativeness of the CCHS and potential selection biases \[\[STROBE: Potential bias; GATHER: Limitations of data sources\]\]
+-   Discuss the representativeness of the CCHS and potential selection biases [[STROBE: Potential bias; GATHER: Limitations of data sources]]
 
--   Outline strategies for handling historical periods before CCHS data were available \[\[GATHER: Data processing; ISPOR-SMDM: Data synthesis\]\]
+-   Outline strategies for handling historical periods before CCHS data were available [[GATHER: Data processing; ISPOR-SMDM: Data synthesis]]
 
 ### 3.3 Exposure ascertainment
 
@@ -76,132 +90,143 @@ To follow...
 
 The cchsflow library will harmonize smoking variables in the CCHS across all survey cycles. Appendix X has harmonization details (variables and variable details).
 
--   Define key smoking status variables (current, former, never smoker) with precise operational definitions \[\[STROBE: Variables; GATHER: Indicator definitions\]\]
+-   Define key smoking status variables (current, former, never smoker) with precise operational definitions [[STROBE: Variables; GATHER: Indicator definitions]]
 
--   Detail how age at initiation and cessation will be determined and validated \[\[GATHER: Data processing; STRESS: Input parameters\]\]
+-   Detail how age at initiation and cessation will be determined and validated [[GATHER: Data processing; STRESS: Input parameters]]
 
--   Describe handling of inconsistent responses across survey items \[\[GATHER: Data processing; ISPOR-SMDM: Data adaptation\]\]
+-   Describe handling of inconsistent responses across survey items [[GATHER: Data processing; ISPOR-SMDM: Data adaptation]]
 
--   Explain approach to measuring smoking intensity and categorizing it for analysis \[\[STROBE: Variables; GATHER: Indicator definitions\]\]
+-   Explain approach to measuring smoking intensity and categorizing it for analysis [[STROBE: Variables; GATHER: Indicator definitions]]
 
--   Detail methods for handling missing data on smoking history variables \[\[STROBE: Statistical methods; GATHER: Data processing\]\]
+-   Detail methods for handling missing data on smoking history variables [[STROBE: Statistical methods; GATHER: Data processing]]
 
 ### 3.4 Analytical approach
 
 Following the approach developed by Holford et al. and adapted by Manuel et al., we will use an age-period-cohort modelling framework to generate smoking histories. The model will consist of two primary components: a smoking initiation model (for people who had not already started smoking) and a smoking cessation model (for those who are currently smoking). We will first construct retrospective smoking histories for each respondent up to the survey date based on their reported age of initiation and cessation. To address survival bias (whereby smokers are less likely to survive to be interviewed), we will apply mortality adjustments using the Mortality Population Risk Tool (MPoRT), which accounts for differential mortality by smoking status. Age-period-cohort models with constrained natural splines will be fitted to estimate smoking initiation and cessation probabilities by birth cohort, age, sex, and province. Additional models will estimate smoking intensity distributions. The models will be calibrated against historical survey estimates of smoking prevalence and then used to project future smoking prevalence through 2050 under status quo conditions. Provincial and territorial estimates will be generated using appropriate small-area estimation techniques with limited sample sizes.
 
+
+
+Table 1a - study data prior to data cleaning and imputation.
+
+Data cleaning.
+Missing data -  condition - smoking status then pack-years.
+Use MICE with variables in study data. 
+
+Table 1b - post cleaning and imputation. 
+
+
 #### 3.4.1 Smoking history model specification
 
--   Provide mathematical formulation of the smoking initiation model, including equations \[\[ISPOR-SMDM: Model specification; STRESS: Mathematical formulation\]\]
+-   Provide mathematical formulation of the smoking initiation model, including equations [ISPOR-SMDM: Model specification; STRESS: Mathematical formulation]
 
--   Detail the smoking cessation model specification, including precise definition of cessation \[\[ISPOR-SMDM: Model specification; STRESS: Mathematical formulation\]\]
+-   Detail the smoking cessation model specification, including precise definition of cessation [[ISPOR-SMDM: Model specification; STRESS: Mathematical formulation]]
 
--   Describe the smoking intensity model and approach to estimating cigarettes per day \[\[ISPOR-SMDM: Model specification; GATHER: Statistical methods\]\]
+-   Describe the smoking intensity model and approach to estimating cigarettes per day [[ISPOR-SMDM: Model specification; GATHER: Statistical methods]]
 
--   Explain the linkage between individual survey data and population-level parameter estimation \[\[ISPOR-SMDM: Data synthesis; GATHER: Statistical methods\]\]
+-   Explain the linkage between individual survey data and population-level parameter estimation [[ISPOR-SMDM: Data synthesis; GATHER: Statistical methods]]
 
 #### 3.4.2 Age-period-cohort modelling
 
--   Detail the specification of constrained natural splines, including knot placement strategy \[\[ISPOR-SMDM: Technical implementation; GATHER: Statistical methods\]\]
+-   Detail the specification of constrained natural splines, including knot placement strategy [[ISPOR-SMDM: Technical implementation; GATHER: Statistical methods]]
 
--   Explain approach to addressing the identifiability problem in age-period-cohort models \[\[ISPOR-SMDM: Methods to address uncertainty; GATHER: Statistical methods\]\]
+-   Explain approach to addressing the identifiability problem in age-period-cohort models [[ISPOR-SMDM: Methods to address uncertainty; GATHER: Statistical methods]]
 
--   Describe specification tests for temporal effects in the models \[\[ISPOR-SMDM: Model validation; GATHER: Statistical methods\]\]
+-   Describe specification tests for temporal effects in the models [[ISPOR-SMDM: Model validation; GATHER: Statistical methods]]
 
 #### 3.4.3 Mortality adjustment
 
--   Detail the MPoRT model structure and how it will be used for mortality adjustment \[\[ISPOR-SMDM: Model structure; GATHER: Statistical methods\]\]
+-   Detail the MPoRT model structure and how it will be used for mortality adjustment [[ISPOR-SMDM: Model structure; GATHER: Statistical methods]]
 
--   Explain how differential mortality by smoking status will be incorporated into prevalence estimates \[\[ISPOR-SMDM: Data synthesis; GATHER: Statistical methods\]\]
+-   Explain how differential mortality by smoking status will be incorporated into prevalence estimates [[ISPOR-SMDM: Data synthesis; GATHER: Statistical methods]]
 
--   Describe approach to validating mortality adjustments using cohort studies if available \[\[ISPOR-SMDM: Model validation; GATHER: Cross-validation\]\]
+-   Describe approach to validating mortality adjustments using cohort studies if available [[ISPOR-SMDM: Model validation; GATHER: Cross-validation]]
 
 #### 3.4.4 Projections and extrapolation
 
--   Detail methods for extrapolating model parameters beyond the available data range \[\[ISPOR-SMDM: Extrapolation; STRESS: Initial conditions and warm-up\]\]
+-   Detail methods for extrapolating model parameters beyond the available data range [[ISPOR-SMDM: Extrapolation; STRESS: Initial conditions and warm-up]]
 
--   Describe assumptions about future trends in initiation, cessation, and intensity \[\[ISPOR-SMDM: Assumptions; STRESS: Assumptions\]\]
+-   Describe assumptions about future trends in initiation, cessation, and intensity [[ISPOR-SMDM: Assumptions; STRESS: Assumptions]]
 
--   Explain approach to status quo scenario definition and alternative policy scenarios if applicable \[\[ISPOR-SMDM: Strategies/scenarios; CHEERS: Comparators\]\]
+-   Explain approach to status quo scenario definition and alternative policy scenarios if applicable [[ISPOR-SMDM: Strategies/scenarios; CHEERS: Comparators]]
 
 #### 3.4.5 Provincial and territorial estimates
 
--   Detail small-area estimation techniques for provinces/territories with limited sample sizes \[\[GATHER: Statistical methods; ISPOR-SMDM: Subgroup analysis\]\]
+-   Detail small-area estimation techniques for provinces/territories with limited sample sizes [[GATHER: Statistical methods; ISPOR-SMDM: Subgroup analysis]]
 
--   Explain how consistency between national and provincial estimates will be ensured \[\[GATHER: Statistical methods; ISPOR-SMDM: Internal consistency\]\]
+-   Explain how consistency between national and provincial estimates will be ensured [[GATHER: Statistical methods; ISPOR-SMDM: Internal consistency]]
 
--   Describe approach to handling heterogeneity across provinces in temporal trends \[\[ISPOR-SMDM: Heterogeneity; GATHER: Statistical methods\]\]
+-   Describe approach to handling heterogeneity across provinces in temporal trends [[ISPOR-SMDM: Heterogeneity; GATHER: Statistical methods]]
 
 ### 3.5 Model validation and uncertainty analysis
 
--   Detail internal validation approach using goodness-of-fit metrics \[\[ISPOR-SMDM: Internal validation; STRESS: Validation - internal\]\]
+-   Detail internal validation approach using goodness-of-fit metrics [[ISPOR-SMDM: Internal validation; STRESS: Validation - internal]]
 
--   Describe external validation against independent data sources \[\[ISPOR-SMDM: External validation; STRESS: Validation - external\]\]
+-   Describe external validation against independent data sources [[ISPOR-SMDM: External validation; STRESS: Validation - external]]
 
--   Explain approach to sensitivity analysis for key parameters and assumptions \[\[ISPOR-SMDM: Uncertainty analysis; STRESS: Sensitivity analysis\]\]
+-   Explain approach to sensitivity analysis for key parameters and assumptions [[ISPOR-SMDM: Uncertainty analysis; STRESS: Sensitivity analysis]]
 
--   Detail methods for quantifying and communicating uncertainty in model outputs \[\[GATHER: Uncertainty analysis; STRESS: Output analysis\]\]
+-   Detail methods for quantifying and communicating uncertainty in model outputs [[GATHER: Uncertainty analysis; STRESS: Output analysis]]
 
 ### 3.6 Computational methods
 
--   Describe software environment and packages to be used \[\[STRESS: Implementation details; ISPOR-SMDM: Computational methods\]\]
+-   Describe software environment and packages to be used [[STRESS: Implementation details; ISPOR-SMDM: Computational methods]]
 
--   Detail computational approach for model fitting and simulation \[\[STRESS: Experimentation; ISPOR-SMDM: Technical implementation\]\]
+-   Detail computational approach for model fitting and simulation [[STRESS: Experimentation; ISPOR-SMDM: Technical implementation]]
 
--   Explain how computational reproducibility will be ensured \[\[GATHER: Access to data and analytics; STRESS: Implementation verification\]\]
+-   Explain how computational reproducibility will be ensured [[GATHER: Access to data and analytics; STRESS: Implementation verification]]
 
 ## 4. Expected outcomes
 
-The primary outcome will be a Canadian Smoking History Generator Model capable of producing detailed smoking histories by birth cohort (1890-2030), age (0-99), sex, and province. The model will provide annual estimates of smoking prevalence, initiation rates, cessation rates, and smoking intensity, both historically (1965-2023) and projected forward (2024-2050). This model will be made available through an online interactive platform and open-source code repository, enabling researchers and policymakers to access detailed smoking parameters for health economic modelling, policy evaluation, and public health planning. The Generator will support various policy planning models, such as Oncosim and POHEM, designed to evaluate the impact of tobacco control policies and predict smoking-attributable disease burden, including cancer, cardiovascular disease, and dementia. By providing Canada-specific smoking parameters at both national and provincial levels, this Generator will enable a more precise estimation of the health and economic impacts in the Canadian context and support evidence-based tobacco control strategies.
+The primary outcome will be a Canadian Smoking Histories Model capable of producing detailed smoking histories by birth cohort (1890-2030), age (0-99), sex, and province. The model will provide annual estimates of smoking prevalence, initiation rates, cessation rates, and smoking intensity, both historically (1965-2023) and projected forward (2024-2050). This model will be made available through an online interactive platform and open-source code repository, enabling researchers and policymakers to access detailed smoking parameters for health economic modelling, policy evaluation, and public health planning. The Generator will support various policy planning models, such as Oncosim and POHEM, designed to evaluate the impact of tobacco control policies and predict smoking-attributable disease burden, including cancer, cardiovascular disease, and dementia. By providing Canada-specific smoking parameters at both national and provincial levels, this Generator will enable a more precise estimation of the health and economic impacts in the Canadian context and support evidence-based tobacco control strategies.
 
--   Specify the format and accessibility of model outputs for different user types \[\[GATHER: Results publication; ISPOR-SMDM: Reporting\]\]
+-   Specify the format and accessibility of model outputs for different user types [[GATHER: Results publication; ISPOR-SMDM: Reporting]]
 
--   Detail the structure of the open-source code repository and documentation approach \[\[GATHER: Access to data and analytics; STRESS: Implementation details\]\]
+-   Detail the structure of the open-source code repository and documentation approach [[GATHER: Access to data and analytics; STRESS: Implementation details]]
 
--   Describe approach to creating an interactive online platform for users \[\[GATHER: Results publication; ISPOR-SMDM: Reporting\]\]
+-   Describe approach to creating an interactive online platform for users [[GATHER: Results publication; ISPOR-SMDM: Reporting]]
 
--   Explain how model parameters will interface with existing disease models \[\[ISPOR-SMDM: Model application; CHEERS: Model-based evaluation\]\]
+-   Explain how model parameters will interface with existing disease models [[ISPOR-SMDM: Model application; CHEERS: Model-based evaluation]]
 
--   Outline approach to model maintenance and updates as new data become available \[\[GATHER: Data access; ISPOR-SMDM: Reporting\]\]
+-   Outline approach to model maintenance and updates as new data become available [[GATHER: Data access; ISPOR-SMDM: Reporting]]
 
 ## 5. Timeline and resources
 
--   Provide a project timeline with key milestones \[\[ISPOR-SMDM: Project management; STRESS: Project planning\]\]
+-   Provide a project timeline with key milestones [[ISPOR-SMDM: Project management; STRESS: Project planning]]
 
--   Detail team composition and roles \[\[ISPOR-SMDM: Project management; GATHER: Authorship\]\]
+-   Detail team composition and roles [[ISPOR-SMDM: Project management; GATHER: Authorship]]
 
--   Describe computational resources required \[\[STRESS: Implementation details; ISPOR-SMDM: Technical implementation\]\]
+-   Describe computational resources required [[STRESS: Implementation details; ISPOR-SMDM: Technical implementation]]
 
 ## 6. Ethical considerations
 
--   Address data privacy and security issues \[\[GATHER: Ethics; STROBE: Ethics\]\]
+-   Address data privacy and security issues [[GATHER: Ethics; STROBE: Ethics]]
 
--   Discuss approach to communicating results to minimize misinterpretation \[\[GATHER: Results publication; ISPOR-SMDM: Reporting\]\]
+-   Discuss approach to communicating results to minimize misinterpretation [[GATHER: Results publication; ISPOR-SMDM: Reporting]]
 
--   Describe stakeholder involvement strategy \[\[ISPOR-SMDM: Stakeholder involvement; CHEERS: Perspective\]\]
+-   Describe stakeholder involvement strategy [[ISPOR-SMDM: Stakeholder involvement; CHEERS: Perspective]]
 
 ## 7. Dissemination plan
 
--   Detail publication strategy for scientific articles \[\[GATHER: Results publication; ISPOR-SMDM: Reporting\]\]
+-   Detail publication strategy for scientific articles [[GATHER: Results publication; ISPOR-SMDM: Reporting]]
 
--   Describe approach to making model and results accessible to policymakers \[\[GATHER: Results publication; CHEERS: Study findings\]\]
+-   Describe approach to making model and results accessible to policymakers [[GATHER: Results publication; CHEERS: Study findings]]
 
--   Outline plan for user training and support \[\[ISPOR-SMDM: Reporting; GATHER: Technical assistance\]\]
+-   Outline plan for user training and support [[ISPOR-SMDM: Reporting; GATHER: Technical assistance]]
 
 ## References
 
--   Comprehensive list of references in APA format \[\[STROBE: References; GATHER: References\]\]
+-   Comprehensive list of references in APA format [[STROBE: References; GATHER: References]]
 
 ## Appendices
 
 ### Appendix A: Variable definitions and harmonization details
 
--   Detailed documentation of cchsflow library and variable harmonization \[\[GATHER: Data processing; STRESS: Input parameters\]\]
+-   Detailed documentation of cchsflow library and variable harmonization [[GATHER: Data processing; STRESS: Input parameters]]
 
 ### Appendix B: Mathematical model specification
 
--   Complete mathematical formulation of all model components \[\[ISPOR-SMDM: Model specification; STRESS: Mathematical formulation\]\]
+-   Complete mathematical formulation of all model components [[ISPOR-SMDM: Model specification; STRESS: Mathematical formulation]]
 
 ### Appendix C: Data access and computational requirements
 
--   Details on data access procedures and computing environment \[\[GATHER: Data access; STRESS: Implementation details\]\]
+-   Details on data access procedures and computing environment [[GATHER: Data access; STRESS: Implementation details]]
