@@ -7,6 +7,7 @@
 _targets
 dist
 _site/
+_freeze/
 
 # renv library files (large)
 renv/library/
@@ -14,8 +15,16 @@ renv/library/
 # Mac
 .DS_Store
 
-# Data
-data/prod
+# Data (raw source files — never commit; pipeline outputs kept locally only)
+data/dev/*.RData
+data/dev/*.rdata
+data/*.rds
+
+# Secure config (RDC paths — never commit)
+config/statscan.yml
+
+# Legacy SAS code (ICES copyright — not for distribution)
+resources/legacy-code/*.sas
 
 # Editor configs
 .prettierrc
@@ -28,3 +37,15 @@ data/prod
 *.aux
 
 /.quarto/
+docs/.quarto/
+
+/.luarc.json
+
+# Internal development notes (working documents, not for collaborators)
+docs/development/
+
+# Working copies
+worksheets/cshm-variables-working-copy.csv
+
+# Runtime
+logs/

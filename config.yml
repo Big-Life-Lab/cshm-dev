@@ -1,25 +1,369 @@
 default:
-  variables: !expr file.path(getwd(), "worksheets/variables/huiport-variables.csv")
-  cchsflow_variable_details: !expr file.path(getwd(), "worksheets/variable-details/cchsflow-variable-details.csv")
-  roles_sheet: !expr file.path(getwd(), "worksheets/roles.csv")
-  modules: NULL
+  # Project metadata
+  Project: CSHM
+  Title: Canadian Smoking Histories Model
+  Version: 0.1.0
+  Date: 2025-06-01
+  Funding: ""
+  Authors:
+    - given: Douglas
+      family: Manuel
+      email: dmanuel@ohri.ca
+      inst: The Ottawa Hospital Research Institute
+      role:
+        - aut
+        - cre
+      ORCID: 0000-0003-0912-0845
+    - given: Rafael
+      family: Meza
+      email: ""
+      inst: BC Cancer Research Institute; School of Population and Public Health, University of British Columbia
+      role:
+        - aut
+      ORCID: 0000-0002-1076-5037
+    - given: Rochelle E.
+      family: Garner
+      pronouns: she/elle
+      email: rochelle.garner@statcan.gc.ca
+      inst: Statistics Canada, Health Analysis Division
+      role:
+        - aut
+      ORCID: ""  # TODO: confirm from a recent Health Reports article
+    - given: Maikol
+      family: Diasparra
+      email: maikol.diasparra@statcan.gc.ca
+      inst: Statistics Canada, Health Analysis Division
+      role:
+        - aut
+      ORCID: ""  # TODO: not found in public sources
+
+  # Data source: "pumf" or "master"
+  # Controls which rows of variables sheet are loaded (source == data_source or "both")
+  data_source: pumf
+
+  # Worksheets
+  worksheets:
+    variables: !expr file.path(getwd(), "worksheets/cshm-variables.csv")
+    # cchsflow base variable details — extended by cshm-variable-details.csv
+    cchsflow_variable_details: !expr path.expand("~/github/cchsflow/inst/extdata/variable_details.csv")
+    # CSHM extensions: 2019-20 and 2022 cycle mappings not yet in cchsflow v3
+    cshm_variable_details: !expr file.path(getwd(), "worksheets/cshm-variable-details.csv")
+
+  # Derived data (study_data and analysis_data are pipeline outputs stored in repo)
+  derived_data:
+    study_data: !expr file.path(getwd(), "data/study_data.rds")
+    analysis_data: !expr file.path(getwd(), "data/analysis_data.rds")
+
+  # Raw PUMF source — cchsflow-data release files (all 11 cycles, CCHS_2001.RData naming).
+  # Internal object name: `table` (use scripts/rename-pumf-objects.R if pipeline expects cchs*_p names).
+  # Not in repo; clone https://github.com/Big-Life-Lab/cchsflow-data separately.
+  raw_data_dir: !expr path.expand("~/github/cchsflow-data/data/sources/rdata")
   data_type: ".RData"
+  sample_proportion: 1.0
   testing_data_cycle: cchs2013_2014_p
-  data:
-    cchs2001_p: !expr file.path(getwd(), "data/dev/cchs2001_p.RData")
-    cchs2003_p: !expr file.path(getwd(), "data/dev/cchs2003_p.RData")
-    cchs2005_p: !expr file.path(getwd(), "data/dev/cchs2005_p.RData")
-    cchs2007_2008_p: !expr file.path(getwd(), "data/dev/cchs2007_2008_p.RData")
-    cchs2009_2010_p: !expr file.path(getwd(), "data/dev/cchs2009_2010_p.RData")
-    cchs2012_p: !expr file.path(getwd(), "data/dev/cchs2012_p.RData")
-    cchs2013_2014_p: !expr file.path(getwd(), "data/dev/cchs2013_2014_p.RData")
-  exclude_age_category: 1
+
+  # PUMF cycles (2001–2022)
+  cchs_cycles:
+    - cchs2001_p
+    - cchs2003_p
+    - cchs2005_p
+    - cchs2007_2008_p
+    - cchs2009_2010_p
+    - cchs2011_2012_p
+    - cchs2013_2014_p
+    - cchs2015_2016_p
+    - cchs2017_2018_p
+    - cchs2019_2020_p
+    - cchs2022_p
+
+  # Survey cycle display labels (integer code → label string)
+  cycle_labels:
+    "1":  "2001"
+    "2":  "2003"
+    "3":  "2005"
+    "4":  "2007–08"
+    "5":  "2009–10"
+    "6":  "2011–12"
+    "7":  "2013–14"
+    "8":  "2015–16"
+    "9":  "2017–18"
+    "10": "2019–20"
+    "11": "2022"
+
+  # Survey variable names
+  # Maps conceptual roles to actual variable names in the harmonized data, separately for
+  # PUMF (open environment) and Master (RDC). Use survey_var(cfg, "key") in R code — never
+  # reference cfg$survey$key$pumf directly. To adapt to a new survey, update these names
+  # (and variables.csv / variable_details.csv) without changing any R code.
+  survey:
+    # Scalar values: survey infrastructure, not variable names
+    cycle: SurveyCycle            # Survey cycle identifier (derived, not recoded by cchsflow)
+
+    # Core demographics
+    sex:
+      pumf:
+        var: DHH_SEX              # Sex (1=male, 2=female)
+      master:
+        var: DHH_SEX
+    age:
+      pumf:
+        var: DHHGAGE_cont         # Continuous age (years); midpoint-estimated from grouped categories
+        min: 18                   # Study inclusion floor (12–17 excluded in cleaning stage)
+        max: 80                   # PUMF top-coded age group (75+, midpoint 80)
+      master:
+        var: DHH_AGE              # True continuous age
+        min: 18
+        max: 110                  # Implausible age ceiling
+    age_grouped:
+      pumf:
+        var: DHHGAGE_A            # Grouped age category (for cleaning/exclusions only)
+      master:
+        var: DHHGAGE_A
+    province:
+      pumf:
+        var: GEOGPRV              # Province/territory of residence
+      master:
+        var: GEOGPRV
+    weight:
+      pumf:
+        var: WTS_M                # Survey sampling weight
+      master:
+        var: WTS_M
+
+    # Sociodemographic covariates (imputation, mortality adjustment, descriptives)
+    # PUMF: binary/categorical; Master: more granular (see protocol §3.3)
+    ethnicity:
+      pumf:
+        var: SDC_RACEM            # Ethnicity (PUMF: 1=white, 2=non-white binary)
+      master:
+        var: SDCFRAC              # More granular ethnicity categories
+    immigration_status:
+      pumf:
+        var: SDCFIMM              # Born in Canada vs. immigrant
+      master:
+        var: SDCFIMM
+    education:
+      pumf:
+        var: EDUDR03              # Education: 1=<HS, 2=HS grad, 3=postsecondary grad
+      master:
+        var: EDUDR04              # 4-category education
+
+    # Smoking history (unified cchsflow v3 variables)
+    smoking_status:
+      pumf:
+        var: SMKDSTY_original     # 6-cat: daily, occ(fmr daily), always occ, fmr daily, fmr occ, never
+      master:
+        var: SMKDSTY_original
+    age_first_cigarette:
+      pumf:
+        var: age_first_cigarette  # Age smoked first whole cigarette (midpoint-estimated)
+        min: 13                   # PUMF observed floor (SMKG01C_cont midpoint ~13)
+        max: 100
+      master:
+        var: age_first_cigarette  # Exact age from SMK_01C
+        min: 8                    # Genuine early initiations captured in Master
+        max: 100
+    age_start_daily:
+      pumf:
+        var: age_start_smoking    # Age started daily smoking (midpoint-estimated)
+        min: 13                   # PUMF observed floor
+        max: 100
+      master:
+        var: age_start_smoking    # Exact age from SMK_040
+        min: 8
+        max: 100
+    years_since_quit:
+      pumf:
+        var: time_quit_smoking_daily  # Years since stopped daily (midpoint-estimated, top-coded at 15)
+        min: 0
+        max: 15                   # PUMF top-code
+      master:
+        var: time_quit_smoking_daily  # Exact years since quit daily (SMK_09C)
+        min: 0
+        max: 80
+    cigs_per_day:
+      pumf:
+        var: cigs_per_day         # Unified: daily + former daily smokers
+        min: 1
+        max: 99
+      master:
+        var: cigs_per_day
+        min: 1
+        max: 99
+    pack_years:
+      pumf:
+        var: pack_years_der       # Cumulative pack-years (derived)
+        min: 0
+        max: 165
+      master:
+        var: pack_years_der
+        min: 0
+        max: 165
+
+  # Data cleaning parameters
+  age_exclusion_category: 1      # age_grouped code to exclude (1 = 12-17 year olds)
+  skewness_threshold: 1          # |skewness| >= threshold triggers truncation
+  truncate_percentile: 99        # Upper percentile cap for skewed continuous vars
+
+  # Imputation parameters (MICE)
+  imputation_m: 5                # Number of multiple imputations
+  imputation_maxit: 5            # MICE iterations per imputation
+
+  # Logging
+  log_level: "INFO"
+  log_file: !expr file.path(getwd(), "logs/cshm.log")
+
+  # APC model specifications (Holford knot structure)
+  apc:
+    age_knots: [10, 15, 20, 50, 60]
+    period_knots: [1940, 1950, 1960, 1970, 1980]
+    cohort_knots: [1930, 1940, 1945, 1950, 1955, 1960, 1965, 1970, 1975, 1980]
+    # Period effect constraints (held constant beyond observed range)
+    # Men/women differ for initiation per Manuel et al. (2020)
+    period_constraints:
+      initiation_men_from: 1999
+      initiation_women_from: 2003
+      cessation_from: 2013
+    cohort_constraints:
+      initiation_prior_to: 1920
+      cessation_from: 1985
+    # Period and cohort range for denominator construction
+    # period_max is the last observed CCHS cycle year (PUMF: 2022; Master: 2023 via statscan profile)
+    # projection_max is the final projection year for rate tables and smoking histories
+    period_min: 1965
+    period_max: 2022            # statscan profile overrides to 2023
+    projection_max: 2050        # rate tables and smoking histories projected to this year
+    cohort_min: 1920
+    # Spline implementation
+    # Primary: "nsp" (natural splines via splines2::nsp())
+    # Sensitivity: "rcs" (restricted cubic splines via rms::rcs())
+    spline_library: "splines2"
+    spline_type: "nsp"
+    # Mortality adjustment method
+    # Primary: "mport" (MPoRT algorithm — see protocol §3.4.4)
+    # Sensitivity: "peto" (Peto constant risk ratio, consistent with Holford et al. 2014)
+    # NOTE: mport not yet implemented; peto used during development.
+    mortality_method: "peto"
+    # Subgroup structure for model stratification
+    subgroups:
+      national:
+        stratify_by: [DHH_SEX]
+      provincial:
+        stratify_by: [GEOGPRV, DHH_SEX]
+
+  # Sensitivity analyses (prespecified; see protocol §3.5)
+  # Each entry documents the parameter change and its protocol rationale.
+  # To run a sensitivity analysis, override the relevant apc: parameter in your
+  # R session or add a named config profile below.
+  sensitivity:
+    spline_type:
+      description: >
+        Test restricted cubic splines (rcs) versus the primary natural splines (nsp).
+        Override: cfg$apc$spline_type <- "rcs"
+      primary: "nsp"
+      alternative: "rcs"
+    mortality_method:
+      description: >
+        Test Peto constant mortality risk ratio versus the primary MPoRT adjustment.
+        Peto is consistent with the original Holford et al. (2014) US implementation.
+        Override: cfg$apc$mortality_method <- "peto"
+      primary: "mport"
+      alternative: "peto"
+    period_constraints:
+      description: >
+        Test alternative period constraint years (e.g. extending to 2003/2007 for
+        initiation, or 2015 for cessation) to assess sensitivity to the assumed
+        stabilisation point. Constraints are held constant at the most recent observed
+        values, so the choice of constraint year affects projections into the future.
+      primary: {initiation_men_from: 1999, initiation_women_from: 2003, cessation_from: 2013}
+    cchs_era:
+      description: >
+        Examination of descriptive discontinuities across CCHS design eras
+        (2001-2005, 2007-2014, 2015-2021, 2022+). Not a formal sensitivity model;
+        addressed through descriptive statistics in Table 1 and considered for
+        SIMEX-style measurement error adjustment if era effects are detected.
+      eras:
+        - label: "2001-2005"
+          cycles: [cchs2001_p, cchs2003_p, cchs2005_p]
+          note: "Biennial, three-frame design"
+        - label: "2007-2014"
+          cycles: [cchs2007_2008_p, cchs2009_2010_p, cchs2011_2012_p, cchs2013_2014_p]
+          note: "Annual continuous collection; major redesign"
+        - label: "2015-2021"
+          cycles: [cchs2015_2016_p, cchs2017_2018_p, cchs2019_2020_p]
+          note: "Major frame and content redesign"
+        - label: "2022+"
+          cycles: [cchs2022_p]
+          note: "Electronic questionnaire mode shift"
+    vaping:
+      description: >
+        Explore alternative assumptions for younger cohorts (born ~1995+) regarding
+        the relationship between vaping initiation and subsequent combustible cigarette
+        smoking: gateway (vaping increases smoking), displacement (vaping replaces
+        smoking), or common liability (shared underlying propensity).
+      note: "Applied to projection scenarios only; does not affect historical APC estimates."
+
+  # Survey year lookup: integer year per SurveyCycle code (1–11)
+  # 2-year cycles use midpoint year (e.g. 2008 for 2007-08)
+  cycle_survey_years:
+    "1":  2002    # 2001
+    "2":  2003
+    "3":  2005
+    "4":  2008    # 2007-08
+    "5":  2010    # 2009-10
+    "6":  2012    # 2011-12
+    "7":  2014    # 2013-14
+    "8":  2016    # 2015-16
+    "9":  2018    # 2017-18
+    "10": 2020    # 2019-20
+    "11": 2022
+
+draft:
+  # 5% sample from cchsflow-data release files (all 11 cycles).
+  # Files named CCHS_2001.RData with internal object `table`.
+  # Usage: Sys.setenv(R_CONFIG_ACTIVE = "draft"); targets::tar_make()
+  sample_proportion: 0.05
+  log_level: "DEBUG"
+  log_file: !expr file.path(getwd(), "logs/cshm-draft.log")
+  raw_data_dir: !expr path.expand("~/github/cchsflow-data/data/sources/rdata")
+  imputation_m: 1
+  imputation_maxit: 1
+  raw_data_file_map:
+    cchs2001_p:      CCHS_2001.RData
+    cchs2003_p:      CCHS_2003.RData
+    cchs2005_p:      CCHS_2005.RData
+    cchs2007_2008_p: CCHS_2007_2008.RData
+    cchs2009_2010_p: CCHS_2009_2010.RData
+    cchs2011_2012_p: CCHS_2011_2012.RData
+    cchs2013_2014_p: CCHS_2013_2014.RData
+    cchs2015_2016_p: CCHS_2015_2016.RData
+    cchs2017_2018_p: CCHS_2017_2018.RData
+    cchs2019_2020_p: CCHS_2019_2020.RData
+    cchs2022_p:      CCHS_2022.RData
+
+dev:
+  # Fast iteration: 10% sample, debug logging, single imputation
+  sample_proportion: 0.1
+  log_level: "DEBUG"
+  log_file: !expr file.path(getwd(), "logs/cshm-dev.log")
+  imputation_m: 1
+  imputation_maxit: 1
+
 prod:
-  data:
-    cchs2001_p: !expr file.path(getwd(), "data/prod/cchs2001_p.RData")
-    cchs2003_p: !expr file.path(getwd(), "data/prod/cchs2003_p.RData")
-    cchs2005_p: !expr file.path(getwd(), "data/prod/cchs2005_p.RData")
-    cchs2007_2008_p: !expr file.path(getwd(), "data/prod/cchs2007_2008_p.RData")
-    cchs2009_2010_p: !expr file.path(getwd(), "data/prod/cchs2009_2010_p.RData")
-    cchs2012_p: !expr file.path(getwd(), "data/prod/cchs2012_p.RData")
-    cchs2013_2014_p: !expr file.path(getwd(), "data/prod/cchs2013_2014_p.RData")
+  # Full PUMF run (same source as default, full sample)
+  sample_proportion: 1.0
+  log_level: "WARN"
+  log_file: !expr file.path(getwd(), "logs/cshm-prod.log")
+  derived_data:
+    study_data: !expr file.path(getwd(), "data/study_data.rds")
+    analysis_data: !expr file.path(getwd(), "data/analysis_data.rds")
+
+statscan:
+  # Delegates to a local config file with RDC-specific paths.
+  # config/statscan.yml is gitignored — never commit.
+  # Copy config/statscan.yml.example → config/statscan.yml and fill in paths.
+  # Usage: Sys.setenv(R_CONFIG_ACTIVE = "statscan")
+  local_config: !expr config::get(file = file.path(getwd(), "config/statscan.yml"))
+  apc:
+    period_max: 2023            # Master files include 2023 cycle
+    projection_max: 2050        # same projection horizon as PUMF

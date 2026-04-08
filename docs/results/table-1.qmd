@@ -1,0 +1,78 @@
+---
+title: "Table 1 — Study population characteristics"
+author: "CSHM Development Team"
+date: today
+format:
+  html:
+    toc: true
+    self-contained: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_knit$set(root.dir = normalizePath("../.."))
+
+cfg <- config::get(file = "config.yml")
+```
+
+# Table 1a — Study population before imputation
+
+Characteristics of CCHS respondents included in CSHM, prior to multiple imputation.
+Columns show males and females separately; overall column shows the combined sample.
+
+```{r table-1a}
+source("R/variables-sheet-utils.R")
+source("R/variable-details-sheet-utils.R")
+source("R/get-descriptive-data.R")
+source("R/create-descriptive-tables.R")
+source("R/descriptive-data.R")
+
+variables_sheet        <- targets::tar_read("variables_sheet")
+variable_details_sheet <- targets::tar_read("variable_details_sheet")
+table_1a_data          <- targets::tar_read("table_1a_data")
+
+predictor_vars <- select_vars_by_role("predictor", variables_sheet)
+
+create_descriptive_table(
+  descriptive_data      = table_1a_data,
+  variables_sheet       = variables_sheet,
+  variable_details_sheet = variable_details_sheet,
+  variables             = predictor_vars,
+  column_stratifier     = survey_var(cfg, "sex"),
+  sections_order        = c("Sociodemographics", "Health behaviour")
+)
+```
+
+# Table 1b — Study population after imputation
+
+```{r table-1b}
+table_1b_data <- targets::tar_read("table_1b_data")
+
+create_descriptive_table(
+  descriptive_data      = table_1b_data,
+  variables_sheet       = variables_sheet,
+  variable_details_sheet = variable_details_sheet,
+  variables             = predictor_vars,
+  column_stratifier     = survey_var(cfg, "sex"),
+  sections_order        = c("Sociodemographics", "Health behaviour")
+)
+```
+
+# Appendix — Characteristics by survey cycle (pre-imputation)
+
+Each cycle shows sex-stratified results. Used to assess temporal trends in
+sample composition and smoking variable availability across cycles.
+
+```{r table-cycle}
+cleaned_data <- targets::tar_read("cleaned_data")
+
+create_cycle_specific_descriptive_table(
+  study_data            = cleaned_data,
+  variables_sheet       = variables_sheet,
+  variable_details_sheet = variable_details_sheet,
+  variables             = predictor_vars,
+  cycle_labels          = cfg$cycle_labels,
+  column_stratifier     = survey_var(cfg, "sex"),
+  sections_order        = c("Sociodemographics", "Health behaviour")
+)
+```

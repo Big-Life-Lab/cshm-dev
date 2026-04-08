@@ -1,0 +1,98 @@
+---
+title: "Stage 7 — APC data preparation"
+subtitle: "Building numerator and denominator cells for the Age-Period-Cohort models"
+---
+
+## Purpose
+
+The APC models are logistic regressions where each row represents a *person-year at risk*. Before fitting the models, we need to convert the cross-sectional CCHS data into this person-year format by reconstructing each respondent's smoking history up to their survey date, then computing the denominator (person-years at risk of initiating or quitting) and numerator (events: initiations and cessations).
+
+This is the most computationally expensive step. By keeping it as a separate target from Stage 8, `{targets}` can cache the APC dataset independently — changing model parameters (knots, constraints) only reruns Stage 8, not Stage 7.
+
+## Inputs
+
+| Target | Description |
+|--------|-------------|
+| `analysis_data` | Imputed dataset (Stage 5) |
+
+Configuration used:
+
+| Parameter | Location | Description |
+|-----------|----------|-------------|
+| `survey$age` | `config.yml` | Continuous age variable |
+| `survey$sex` | `config.yml` | Sex variable |
+| `survey$cycle` | `config.yml` | Survey cycle integer |
+| `survey$weight` | `config.yml` | Sampling weight |
+| `survey$smoking_status` | `config.yml` | 6-category smoking status |
+| `survey$age_first_cigarette` | `config.yml` | Age at first whole cigarette |
+| `survey$years_since_quit` | `config.yml` | Years since quitting (former daily smokers) |
+| `survey$min_age_initiation` | `config.yml` | APC floor for initiation (8 years) |
+| `survey$min_age_cessation` | `config.yml` | APC floor for cessation (8 years) |
+| `apc$age_knots` | `config.yml` | `[10, 15, 20, 50, 60]` |
+| `apc$period_knots` | `config.yml` | `[1940, 1950, 1960, 1970, 1980]` |
+| `apc$cohort_knots` | `config.yml` | `[1930, 1940, 1945, 1950, 1955, 1960, 1965, 1970, 1975, 1980]` |
+
+## Code
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_knit$set(root.dir = normalizePath("../.."))
+cfg <- config::get(file = "config.yml")
+```
+
+```{r load-apc-data}
+apc_data <- targets::tar_read("apc_data")
+# apc_data is a list: $initiation_men, $initiation_women,
+#                      $cessation_men, $cessation_women
+names(apc_data)
+```
+
+```{r inspect-apc-data}
+# Initiation data: one row per person-year at risk of initiating
+nrow(apc_data$initiation_men)
+nrow(apc_data$initiation_women)
+
+# Cessation data: one row per person-year at risk of quitting
+nrow(apc_data$cessation_men)
+nrow(apc_data$cessation_women)
+
+# Event rates
+mean(apc_data$initiation_men$init)
+mean(apc_data$cessation_men$init)
+```
+
+## Outputs
+
+| Target | Description |
+|--------|-------------|
+| `apc_data` | Named list with four data frames: `initiation_men`, `initiation_women`, `cessation_men`, `cessation_women` |
+
+Each data frame contains:
+
+| Column | Description |
+|--------|-------------|
+| `age` | Age at risk (years) |
+| `period` | Calendar year |
+| `cohort` | Birth year (`period - age`) |
+| `init` | Event indicator (1 = initiated/quit, 0 = at risk but no event) |
+| `weighting` | Survey weight × mortality correction |
+| Natural spline columns | Spline basis for age, period, cohort effects |
+
+## Key decisions
+
+**APC identity: `cohort = period − age`.** This fundamental identity is the basis for the APC framework. Each respondent's smoking history is reconstructed year-by-year using their reported age at initiation/cessation and the survey year. The cohort effect is not estimated independently — it is derived from the period and age effects.
+
+**Retrospective history construction.** A current smoker at age 45 in survey year 2014 is recorded as a person-year at risk of cessation at every age from their initiation age to 45. This reconstruction assumes respondents accurately recall their age of initiation and cessation (supported by CCHS validation studies).
+
+**Mortality adjustment.** Ever-smokers are less likely to survive to survey date than never-smokers, creating survival bias. The `weighting` column incorporates a mortality correction. The primary method is MPoRT (not yet implemented); during development, the Peto constant risk ratio is used as a fallback (see `cfg$apc$mortality_method`).
+
+**APC floor ages.** Initiation probability is assumed zero before `survey_bound(cfg, "age_first_cigarette", "min")` (PUMF: 13, Master: 8). Cessation probability is assumed zero before `survey_bound(cfg, "years_since_quit", "min")` (0). In PUMF data, the practical floor for observed initiation is ~13 due to midpoint imputation of grouped categories. The Master analytical floor of 8 captures genuine early initiations.
+
+**Four separate data frames, not one.** Men and women are modelled separately (consistent with Manuel et al. 2020). Initiation and cessation are separate models. Keeping four data frames lets Stage 8 fit all four models in parallel using `{targets}` branching.
+
+## Related resources
+
+- [Stage 8 — APC model fitting](8-apc-model.qmd)
+- [APC methodology explanation](../explanation/apc-method.qmd)
+- `R/apc-model.R` — `prepare_apc_data()`, `build_initiation_data()`, `build_cessation_data()`
+- Protocol §3.4 — analytical approach

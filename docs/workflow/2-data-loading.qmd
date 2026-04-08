@@ -1,0 +1,72 @@
+---
+title: "Stage 2 — Data loading"
+subtitle: "Loading and harmonizing 11 CCHS survey cycles"
+---
+
+## Purpose
+
+The Canadian Community Health Survey (CCHS) has been conducted annually or biennially since 2001. Each cycle is released as a separate file with slightly different variable names, response categories, and coding conventions. This stage loads all 11 PUMF cycles and harmonizes them into a single consistent data frame using the [`cchsflow`](https://github.com/Big-Life-Lab/cchsflow) R package.
+
+Harmonization is the most complex and fragile step in the pipeline. This QMD walks through what happens, why certain decisions were made, and what to watch for when extending the pipeline to new cycles.
+
+## Inputs
+
+| Target | Description |
+|--------|-------------|
+| `variables_sheet` | Study variable list (Stage 1) |
+| `variable_details_sheet` | Recoding rules (Stage 1) |
+
+Raw `.RData` files are read directly from `cfg$raw_data_dir` (not a pipeline target).
+
+## Code
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_knit$set(root.dir = normalizePath("../.."))
+cfg <- config::get(file = "config.yml")
+```
+
+```{r load-study-data}
+study_data <- targets::tar_read("study_data")
+```
+
+```{r inspect}
+# Total respondents across all cycles
+nrow(study_data)
+
+# Respondents per cycle
+table(study_data[[survey_var(cfg, "cycle")]])
+
+# Variable completeness for key smoking variables
+key_vars <- c(survey_var(cfg, "smoking_status"), survey_var(cfg, "age_first_cigarette"),
+              survey_var(cfg, "years_since_quit"))
+sapply(study_data[, key_vars], function(x) mean(!is.na(x)))
+```
+
+## Outputs
+
+| Target | Description |
+|--------|-------------|
+| `study_data` | Combined harmonized data frame (~1.4 million rows × study variables) |
+
+## Key decisions
+
+**Variable filtering by source.** `load_study_data()` filters `variables_sheet` to rows where `source %in% c(cfg$data_source, "both")` before passing to `rec_with_table()`. This means only PUMF variables are loaded in the development environment; only Master variables at the RDC. The `survey_var(cfg, "cycle")` variable is excluded from this filter because it is derived manually (not recoded by cchsflow).
+
+**Tibble → data.frame conversion.** `cchsflow::rec_with_table()` requires a plain `data.frame`. When input is a tibble, column subsetting with logical indices and `recEnd = "copy"` crashes with "list cannot be coerced to double". The fix (`as.data.frame(raw_data)`) is applied before every `rec_with_table()` call.
+
+**Survey cycle coding.** `SurveyCycle` is added as an integer (1–11) after harmonization. The lookup table in `survey_cycle_code()` maps cchsflow dataset names (e.g., `cchs2013_2014_p`) to integer codes. Integer codes are used throughout for compactness; `cfg$cycle_labels` maps them to display strings for tables and plots.
+
+**cchsflow-data release naming.** The `draft` config profile uses the `cchsflow-data` GitHub release files, which use `CCHS_2001.RData` naming with an internal object called `table` (not `cchs2001_p`). The `raw_data_file_map` config section handles this naming difference; the pipeline supports both conventions.
+
+**Missing variables by cycle.** Many sociodemographic variables are only available in some cycles:
+- `SDCFIMM` (immigration status): 2007–2014 only
+- `EDUDR03`: not available in 2022
+- `SDC_RACEM` (ethnicity): PUMF encodes as binary white/non-white; Master has more categories
+
+These variables will be `NA` for cycles where they are absent. This is expected and handled by the imputation stage.
+
+## Related resources
+
+- [How to load and harmonize CCHS data](../how-to/data-loading-and-harmonizing.qmd)
+- cchsflow documentation: <https://big-life-lab.github.io/cchsflow/>

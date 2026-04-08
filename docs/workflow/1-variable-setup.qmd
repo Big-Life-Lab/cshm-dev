@@ -1,0 +1,361 @@
+---
+title: "Stage 1 — Variable setup"
+subtitle: "Study data dictionary and variable roles"
+---
+
+## Purpose
+
+Before any data can be loaded, the pipeline needs to know *which* variables to extract from the CCHS and *how* to recode them across survey cycles. This is defined entirely in two plain-text worksheets — no variable names or categories are hard-coded in R. Keeping the variable definition separate from code means you can adapt the pipeline to a new survey or country by editing the worksheets, not the R code.
+
+This page serves as the **study data dictionary** — a complete description of every variable used in the CSHM, generated directly from those worksheets. If the worksheets change, this page updates automatically on re-render.
+
+## Inputs
+
+| File | Contents |
+|------|----------|
+| `worksheets/cshm-variables.csv` | Study variable list: name, label, type, role, section, source |
+| `~/github/cchsflow/inst/extdata/variable_details.csv` | cchsflow base recoding rules (cycles 2001–2018) |
+| `worksheets/cshm-variable-details.csv` | CSHM extension rows (2019–20 and 2022 cycles) |
+
+## Outputs
+
+| Target | Description |
+|--------|-------------|
+| `variables_sheet` | Data frame: one row per study variable |
+| `variable_details_sheet` | Data frame: combined cchsflow base + CSHM extension recoding rules |
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+# root must be set before source() calls; use absolute paths here
+repo_root <- normalizePath("../..")
+knitr::opts_knit$set(root.dir = repo_root)
+
+cfg    <- config::get(file = file.path(repo_root, "config.yml"))
+source(file.path(repo_root, "R/variables-sheet-utils.R"))
+source(file.path(repo_root, "R/variable-details-sheet-utils.R"))
+
+withr::with_dir(repo_root, {
+  variables_sheet        <- targets::tar_read("variables_sheet")
+  variable_details_sheet <- targets::tar_read("variable_details_sheet")
+})
+```
+
+```{r helpers, include=FALSE}
+library(dplyr)
+library(knitr)
+
+# All cycles used in this study (PUMF)
+all_pumf_cycles <- c("2001", "2003", "2005", "2007-08", "2009-10",
+                     "2011-12", "2013-14", "2015-16", "2017-18", "2019-20", "2022")
+
+pumf_cycle_map <- c(
+  cchs2001_p = "2001", cchs2003_p = "2003", cchs2005_p = "2005",
+  cchs2007_2008_p = "2007-08", cchs2009_2010_p = "2009-10",
+  cchs2011_2012_p = "2011-12", cchs2013_2014_p = "2013-14",
+  cchs2015_2016_p = "2015-16", cchs2017_2018_p = "2017-18",
+  cchs2019_2020_p = "2019-20", cchs2022_p = "2022"
+)
+master_cycle_map <- c(
+  cchs2001_m = "2001", cchs2003_m = "2003", cchs2005_m = "2005",
+  cchs2007_2008_m = "2007-08", cchs2009_2010_m = "2009-10",
+  cchs2011_2012_m = "2011-12", cchs2013_2014_m = "2013-14",
+  cchs2015_2016_m = "2015-16", cchs2017_2018_m = "2017-18",
+  cchs2019_2020_m = "2019-20", cchs2022_m = "2022", cchs2023_m = "2023"
+)
+
+# --- helper: extract variable names from variableStart notation ---
+# Returns list(pumf = "VARNAME", master = "MASTERNAME or same")
+extract_var_names <- function(var_name, variable_start) {
+  if (is.na(variable_start) || variable_start == "") return(list(pumf = var_name, master = ""))
+  # fallback name in [brackets] is the canonical (master-file) name
+  fallback <- regmatches(variable_start, regexpr("\\[([A-Za-z0-9_]+)\\]", variable_start))
+  fallback <- if (length(fallback) > 0) gsub("\\[|\\]", "", fallback) else var_name
+  # if fallback differs from var_name, it's the master variable name
+  master_name <- if (fallback != var_name) fallback else ""
+  list(pumf = var_name, master = master_name)
+}
+
+# --- helper: get cycle coverage from variable_details ---
+# Returns list(pumf = "all" or "2001, 2003 ...", master = "all" or "...")
+get_cycle_coverage <- function(var_name, variable_details_sheet) {
+  rows <- variable_details_sheet[variable_details_sheet$variable == var_name, ]
+  if (nrow(rows) == 0) return(list(pumf = "—", master = "—"))
+
+  # expand databaseStart (comma-separated dataset names) across all rows
+  all_datasets <- unlist(strsplit(as.character(rows$databaseStart), ",\\s*"))
+  all_datasets <- trimws(all_datasets)
+
+  pumf_yrs   <- unique(pumf_cycle_map[all_datasets[all_datasets %in% names(pumf_cycle_map)]])
+  master_yrs <- unique(master_cycle_map[all_datasets[all_datasets %in% names(master_cycle_map)]])
+  pumf_yrs   <- sort(pumf_yrs[!is.na(pumf_yrs)])
+  master_yrs <- sort(master_yrs[!is.na(master_yrs)])
+
+  pumf_str <- if (length(pumf_yrs) == 0) "—"
+              else if (identical(pumf_yrs, all_pumf_cycles)) "all 11 cycles"
+              else paste(pumf_yrs, collapse = ", ")
+
+  master_str <- if (length(master_yrs) == 0) "—"
+                else paste(master_yrs, collapse = ", ")
+
+  list(pumf = pumf_str, master = master_str)
+}
+
+# --- helper: categories as HTML lines (one per line) ---
+get_categories_html <- function(var_name, variable_details_sheet) {
+  rows <- get_unique_rec_end_rows(variable_details_sheet, var_name, include_NA = FALSE)
+  if (nrow(rows) == 0) return("")
+  pairs <- ifelse(
+    is.na(rows$catLabel) | rows$catLabel == "",
+    as.character(rows$recEnd),
+    paste0("<b>", rows$recEnd, "</b>: ", rows$catLabel)
+  )
+  paste(pairs, collapse = "<br>")
+}
+
+# --- helper: continuous range ---
+get_range <- function(var_name, variable_details_sheet) {
+  rows <- variable_details_sheet[variable_details_sheet$variable == var_name, ]
+  rows <- rows[!grepl("^NA::", as.character(rows$recEnd)), ]
+  if (nrow(rows) == 0) return("")
+  ends <- suppressWarnings(as.numeric(as.character(rows$recEnd)))
+  ends <- ends[!is.na(ends)]
+  if (length(ends) == 0) return("")
+  paste0(min(ends), "–", max(ends))
+}
+
+# --- helper: missing data codes as HTML lines ---
+get_na_codes_html <- function(var_name, variable_details_sheet) {
+  rows <- variable_details_sheet[variable_details_sheet$variable == var_name, ]
+  na_rows <- rows[grepl("^NA::", as.character(rows$recEnd)), ]
+  if (nrow(na_rows) == 0) return("—")
+  codes <- paste0("<b>", na_rows$recEnd, "</b>: ", na_rows$catLabel)
+  paste(unique(codes), collapse = "<br>")
+}
+
+# --- helper: cycle coverage as named vectors for matrix table ---
+# Returns list(pumf = named logical, master = named logical) over all_cycles
+all_cycles <- c("2001", "2003", "2005", "2007-08", "2009-10",
+                "2011-12", "2013-14", "2015-16", "2017-18", "2019-20", "2022", "2023")
+
+get_cycle_coverage_vec <- function(var_name, variable_details_sheet) {
+  rows <- variable_details_sheet[variable_details_sheet$variable == var_name, ]
+  if (nrow(rows) == 0) {
+    pumf_v   <- setNames(rep(FALSE, length(all_cycles)), all_cycles)
+    master_v <- setNames(rep(FALSE, length(all_cycles)), all_cycles)
+    return(list(pumf = pumf_v, master = master_v))
+  }
+  all_datasets <- trimws(unlist(strsplit(as.character(rows$databaseStart), ",\\s*")))
+  pumf_yrs   <- unname(pumf_cycle_map[all_datasets[all_datasets %in% names(pumf_cycle_map)]])
+  master_yrs <- unname(master_cycle_map[all_datasets[all_datasets %in% names(master_cycle_map)]])
+  pumf_v   <- setNames(all_cycles %in% pumf_yrs,   all_cycles)
+  master_v <- setNames(all_cycles %in% master_yrs, all_cycles)
+  list(pumf = pumf_v, master = master_v)
+}
+
+# --- build config key → pumf/master variable mapping from cfg$survey ---
+# Scalar entries (e.g. cycle) are skipped; only pumf/master list entries are kept.
+# Each source entry is now a list with $var, $min, $max.
+`%||%` <- function(x, y) if (is.null(x)) y else x
+survey_cfg <- cfg$survey
+survey_map <- do.call(rbind, lapply(names(survey_cfg), function(key) {
+  entry <- survey_cfg[[key]]
+  if (!is.list(entry)) return(NULL)  # skip scalars like cycle
+  pumf   <- entry[["pumf"]]
+  master <- entry[["master"]]
+  data.frame(
+    config_key     = key,
+    pumf_varname   = if (is.list(pumf))   pumf[["var"]]   else pumf   %||% NA_character_,
+    master_varname = if (is.list(master)) master[["var"]] else master %||% NA_character_,
+    stringsAsFactors = FALSE
+  )
+}))
+```
+
+## Study data dictionary
+
+Each row is one variable. The **Config key : CCHS variable** column shows the `config.yml` key paired with the PUMF variable name; where the Master file uses a different name it is shown on a second line. Categories and ranges are from `variable_details_sheet`.
+
+^[Missing data codes apply uniformly to all variables: **NA(a)** = not applicable; **NA(b)** = don't know or refused; **NA(c)** = not asked in this cycle.]
+
+```{r data-dictionary}
+#| results: asis
+design_vars <- c("SurveyCycle", "WTS_M")
+
+dict <- variables_sheet |>
+  filter(!variable %in% design_vars) |>
+  rowwise() |>
+  mutate(
+    config_key  = {
+      hit <- survey_map$config_key[!is.na(survey_map$pumf_varname) &
+                                     survey_map$pumf_varname == variable]
+      if (length(hit) > 0) hit[1] else ""
+    },
+    master_name = {
+      hit <- survey_map$master_varname[!is.na(survey_map$pumf_varname) &
+                                         survey_map$pumf_varname == variable]
+      if (length(hit) > 0 && !is.na(hit[1]) && hit[1] != variable) hit[1] else ""
+    },
+    key_var     = {
+      key <- config_key
+      pumf_part <- if (key != "") paste0(key, ": ", variable) else variable
+      if (master_name != "" && master_name != variable)
+        paste0(pumf_part, "<br><small>Master: ", master_name, "</small>")
+      else
+        pumf_part
+    },
+    values      = if (variableType == "Categorical")
+                    get_categories_html(variable, variable_details_sheet)
+                  else
+                    get_range(variable, variable_details_sheet)
+  ) |>
+  ungroup() |>
+  select(section, key_var, label, variableType, units, values)
+
+sections <- unique(dict$section)
+sections <- sections[!is.na(sections)]
+
+for (sec in sections) {
+  cat("\n\n###", sec, "\n\n")
+  tbl <- dict |>
+    filter(section == sec) |>
+    select(-section) |>
+    rename(
+      `Config key: CCHS variable` = key_var,
+      Label            = label,
+      Type             = variableType,
+      Units            = units,
+      `Values / range` = values
+    )
+  print(kable(tbl, format = "html", escape = FALSE,
+              table.attr = 'class="table table-sm table-striped"'))
+}
+```
+
+## Cycle coverage
+
+Each cell shows whether the variable is available in that survey cycle. **P** = PUMF, **M** = Master, **P+M** = both. Blank = not available. Gaps indicate cycles where the variable was not asked or not yet harmonized.
+
+```{r cycle-coverage}
+#| results: asis
+design_vars <- c("SurveyCycle", "WTS_M")
+
+cov_rows <- variables_sheet |>
+  filter(!variable %in% design_vars) |>
+  rowwise() |>
+  mutate(
+    config_key = {
+      hit <- survey_map$config_key[!is.na(survey_map$pumf_varname) &
+                                     survey_map$pumf_varname == variable]
+      if (length(hit) > 0) hit[1] else ""
+    },
+    cov = list(get_cycle_coverage_vec(variable, variable_details_sheet))
+  ) |>
+  ungroup()
+
+sections <- unique(cov_rows$section)
+sections <- sections[!is.na(sections)]
+
+for (sec in sections) {
+  cat("\n\n###", sec, "\n\n")
+  sec_rows <- cov_rows[!is.na(cov_rows$section) & cov_rows$section == sec, ]
+
+  mat <- do.call(rbind, lapply(seq_len(nrow(sec_rows)), function(i) {
+    cv <- sec_rows$cov[[i]]
+    sapply(all_cycles, function(yr) {
+      p <- cv$pumf[yr]
+      m <- cv$master[yr]
+      if (isTRUE(p) && isTRUE(m)) "P+M"
+      else if (isTRUE(p))          "P"
+      else if (isTRUE(m))          "M"
+      else                          ""
+    })
+  }))
+
+  tbl <- data.frame(
+    `Config key` = sec_rows$config_key,
+    Label        = sec_rows$label,
+    mat,
+    check.names  = FALSE,
+    stringsAsFactors = FALSE
+  )
+  colnames(tbl)[1:2] <- c("Config key", "Label")
+
+  print(kable(tbl, format = "html", escape = FALSE,
+              table.attr = 'class="table table-sm table-striped"'))
+}
+```
+
+## Variable roles
+
+Each variable carries one or more **roles** — a comma-separated label in `variables_sheet` that tells the pipeline how to use that variable. Roles allow downstream stages to select exactly the variables they need without any hard-coding.
+
+```{r role-table}
+# Role definitions
+role_defs <- data.frame(
+  Role = c("design", "intermediate", "predictor", "model-stratifier",
+           "table1", "table1-stratifier",
+           "apc-numerator", "apc-denominator",
+           "imputation-predictor", "sensitivity-analysis"),
+  Group = c("Survey design", "Harmonization", "Model", "Model",
+            "Descriptive", "Descriptive",
+            "APC data prep", "APC data prep",
+            "Imputation", "Analysis"),
+  Purpose = c(
+    "Survey infrastructure — cycle identifier, sampling weights",
+    "Raw cchsflow input used to derive a unified variable; not used directly by pipeline code",
+    "Covariate in the APC model or descriptive analysis",
+    "Stratifies APC models into separate fits (e.g., sex)",
+    "Appears as a row in Table 1 descriptive statistics",
+    "Stratifies Table 1 columns (e.g., sex columns)",
+    "Defines the event indicator for APC numerator cells (Stage 7)",
+    "Constructs the at-risk person-year denominator (Stage 7)",
+    "Included in the MICE imputation model (Stage 5)",
+    "Used in sensitivity analyses only"
+  ),
+  stringsAsFactors = FALSE
+)
+kable(role_defs, format = "html",
+      table.attr = 'class="table table-sm table-striped"')
+```
+
+```{r role-variable-crosswalk}
+#| results: asis
+# Which variables carry which roles?
+cat("\n\n### Variables by role\n\n")
+
+# Expand multi-role rows
+role_rows <- lapply(seq_len(nrow(variables_sheet)), function(i) {
+  roles <- trimws(strsplit(variables_sheet$role[i], ",")[[1]])
+  data.frame(role     = roles,
+             variable = variables_sheet$variable[i],
+             label    = variables_sheet$label[i],
+             source   = variables_sheet$source[i],
+             stringsAsFactors = FALSE)
+})
+role_expanded <- do.call(rbind, role_rows)
+
+for (r in sort(unique(role_expanded$role))) {
+  cat("\n\n**`", r, "`**\n\n", sep = "")
+  vars <- role_expanded[role_expanded$role == r, c("variable", "label", "source")]
+  print(kable(vars, format = "html", row.names = FALSE,
+              table.attr = 'class="table table-sm"'))
+}
+```
+
+## Key decisions
+
+**Separation of definition from code.** Variable names, types, categories, and roles are all stored in plain-text CSVs. R code never contains a bare CCHS variable name — it always reads from `survey_var(cfg, "key")` (for key variables) or filters `variables_sheet` by role. This makes the pipeline adaptable to other surveys.
+
+**PUMF vs Master.** The `source` column (`pumf` / `master` / `both`) controls which variables are loaded in each computing environment. `load_study_data()` filters at load time — PUMF variables only in the open environment; Master variables at the Statistics Canada RDC.
+
+**Extension rows.** cchsflow v3 `variable_details.csv` covers CCHS demographics only through 2017–18. The CSHM extension rows (`worksheets/cshm-variable-details.csv`) add recoding rules for `DHH_SEX`, `DHHGAGE_cont`, `GEOGPRV`, and `WTS_M` for the 2019–20 and 2022 cycles. As cchsflow v3 extends its coverage, these extension rows can be removed.
+
+**Missing data codes.** The CSHM uses `haven::tagged_na()` throughout, preserving the reason for missingness: `NA(a)` = not applicable, `NA(b)` = don't know or refused, `NA(c)` = not asked in this cycle. These are carried through all pipeline stages and used in imputation (Stage 5).
+
+## Related resources
+
+- [Stage 2 — Data loading](2-data-loading.qmd)
+- [Variable reference](../reference/variables.qmd)
+- [How to adapt variables for a different survey](../how-to/custom-models.qmd)
+- `schemas/cshm-variables.yaml` — role vocabulary (LinkML schema)

@@ -1,0 +1,67 @@
+---
+title: "Stage 6 — Descriptive statistics (post-imputation)"
+subtitle: "Table 1b: study population characteristics after imputation"
+---
+
+## Purpose
+
+After imputation, we repeat the descriptive statistics on the completed dataset. Comparing Table 1b to Table 1a (Stage 4) allows readers to see what imputation changed: proportions for variables with high missingness will shift, while variables with complete data should be unchanged.
+
+This is standard practice in studies using multiple imputation — reporting both tables provides full transparency about the role of imputation in the analysis.
+
+## Inputs
+
+| Target | Description |
+|--------|-------------|
+| `analysis_data` | `mids` object — 5 imputed datasets (Stage 5) |
+| `variables_sheet` | Variable metadata |
+| `variable_details_sheet` | Recoding rules and value labels |
+
+## Code
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_knit$set(root.dir = normalizePath("../.."))
+cfg <- config::get(file = "config.yml")
+```
+
+```{r load-table-data}
+table_1b_data          <- targets::tar_read("table_1b_data")
+variables_sheet        <- targets::tar_read("variables_sheet")
+variable_details_sheet <- targets::tar_read("variable_details_sheet")
+```
+
+```{r render-table-1b}
+source("R/variables-sheet-utils.R")
+source("R/variable-details-sheet-utils.R")
+source("R/get-descriptive-data.R")
+source("R/create-descriptive-tables.R")
+
+predictor_vars <- select_vars_by_role("predictor", variables_sheet)
+
+create_descriptive_table(
+  descriptive_data       = table_1b_data,
+  variables_sheet        = variables_sheet,
+  variable_details_sheet = variable_details_sheet,
+  variables              = predictor_vars,
+  column_stratifier      = survey_var(cfg, "sex"),
+  sections_order         = c("Sociodemographics", "Health behaviour")
+)
+```
+
+## Outputs
+
+| Target | Description |
+|--------|-------------|
+| `table_1b_data` | Named list of post-imputation descriptive statistics |
+
+## Key decisions
+
+**Pooled over imputations.** `get_cshm_desc_data()` pools descriptive statistics across the `m = 5` imputed datasets using Rubin's rules for means and proportions. Standard deviations reflect within-imputation variability only (between-imputation variability in descriptives is negligible for reporting purposes).
+
+**Same structure as Table 1a.** The same `create_descriptive_table()` call is used for both tables, ensuring the rows and columns are identical and differences are directly comparable.
+
+## Related resources
+
+- [Stage 4 — Pre-imputation descriptives](4-descriptive-statistics.qmd)
+- `docs/results/table-1.qmd` — rendered Tables 1a and 1b side by side
