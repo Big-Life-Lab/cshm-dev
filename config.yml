@@ -44,9 +44,12 @@ default:
   # Worksheets
   worksheets:
     variables: !expr file.path(getwd(), "worksheets/cshm-variables.csv")
-    # cchsflow base variable details — extended by cshm-variable-details.csv
-    cchsflow_variable_details: !expr path.expand("~/github/cchsflow/inst/extdata/variable_details.csv")
-    # CSHM extensions: 2019-20 and 2022 cycle mappings not yet in cchsflow v3
+    # cchsflow base variable details — in-repo snapshot of cchsflow v3
+    # inst/extdata/variable_details.csv (with local fixes; see cchsflow #184/#185).
+    # Keeps the repo runnable without a sibling cchsflow checkout. Refresh from
+    # ~/github/cchsflow when upstream merges the fixes.
+    cchsflow_variable_details: !expr file.path(getwd(), "worksheets/cchsflow-variable-details.csv")
+    # CSHM extensions: GEOGPRV and WTS_M for 2019-20 and 2022 (not yet in cchsflow v3)
     cshm_variable_details: !expr file.path(getwd(), "worksheets/cshm-variable-details.csv")
 
   # Derived data (study_data and analysis_data are pipeline outputs stored in repo)
@@ -114,11 +117,6 @@ default:
         var: DHH_AGE              # True continuous age
         min: 18
         max: 110                  # Implausible age ceiling
-    age_grouped:
-      pumf:
-        var: DHHGAGE_A            # Grouped age category (for cleaning/exclusions only)
-      master:
-        var: DHHGAGE_A
     province:
       pumf:
         var: GEOGPRV              # Province/territory of residence
@@ -200,8 +198,11 @@ default:
         min: 0
         max: 165
 
+  # Validation
+  strict_validation: false    # TRUE = stop on critical coverage gaps; FALSE = warn only
+
   # Data cleaning parameters
-  age_exclusion_category: 1      # age_grouped code to exclude (1 = 12-17 year olds)
+  age_exclusion_min: 18           # Exclude respondents younger than this (drops 12-17 year olds)
   skewness_threshold: 1          # |skewness| >= threshold triggers truncation
   truncate_percentile: 99        # Upper percentile cap for skewed continuous vars
 
@@ -245,11 +246,12 @@ default:
     # NOTE: mport not yet implemented; peto used during development.
     mortality_method: "peto"
     # Subgroup structure for model stratification
+    # Subgroup stratification uses config keys (resolved via survey_var() at runtime)
     subgroups:
       national:
-        stratify_by: [DHH_SEX]
+        stratify_by: [sex]
       provincial:
-        stratify_by: [GEOGPRV, DHH_SEX]
+        stratify_by: [province, sex]
 
   # Sensitivity analyses (prespecified; see protocol §3.5)
   # Each entry documents the parameter change and its protocol rationale.
@@ -351,6 +353,7 @@ dev:
 
 prod:
   # Full PUMF run (same source as default, full sample)
+  strict_validation: true
   sample_proportion: 1.0
   log_level: "WARN"
   log_file: !expr file.path(getwd(), "logs/cshm-prod.log")
@@ -363,6 +366,7 @@ statscan:
   # config/statscan.yml is gitignored — never commit.
   # Copy config/statscan.yml.example → config/statscan.yml and fill in paths.
   # Usage: Sys.setenv(R_CONFIG_ACTIVE = "statscan")
+  strict_validation: true
   local_config: !expr config::get(file = file.path(getwd(), "config/statscan.yml"))
   apc:
     period_max: 2023            # Master files include 2023 cycle

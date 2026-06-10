@@ -5,17 +5,19 @@ subtitle: "Study data dictionary and variable roles"
 
 ## Purpose
 
-Before any data can be loaded, the pipeline needs to know *which* variables to extract from the CCHS and *how* to recode them across survey cycles. This is defined entirely in two plain-text worksheets — no variable names or categories are hard-coded in R. Keeping the variable definition separate from code means you can adapt the pipeline to a new survey or country by editing the worksheets, not the R code.
+This page serves as the **study data dictionary** — a complete description of every variable used in the CSHM, generated directly from those cchsflow worksheets. If the cchsflow worksheets change, this page updates automatically on re-render. 
 
-This page serves as the **study data dictionary** — a complete description of every variable used in the CSHM, generated directly from those worksheets. If the worksheets change, this page updates automatically on re-render.
+The data includes both PUMF and Master versions of variables available for all CCHS cycles. Variables in cchsflow are harmonized across cycles. There are many harmonization issues that are discussed in the cchsflow R package, as well as the protocol. Further the CCHS survey major undergoes redevelopment at different periods. Redevelopment includes redevelopment of the study frame and selection process that affects response bias.
+
+The main different between the PUMF and Main versions of the CCHS is categorizing continuous variables like age to reduce the risk of responder identification. In this study, the categorized groups like age (DHHGAGE identified as a categorical variable by the "G" before "AGE") are transformed into "pseudo-continous variables" (DHHGAGE_cont identified by "_cont") by assiging the mid-point value of the cateogy. 
 
 ## Inputs
 
 | File | Contents |
 |------|----------|
 | `worksheets/cshm-variables.csv` | Study variable list: name, label, type, role, section, source |
-| `~/github/cchsflow/inst/extdata/variable_details.csv` | cchsflow base recoding rules (cycles 2001–2018) |
-| `worksheets/cshm-variable-details.csv` | CSHM extension rows (2019–20 and 2022 cycles) |
+| `worksheets/cchsflow-variable-details.csv` | In-repo snapshot of cchsflow v3 base recoding rules (cycles 2001–2023) |
+| `worksheets/cshm-variable-details.csv` | CSHM extension rows (GEOGPRV and WTS_M, 2019–20 and 2022 cycles) |
 
 ## Outputs
 
@@ -56,12 +58,15 @@ pumf_cycle_map <- c(
   cchs2015_2016_p = "2015-16", cchs2017_2018_p = "2017-18",
   cchs2019_2020_p = "2019-20", cchs2022_p = "2022"
 )
+# Master coverage: cchsflow v3 uses _m suffix for Master/RDC files.
+# Legacy _i (ICES) and _s (share) suffixes were removed in v3.
 master_cycle_map <- c(
   cchs2001_m = "2001", cchs2003_m = "2003", cchs2005_m = "2005",
   cchs2007_2008_m = "2007-08", cchs2009_2010_m = "2009-10",
   cchs2011_2012_m = "2011-12", cchs2013_2014_m = "2013-14",
   cchs2015_2016_m = "2015-16", cchs2017_2018_m = "2017-18",
-  cchs2019_2020_m = "2019-20", cchs2022_m = "2022", cchs2023_m = "2023"
+  cchs2019_2020_m = "2019-20", cchs2021_m = "2021",
+  cchs2022_m = "2022", cchs2023_m = "2023"
 )
 
 # --- helper: extract variable names from variableStart notation ---
@@ -134,22 +139,44 @@ get_na_codes_html <- function(var_name, variable_details_sheet) {
 }
 
 # --- helper: cycle coverage as named vectors for matrix table ---
-# Returns list(pumf = named logical, master = named logical) over all_cycles
+# Returns list(pumf = named logical, master = named logical) over all_cycles.
+# master_var_name: when the Master file uses a different variable name (e.g.,
+# DHH_AGE for PUMF's DHHGAGE_cont), pass it here to look up Master coverage
+# from that variable's rows in variable_details_sheet.
 all_cycles <- c("2001", "2003", "2005", "2007-08", "2009-10",
                 "2011-12", "2013-14", "2015-16", "2017-18", "2019-20", "2022", "2023")
 
-get_cycle_coverage_vec <- function(var_name, variable_details_sheet) {
+get_cycle_coverage_vec <- function(var_name, variable_details_sheet,
+                                   master_var_name = NULL) {
+  # PUMF coverage: always from the primary variable name
   rows <- variable_details_sheet[variable_details_sheet$variable == var_name, ]
   if (nrow(rows) == 0) {
-    pumf_v   <- setNames(rep(FALSE, length(all_cycles)), all_cycles)
-    master_v <- setNames(rep(FALSE, length(all_cycles)), all_cycles)
-    return(list(pumf = pumf_v, master = master_v))
+    pumf_v <- setNames(rep(FALSE, length(all_cycles)), all_cycles)
+  } else {
+    all_datasets <- trimws(unlist(strsplit(as.character(rows$databaseStart), ",\\s*")))
+    pumf_yrs <- unname(pumf_cycle_map[all_datasets[all_datasets %in% names(pumf_cycle_map)]])
+    pumf_v   <- setNames(all_cycles %in% pumf_yrs, all_cycles)
   }
-  all_datasets <- trimws(unlist(strsplit(as.character(rows$databaseStart), ",\\s*")))
-  pumf_yrs   <- unname(pumf_cycle_map[all_datasets[all_datasets %in% names(pumf_cycle_map)]])
-  master_yrs <- unname(master_cycle_map[all_datasets[all_datasets %in% names(master_cycle_map)]])
-  pumf_v   <- setNames(all_cycles %in% pumf_yrs,   all_cycles)
-  master_v <- setNames(all_cycles %in% master_yrs, all_cycles)
+
+  # Master coverage: use master_var_name if provided, otherwise same variable
+  master_lookup <- if (!is.null(master_var_name) && master_var_name != var_name) {
+    master_var_name
+  } else {
+    var_name
+  }
+  m_rows <- variable_details_sheet[variable_details_sheet$variable == master_lookup, ]
+  if (nrow(m_rows) == 0) {
+    # Also check primary variable rows for _m datasets (variables with same name in both)
+    m_rows <- rows
+  }
+  if (nrow(m_rows) == 0) {
+    master_v <- setNames(rep(FALSE, length(all_cycles)), all_cycles)
+  } else {
+    m_datasets <- trimws(unlist(strsplit(as.character(m_rows$databaseStart), ",\\s*")))
+    master_yrs <- unname(master_cycle_map[m_datasets[m_datasets %in% names(master_cycle_map)]])
+    master_v   <- setNames(all_cycles %in% master_yrs, all_cycles)
+  }
+
   list(pumf = pumf_v, master = master_v)
 }
 
@@ -180,7 +207,7 @@ Each row is one variable. The **Config key : CCHS variable** column shows the `c
 
 ```{r data-dictionary}
 #| results: asis
-design_vars <- c("SurveyCycle", "WTS_M")
+design_vars <- variables_sheet$variable[grepl("design", variables_sheet$role)]
 
 dict <- variables_sheet |>
   filter(!variable %in% design_vars) |>
@@ -238,8 +265,7 @@ Each cell shows whether the variable is available in that survey cycle. **P** = 
 
 ```{r cycle-coverage}
 #| results: asis
-design_vars <- c("SurveyCycle", "WTS_M")
-
+# design_vars already defined in data-dictionary chunk above
 cov_rows <- variables_sheet |>
   filter(!variable %in% design_vars) |>
   rowwise() |>
@@ -249,7 +275,15 @@ cov_rows <- variables_sheet |>
                                      survey_map$pumf_varname == variable]
       if (length(hit) > 0) hit[1] else ""
     },
-    cov = list(get_cycle_coverage_vec(variable, variable_details_sheet))
+    master_var = {
+      hit <- survey_map$master_varname[!is.na(survey_map$pumf_varname) &
+                                         survey_map$pumf_varname == variable]
+      if (length(hit) > 0 && !is.na(hit[1]) && hit[1] != "") hit[1] else NA_character_
+    },
+    cov = list(get_cycle_coverage_vec(
+      variable, variable_details_sheet,
+      master_var_name = if (is.na(master_var)) NULL else master_var
+    ))
   ) |>
   ungroup()
 
@@ -349,7 +383,7 @@ for (r in sort(unique(role_expanded$role))) {
 
 **PUMF vs Master.** The `source` column (`pumf` / `master` / `both`) controls which variables are loaded in each computing environment. `load_study_data()` filters at load time — PUMF variables only in the open environment; Master variables at the Statistics Canada RDC.
 
-**Extension rows.** cchsflow v3 `variable_details.csv` covers CCHS demographics only through 2017–18. The CSHM extension rows (`worksheets/cshm-variable-details.csv`) add recoding rules for `DHH_SEX`, `DHHGAGE_cont`, `GEOGPRV`, and `WTS_M` for the 2019–20 and 2022 cycles. As cchsflow v3 extends its coverage, these extension rows can be removed.
+**Extension rows.** cchsflow v3 now covers age and sex (`DHH_SEX`, `DHHGAGE_cont`) for all 2001–2023 cycles, so their former extension rows have been removed. The CSHM extension rows (`worksheets/cshm-variable-details.csv`) still add recoding rules for `GEOGPRV` and `WTS_M` for the 2019–20 and 2022 cycles, which cchsflow v3 does not yet harmonize. As cchsflow extends its coverage, the remaining extension rows can be removed.
 
 **Missing data codes.** The CSHM uses `haven::tagged_na()` throughout, preserving the reason for missingness: `NA(a)` = not applicable, `NA(b)` = don't know or refused, `NA(c)` = not asked in this cycle. These are carried through all pipeline stages and used in imputation (Stage 5).
 
