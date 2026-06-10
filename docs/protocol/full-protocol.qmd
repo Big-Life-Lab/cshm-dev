@@ -2,9 +2,12 @@
 title: "A Canadian Smoking Histories Model: a study protocol to generate smoking cohorts from 1940 and project to 2050"
 status: "Draft"
 version-summary:
-  date: "2026-02-24"
-  version: "0.2.5"
+  date: "2026-06-11"
+  version: "0.3.0"
 version-history:
+  - version: "0.3.0"
+    date: "2026-06-11"
+    description: "Missing data and imputation plan: where-matrix MICE restricted to item non-response (m = 5), survey design variables in the imputation model, derived variables recomputed from imputed feeders. Tables 1a/1b specified as unweighted n with survey-weighted statistics in a single table. Added Appendix D (detailed imputation plan and four-phase assessment, adapting the DemPoRTv2 framework). Documented PUMF cycle-level smoking variable gaps (2019-20, 2022) and the 2015-16 SMKG035 recode."
   - version: "0.2.0"
     date: "2026-03-09"
     description: "Update to include reporting guideline placeholders. Added potential measurement error and sensitivity analyses. Equity subgroup analysis removed from primary analysis. Added total cigarettes smoked in Canada by year as an expected output. Added sensitivity analyses for spline type (NSP vs RCS) and mortality adjustment method (MPoRT vs Peto)."
@@ -139,8 +142,8 @@ The CSHM uses a two-stage analytical framework. In the first stage, we estimate 
 Analysis-ready datasets will be produced through a standardized pipeline.
 
 1.  **Cleaning:** Distribution checks and truncation of extreme values for continuous variables (e.g., smoking intensity).
-2.  **Imputation:** Missing data on smoking status, initiation age, and cessation age will be addressed using Multiple Imputation by Chained Equations (MICE). The imputation model will include sociodemographic predictors (age, sex, province, education, income) and health status indicators.
-3.  **Descriptive statistics:** Baseline characteristics will be reported pre-imputation (Table 1a) and post-imputation (Table 1b). Tables 1 will include stratification for sex and survey year. Descriptive statistics will be examined for potential discontinuities across CCHS design eras (2001–2005, 2007–2014, 2015–2021, 2022+), which reflect major changes to the survey frame, recruitment, and collection mode [@gagne2017; @backinger2008]. Although smoking variables can be harmonized across cycles, changes to the sampling frame and mode may introduce measurement differences that are not fully correctable through harmonization alone [@chen2020joinpoint].
+2.  **Imputation:** Item non-response (don't know/refused; tagged NA(b)) on smoking status, initiation age, and cessation timing will be addressed using Multiple Imputation by Chained Equations (MICE) with *m* = 5 imputations. Imputation is restricted to item non-response through an explicit `where` matrix; structural missingness — not-applicable (NA(a), e.g., initiation age for never-smokers) and not-asked-this-cycle (NA(c)) — is preserved and never imputed directly. The imputation model includes the survey design variables (cycle, sampling weight) and sociodemographic predictors (age, sex, province, education) alongside the smoking history variables, preserving congeniality with the APC analysis models. Derived variables (e.g., pack-years) are recomputed from their imputed feeder variables rather than imputed directly. The full specification, including the diagnostic and sensitivity-analysis plan, is given in [Appendix D: Missing data and imputation plan](appendix-imputation.qmd).
+3.  **Descriptive statistics:** Baseline characteristics will be reported pre-imputation (Table 1a), which discloses the amount and type of missing data, and post-imputation (Table 1b), averaged across the *m* completed datasets. Both tables present unweighted n with survey-weighted percentages (and weighted median/IQR for continuous variables) — the unweighted n discloses the information content of each cell while the weighted statistics describe the population; a fully unweighted variant is provided as an appendix table. Tables 1 will include stratification for sex and survey year. Descriptive statistics will be examined for potential discontinuities across CCHS design eras (2001–2005, 2007–2014, 2015–2021, 2022+), which reflect major changes to the survey frame, recruitment, and collection mode [@gagne2017; @backinger2008]. Although smoking variables can be harmonized across cycles, changes to the sampling frame and mode may introduce measurement differences that are not fully correctable through harmonization alone [@chen2020joinpoint].
 
 ### 3.4.2 Age-period-cohort modelling
 
@@ -334,6 +337,12 @@ The CSHM is implemented in the R programming environment (version 4.2+). The pro
 All code will be hosted on GitHub under the MIT licence. The repository will include full documentation, metadata worksheets, and instructions for replication on both PUMF and Master file environments.
 
 > STRESS: Implementation details; GATHER: Access to data and analytics
+
+## Appendix D: Missing data and imputation plan
+
+The detailed missing-data specification — the tagged-NA taxonomy, the `where`-matrix MICE design, cycle-level absence handling, the Table 1a/1b weighting presentation, and the four-phase diagnostic and sensitivity-analysis plan — is maintained as a standalone document: [Appendix D: Missing data and imputation plan](appendix-imputation.qmd). It adapts the DemPoRTv2 imputation assessment framework with improvements developed for this study.
+
+> STROBE: Statistical methods (missing data); GATHER: Data processing
 
 ::::
 
