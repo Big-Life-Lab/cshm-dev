@@ -8,7 +8,7 @@
 #' smoking and creates a dataset with key variables needed for age-period-cohort (APC) modeling of smoking 
 #' initiation rates.
 #' 
-#' This function implements part of the Canadian Smoking History Generator Model in R, specifically 
+#' This function implements part of the Canadian Smoking Histories Model in R, specifically 
 #' replicating the data preparation step from line 120 in the original SAS code (Modeling2013.sas).
 #' 
 #' @param dataset A data frame containing harmonized CCHS smoking history data (from cchsflow).
@@ -101,7 +101,7 @@
 #' \code{\link[cchsflow]{cchsflow}} for information on the CCHS data harmonization
 #' 
 #' @references 
-#' Manuel, D.G. et al. (2013) "Canadian Smoking History Generator Model"
+#' Manuel, D.G. et al. (2013) "Canadian Smoking Histories Model"
 #' 
 #' @export
 process_smoking_initiation <- function(dataset, sex = "M") {
@@ -121,7 +121,7 @@ process_smoking_initiation <- function(dataset, sex = "M") {
   }
   
   # Filter dataset by sex
-  filtered_data <- subset(dataset, sex == sex)
+  filtered_data <- dataset[dataset$sex == sex, ]
   
   # Process smoking initiation data
   # Set initialization variables for non-smokers (never smoked 100+ cigarettes)
