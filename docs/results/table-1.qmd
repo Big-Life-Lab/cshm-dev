@@ -31,15 +31,16 @@ variables_sheet        <- targets::tar_read("variables_sheet")
 variable_details_sheet <- targets::tar_read("variable_details_sheet")
 table_1a_data          <- targets::tar_read("table_1a_data")
 
-predictor_vars <- select_vars_by_role("predictor", variables_sheet)
+# Table rows: the table1 role (includes auxiliary covariates that are not APC predictors)
+table1_vars <- select_vars_by_role("table1", variables_sheet)
 
 create_descriptive_table(
   descriptive_data      = table_1a_data,
   variables_sheet       = variables_sheet,
   variable_details_sheet = variable_details_sheet,
-  variables             = predictor_vars,
+  variables             = table1_vars,
   column_stratifier     = survey_var(cfg, "sex"),
-  sections_order        = c("Sociodemographics", "Health behaviour")
+  sections_order        = c("Sociodemographics", "Health status", "Health behaviour")
 )
 ```
 
@@ -52,9 +53,9 @@ create_descriptive_table(
   descriptive_data      = table_1b_data,
   variables_sheet       = variables_sheet,
   variable_details_sheet = variable_details_sheet,
-  variables             = predictor_vars,
+  variables             = table1_vars,
   column_stratifier     = survey_var(cfg, "sex"),
-  sections_order        = c("Sociodemographics", "Health behaviour")
+  sections_order        = c("Sociodemographics", "Health status", "Health behaviour")
 )
 ```
 
@@ -70,10 +71,39 @@ create_cycle_specific_descriptive_table(
   study_data            = cleaned_data,
   variables_sheet       = variables_sheet,
   variable_details_sheet = variable_details_sheet,
-  variables             = predictor_vars,
+  variables             = table1_vars,
   cycle_col             = survey_var(cfg, "cycle"),
   cycle_labels          = cfg$cycle_labels,
   column_stratifier     = survey_var(cfg, "sex"),
-  sections_order        = c("Sociodemographics", "Health behaviour")
+  weight_var            = survey_var(cfg, "weight"),
+  sections_order        = c("Sociodemographics", "Health status", "Health behaviour")
+)
+```
+
+# Appendix — Fully unweighted Tables 1a and 1b
+
+Unweighted percentages and quantiles for comparison with the survey-weighted
+presentation above (protocol §3.4.1).
+
+```{r table-1-unweighted}
+table_1a_unweighted <- targets::tar_read("table_1a_unweighted_data")
+table_1b_unweighted <- targets::tar_read("table_1b_unweighted_data")
+
+create_descriptive_table(
+  descriptive_data      = table_1a_unweighted,
+  variables_sheet       = variables_sheet,
+  variable_details_sheet = variable_details_sheet,
+  variables             = table1_vars,
+  column_stratifier     = survey_var(cfg, "sex"),
+  sections_order        = c("Sociodemographics", "Health status", "Health behaviour")
+)
+
+create_descriptive_table(
+  descriptive_data      = table_1b_unweighted,
+  variables_sheet       = variables_sheet,
+  variable_details_sheet = variable_details_sheet,
+  variables             = table1_vars,
+  column_stratifier     = survey_var(cfg, "sex"),
+  sections_order        = c("Sociodemographics", "Health status", "Health behaviour")
 )
 ```

@@ -1,0 +1,48 @@
+name: Protocol version check
+
+# The study protocol is a prespecified governance document: any change to
+# docs/protocol/ must be recorded in the version history, not edited silently.
+# This check fails a PR that touches protocol files without bumping
+# version-summary.version in full-protocol.qmd.
+
+on:
+  pull_request:
+    paths:
+      - "docs/protocol/**"
+
+jobs:
+  version-bumped:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require a version bump when protocol files change
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          base="origin/${BASE_REF}"
+          git fetch origin "${BASE_REF}" --depth=1
+
+          changed=$(git diff --name-only "$base"...HEAD -- docs/protocol/)
+          echo "Protocol files changed:"
+          echo "$changed"
+
+          get_version() {
+            git show "$1:docs/protocol/full-protocol.qmd" 2>/dev/null \
+              | awk '/^version-summary:/{f=1; next} f && /version:/{gsub(/[" ]/, "", $2); print $2; exit}'
+          }
+          base_version=$(get_version "$base")
+          head_version=$(get_version HEAD)
+          echo "Base version: ${base_version:-<none>} | Head version: ${head_version:-<none>}"
+
+          if [ -z "$head_version" ]; then
+            echo "::error::Could not parse version-summary.version from full-protocol.qmd"
+            exit 1
+          fi
+          if [ "$base_version" = "$head_version" ]; then
+            echo "::error::docs/protocol/ changed but version-summary.version is still ${head_version}. Bump the version and add a version-history entry describing the change."
+            exit 1
+          fi
+          echo "Version bumped: ${base_version:-<none>} -> ${head_version}"

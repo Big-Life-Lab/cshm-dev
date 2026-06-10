@@ -36,7 +36,8 @@ fmt_pct <- function(x, digits = 1) paste0(round(x * 100, digits), "%")
 # Run targets::tar_make() first if results are not available.
 study_data    <- tar_read("study_data")
 cleaned_data  <- tar_read("cleaned_data")
-analysis_data <- tar_read("analysis_data")
+imputation_result <- tar_read("analysis_data")
+analysis_data <- imputation_result$datasets[[1]]  # imputation 1; see protocol Appendix D
 ```
 
 ```{r derived-values, include=FALSE}
@@ -105,7 +106,7 @@ Period effects were held constant beyond observed data: men's initiation from `r
 
 ## 2.4 Missing data
 
-Missing sociodemographic variables were handled using multiple imputation by chained equations (MICE; `m = `r cfg$imputation_m`, maxit = `r cfg$imputation_maxit`). Variables structurally absent from some cycles (e.g., immigration status) were imputed using available cycle data.
+Item non-response (don’t know/refused) was handled using multiple imputation by chained equations (MICE; `m = `r cfg$imputation_m`, maxit = `r cfg$imputation_maxit`), restricted through an explicit `where` matrix so that structural missingness (not-applicable and not-asked-this-cycle values) was preserved rather than imputed. The imputation model included the survey design variables (cycle, sampling weight) and sociodemographic predictors; derived variables were recomputed from their imputed feeders. The full specification and assessment plan are given in the protocol, Appendix D.
 
 # 3. Results
 
