@@ -14,18 +14,18 @@
 #' @param cfg Config object from config::get()
 #' @return Cleaned data frame
 clean_study_data <- function(study_data, variables_sheet, cfg) {
-  # Step 1: Age restriction — exclude youngest age group (typically 12-17)
-  age_grouped_col <- survey_var(cfg, "age_grouped")
-  if (!is.null(cfg$age_exclusion_category) && age_grouped_col %in% colnames(study_data)) {
-    exclude_code <- as.character(cfg$age_exclusion_category)
+  # Step 1: Age restriction — exclude respondents below the study floor
+  # (cfg$age_exclusion_min, typically 18: drops the 12-17 age groups)
+  age_col <- survey_var(cfg, "age")
+  if (!is.null(cfg$age_exclusion_min) && age_col %in% colnames(study_data)) {
     n_before <- nrow(study_data)
     study_data <- study_data[
-      is.na(study_data[[age_grouped_col]]) |
-      as.character(study_data[[age_grouped_col]]) != exclude_code,
+      is.na(study_data[[age_col]]) |
+      study_data[[age_col]] >= cfg$age_exclusion_min,
     ]
     message(
       "Age restriction: excluded ", n_before - nrow(study_data),
-      " respondents in age group ", exclude_code,
+      " respondents younger than ", cfg$age_exclusion_min,
       " (", nrow(study_data), " remaining)"
     )
   }
