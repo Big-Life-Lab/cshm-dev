@@ -35,7 +35,8 @@ survey_cycle_code <- function(data_name) {
 #' @param variables_sheet variables worksheet (data frame)
 #' @param variable_details_sheet variable_details worksheet (data frame)
 #' @return Combined harmonized data frame (all cycles, study variables only)
-load_study_data <- function(cfg, variables_sheet, variable_details_sheet) {
+load_study_data <- function(cfg, variables_sheet, variable_details_sheet,
+                            coverage_check = NULL) {
   # Filter to variables for this data source (pumf/master/both)
   # The cycle variable (survey_var(cfg, "cycle")) is derived manually — rec_with_table cannot derive it
   study_vars <- variables_sheet[

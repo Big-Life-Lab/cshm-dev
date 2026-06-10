@@ -1,0 +1,268 @@
+id: https://github.com/big-life-lab/cshm/schemas/cshm-rate-tables
+name: cshm-rate-tables
+title: CSHM rate table schema
+description: >-
+  Schema for the initiation and cessation rate tables produced by the CSHM
+  APC model (Stage 8). These tables are the primary shareable output of the
+  CSHM and the direct input to Stage 9 (smoking history simulation).
+
+  Rate tables are stratified by model type (initiation/cessation), sex,
+  and optionally province. Each row gives the conditional probability of
+  the smoking transition at a given age and period (or birth cohort).
+
+  The CSHM generates individual-level smoking histories directly from these
+  rate tables, following Manuel et al. (2020) and Holford et al. (2014).
+  National PUMF-derived tables are distributed under the Statistics Canada
+  Open Licence for use in other jurisdictions.
+
+version: 0.1.0
+license: MIT
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  cshm: https://github.com/big-life-lab/cshm/schemas/cshm-rate-tables/
+
+default_prefix: cshm
+default_range: string
+
+imports:
+  - linkml:types
+
+# ---------------------------------------------------------------------------
+# Enumerations
+# ---------------------------------------------------------------------------
+
+enums:
+
+  ModelTypeEnum:
+    description: Which smoking transition the rate applies to.
+    permissible_values:
+      initiation:
+        description: >-
+          Probability of transitioning from never smoker to current smoker
+          at age a, conditional on being a never smoker at age a−1.
+          Zero for ages below the initiation floor (PUMF: 13, Master: 8).
+      cessation:
+        description: >-
+          Conditional probability of a current smoker quitting at age a.
+          Zero for ages below the cessation floor.
+
+  SexEnum:
+    description: >-
+      Sex stratum for this rate. Initiation rates are estimated separately
+      for men and women because period effect constraint years differ.
+    permissible_values:
+      "1":
+        description: Male
+      "2":
+        description: Female
+
+  ProvinceEnum:
+    description: >-
+      Geographic stratum. "national" indicates the all-Canada model;
+      province codes follow Statistics Canada GEOGPRV values.
+    permissible_values:
+      national:
+        description: All-Canada estimate (no provincial stratification)
+      "10":
+        description: Newfoundland and Labrador
+      "11":
+        description: Prince Edward Island
+      "12":
+        description: Nova Scotia
+      "13":
+        description: New Brunswick
+      "24":
+        description: Quebec
+      "35":
+        description: Ontario
+      "46":
+        description: Manitoba
+      "47":
+        description: Saskatchewan
+      "48":
+        description: Alberta
+      "59":
+        description: British Columbia
+      "60":
+        description: Territories (pooled)
+
+# ---------------------------------------------------------------------------
+# Slots
+# ---------------------------------------------------------------------------
+
+slots:
+
+  model_type:
+    description: Whether this row contains an initiation or cessation rate.
+    range: ModelTypeEnum
+    required: true
+
+  sex:
+    description: Sex stratum.
+    range: SexEnum
+    required: true
+
+  province:
+    description: >-
+      Geographic stratum. "national" for the all-Canada model. Provincial
+      rates are only produced where CCHS sample size meets the minimum
+      threshold (see protocol issue #3 / #10).
+    range: ProvinceEnum
+    required: true
+
+  age:
+    description: >-
+      Age in years at which the transition probability applies.
+      Initiation: ages 8–85. Cessation: ages 8–85.
+    range: integer
+    required: true
+    minimum_value: 0
+    maximum_value: 110
+
+  period:
+    description: >-
+      Calendar year for which the rate is estimated.
+      Rates beyond the period constraint year are held constant
+      (initiation men: from 1999; initiation women: from 2003;
+      cessation: from 2013).
+    range: integer
+    required: true
+
+  cohort:
+    description: >-
+      Birth cohort year: cohort = period − age. Included for convenience;
+      redundant given age and period but included for convenience in downstream use.
+    range: integer
+
+  rate:
+    description: >-
+      Conditional probability of the smoking transition (0–1).
+      Initiation: P(initiate at age a | never smoker at age a−1).
+      Cessation: P(quit at age a | current smoker at age a−1).
+    range: float
+    required: true
+    minimum_value: 0.0
+    maximum_value: 1.0
+
+  rate_lower:
+    description: >-
+      Lower bound of the 95% confidence interval for the rate.
+      Derived from the APC model coefficient covariance matrix.
+    range: float
+    minimum_value: 0.0
+    maximum_value: 1.0
+
+  rate_upper:
+    description: >-
+      Upper bound of the 95% confidence interval for the rate.
+    range: float
+    minimum_value: 0.0
+    maximum_value: 1.0
+
+  mortality_correction:
+    description: >-
+      Mortality correction method applied before model fitting.
+      "peto" — Peto method (survival weight proportional to 1/survival).
+      "mport" — MPoRT weights adjusted for age, smoking status, years since
+      quitting, immigration, and sex (not yet implemented).
+    range: string
+
+# ---------------------------------------------------------------------------
+# Classes
+# ---------------------------------------------------------------------------
+
+classes:
+
+  RateTableRow:
+    description: >-
+      One row in a CSHM rate table: the conditional probability of a smoking
+      transition for a given model type, sex, geography, age, and period.
+      Each row is a unique combination of (model_type, sex, province, age,
+      period).
+
+      A complete set of national CSHM rate tables comprises four strata:
+        - initiation, sex = 1 (men)
+        - initiation, sex = 2 (women)
+        - cessation, sex = 1 (men)
+        - cessation, sex = 2 (women)
+    slots:
+      - model_type
+      - sex
+      - province
+      - age
+      - period
+      - cohort
+      - rate
+      - rate_lower
+      - rate_upper
+      - mortality_correction
+
+  RateTable:
+    description: >-
+      A complete rate table for one (model_type × sex × province) stratum.
+      The PUMF-derived national tables (province = "national") are the
+      primary shareable artifact — they can be distributed internationally
+      under the Statistics Canada Open Licence.
+    tree_root: true
+    attributes:
+      rows:
+        range: RateTableRow
+        multivalued: true
+        inlined_as_list: true
+      metadata:
+        description: Provenance and version information for this rate table.
+        range: RateTableMetadata
+
+  RateTableMetadata:
+    description: >-
+      Provenance record for a rate table. Enables downstream users (e.g.,
+      downstream users) to trace which version of the CSHM model produced
+      a given set of rates.
+    attributes:
+      table_id:
+        description: >-
+          Unique identifier for this table, encoding stratum:
+          e.g., "cshm-initiation-male-national-v0.1.0".
+        range: string
+        required: true
+      model_type:
+        description: Initiation or cessation.
+        range: ModelTypeEnum
+        required: true
+      sex:
+        description: Sex stratum.
+        range: SexEnum
+        required: true
+      province:
+        description: Geographic stratum.
+        range: ProvinceEnum
+        required: true
+      cshm_version:
+        description: CSHM software version that produced this table.
+        range: string
+        required: true
+      cchs_cycles:
+        description: >-
+          CCHS cycles used to fit the APC model. Format: comma-separated
+          cycle labels (e.g., "2001, 2003, 2005, 2007-08, ..., 2022").
+        range: string
+      data_source:
+        description: >-
+          Whether rates were estimated from PUMF or Master files.
+          PUMF rates are the shareable international artifact.
+          Master rates are the definitive estimates (RDC only).
+        range: string
+      date_produced:
+        description: Date this table was generated (ISO 8601).
+        range: date
+        required: true
+      config_profile:
+        description: >-
+          `{config}` profile used (e.g., "prod", "statscan").
+        range: string
+      projection_horizon:
+        description: >-
+          Final projection year for this rate table (e.g., 2050 for the primary
+          analysis). Period effects beyond the constraint year are held constant
+          at the most recently observed values.

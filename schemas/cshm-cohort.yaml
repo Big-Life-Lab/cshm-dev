@@ -1,0 +1,230 @@
+id: https://github.com/big-life-lab/cshm/schemas/cshm-cohort
+name: cshm-cohort
+title: CSHM synthetic cohort schema
+description: >-
+  Schema for the synthetic Canadian population cohorts used in Stage 2
+  (smoking history simulation). These records are generated from Canadian
+  demographic data — not from the CCHS — and serve as the population
+  through which initiation and cessation rates from the APC model are
+  applied to simulate individual smoking histories.
+
+  This schema is independent of the CCHS harmonization layer (cshm-variables)
+  and the model output layer (cshm-rate-tables).
+
+version: 0.1.0
+license: MIT
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  cshm: https://github.com/big-life-lab/cshm/schemas/cshm-cohort/
+
+default_prefix: cshm
+default_range: string
+
+imports:
+  - linkml:types
+
+# ---------------------------------------------------------------------------
+# Enumerations
+# ---------------------------------------------------------------------------
+
+enums:
+
+  SexEnum:
+    description: Biological sex of the synthetic individual.
+    permissible_values:
+      "1":
+        description: Male
+      "2":
+        description: Female
+
+  SmokingStatusEnum:
+    description: >-
+      Smoking status at a given age in the simulated life history.
+      Corresponds to the three-state model: never, current, former.
+    permissible_values:
+      never:
+        description: Has never smoked (fewer than 100 lifetime cigarettes)
+      current:
+        description: Currently smoking (daily or occasionally)
+      former:
+        description: >-
+          Former smoker — smoked at least 100 cigarettes lifetime and
+          not currently smoking
+
+  ProvinceEnum:
+    description: >-
+      Canadian province or territory of residence. Uses Statistics Canada
+      geographic codes (GEOGPRV values from CCHS).
+    permissible_values:
+      "10":
+        description: Newfoundland and Labrador
+      "11":
+        description: Prince Edward Island
+      "12":
+        description: Nova Scotia
+      "13":
+        description: New Brunswick
+      "24":
+        description: Quebec
+      "35":
+        description: Ontario
+      "46":
+        description: Manitoba
+      "47":
+        description: Saskatchewan
+      "48":
+        description: Alberta
+      "59":
+        description: British Columbia
+      "60":
+        description: Territories (Yukon, Northwest Territories, Nunavut — pooled)
+
+# ---------------------------------------------------------------------------
+# Slots
+# ---------------------------------------------------------------------------
+
+slots:
+
+  person_id:
+    description: >-
+      Unique identifier for the synthetic individual within a simulation run.
+    identifier: true
+    required: true
+    range: integer
+
+  birth_year:
+    description: >-
+      Year of birth of the synthetic individual. Defines the birth cohort.
+      Used as the cohort identifier in the APC model: cohort = period − age.
+    range: integer
+    required: true
+    minimum_value: 1900
+    maximum_value: 2050
+
+  sex:
+    description: >-
+      Biological sex. Initiation and cessation rates are estimated separately
+      by sex; this field determines which rate table is applied.
+    range: SexEnum
+    required: true
+
+  province:
+    description: >-
+      Province or territory of residence. Used when provincial-level rate
+      tables are available. Territories are pooled into a single stratum
+      due to small sample sizes in the source CCHS data.
+    range: ProvinceEnum
+
+  weight:
+    description: >-
+      Population weight for this synthetic individual, derived from Statistics
+      Canada demographic projections. Used to produce population-level
+      smoking prevalence estimates from the simulation.
+    range: float
+    required: true
+    minimum_value: 0.0
+
+  simulation_run:
+    description: >-
+      Identifier for the Monte Carlo simulation run. Multiple runs are used
+      to quantify uncertainty in smoking history estimates.
+    range: integer
+
+# ---------------------------------------------------------------------------
+# Classes
+# ---------------------------------------------------------------------------
+
+classes:
+
+  SyntheticPerson:
+    description: >-
+      A single synthetic individual in the CSHM simulation population.
+      Each person is assigned demographic attributes and then "aged" through
+      the initiation and cessation rate tables to generate a smoking history.
+    slots:
+      - person_id
+      - birth_year
+      - sex
+      - province
+      - weight
+      - simulation_run
+
+  SmokingHistoryRecord:
+    description: >-
+      One record in a simulated smoking history — the smoking status of a
+      synthetic individual at a specific age. A complete smoking history
+      for one person is a sequence of these records from birth to death
+      (or the end of the projection period).
+    slots:
+      - person_id
+      - birth_year
+      - sex
+    attributes:
+      age:
+        description: Age of the synthetic individual at this time point (years).
+        range: integer
+        required: true
+        minimum_value: 0
+        maximum_value: 110
+      period:
+        description: >-
+          Calendar year corresponding to this age: period = birth_year + age.
+        range: integer
+        required: true
+      smoking_status:
+        description: Smoking status at this age.
+        range: SmokingStatusEnum
+        required: true
+      age_initiation:
+        description: >-
+          Age at which the individual first smoked a whole cigarette.
+          Null if smoking_status is `never`.
+        range: integer
+      age_cessation:
+        description: >-
+          Age at which the individual quit smoking (most recent quit, if
+          multiple quit attempts). Null if smoking_status is `never` or
+          `current`.
+        range: integer
+
+  SyntheticCohort:
+    description: >-
+      The full synthetic population for one simulation run. Contains all
+      synthetic persons and their demographic attributes. Smoking histories
+      are stored separately in SmokingHistoryRecord.
+    tree_root: true
+    attributes:
+      persons:
+        range: SyntheticPerson
+        multivalued: true
+        inlined_as_list: true
+      run_metadata:
+        description: >-
+          Metadata about this simulation run: date, config profile, rate
+          table version, random seed.
+        range: SimulationRunMetadata
+
+  SimulationRunMetadata:
+    description: Provenance record for a simulation run.
+    attributes:
+      run_id:
+        description: Unique identifier for this simulation run.
+        range: string
+        required: true
+      run_date:
+        description: Date the simulation was executed (ISO 8601).
+        range: date
+        required: true
+      config_profile:
+        description: >-
+          `{config}` profile used (e.g., "prod", "statscan"). Determines
+          the data source and model parameters.
+        range: string
+        required: true
+      rate_table_version:
+        description: Version of the cshm-rate-tables used as input.
+        range: string
+      random_seed:
+        description: Random seed used for reproducibility.
+        range: integer
