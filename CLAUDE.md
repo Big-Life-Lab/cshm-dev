@@ -49,7 +49,7 @@ The pipeline follows the DemPoRT-V2-dev pattern (`~/github/DemPoRT-V2-dev`); its
 | File | Purpose |
 |------|---------|
 | [_targets.R](_targets.R) | Pipeline definition (stages 1–8 active; 9–10 stubbed) |
-| [config.yml](config.yml) | Environment profiles (`default`, `dev`, `prod`, `statscan`) |
+| [config.yml](config.yml) | Environment profiles (`default`, `draft`, `dev`, `prod`, `statscan`) |
 | [worksheets/cshm-variables.csv](worksheets/cshm-variables.csv) | Study variable list — `role`, `source`, and `purpose` columns |
 | [worksheets/cshm-variable-details.csv](worksheets/cshm-variable-details.csv) | CSHM extension rows: GEOGPRV and WTS_M for cchs2019_2020_p and cchs2022_p (DHH_SEX/DHHGAGE_cont rows removed — cchsflow v3 now covers them) |
 | [R/study-data.R](R/study-data.R) | `load_study_data()` — load + harmonize CCHS cycles |
@@ -65,9 +65,9 @@ The pipeline follows the DemPoRT-V2-dev pattern (`~/github/DemPoRT-V2-dev`); its
 | [R/validation.R](R/validation.R) | Prevalence validation |
 | [docs/results/table-1.qmd](docs/results/table-1.qmd) | Table 1a, 1b, and cycle appendix |
 | [R/legacy/smoking.R](R/legacy/smoking.R) | Interim smoking variables (pre-cchsflow v3) |
-| [R/process_smoking_initiation.R](R/process_smoking_initiation.R) | APC data prep (pre-pipeline; to be refactored) |
+| [R/legacy/process_smoking_initiation.R](R/legacy/process_smoking_initiation.R) | APC data prep (pre-pipeline; superseded by R/apc-model.R) |
 | [resources/legacy-code/Modeling2013.sas](resources/legacy-code/Modeling2013.sas) | Original SAS implementation (Manuel et al. 2020) |
-| [docs/references/Manuel_HR_2020.pdf](docs/references/Manuel_HR_2020.pdf) | Key reference paper |
+| docs/references/Manuel_HR_2020.pdf | Key reference paper (local only; PDFs are gitignored) |
 | [config/statscan.yml.example](config/statscan.yml.example) | RDC config template (copy to `config/statscan.yml`, gitignored) |
 
 **Documentation structure** (three purposes):
@@ -85,7 +85,7 @@ The pipeline follows the DemPoRT-V2-dev pattern (`~/github/DemPoRT-V2-dev`); its
 **Development artefacts** (`docs/development/` — gitignored, local only): planning documents, meeting notes, protocol drafts, pipeline progress notes.
 
 `config.yml` profiles (set via `R_CONFIG_ACTIVE`):
-- **default** — PUMF data from `~/github/cchsflow/data/`; full sample
+- **default** — PUMF data from `~/github/cchsflow-data/data/sources/rdata/` (renamed via scripts/rename-pumf-objects.R); full sample
 - **draft** — 5% sample from `cchsflow-data` release files (`CCHS_2001.RData` naming, internal object `table`)
 - **dev** — 10% sample from default PUMF source; single imputation; fast iteration
 - **prod** — full PUMF sample; WARN logging

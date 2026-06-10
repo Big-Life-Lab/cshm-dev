@@ -20,9 +20,10 @@ survey_cycle_code <- function(data_name) {
     cchs2019_2020_p = 10L,
     cchs2022_p      = 11L
   )
-  code <- codes[[data_name]]
-  if (is.null(code)) stop("Unknown CCHS dataset name: ", data_name)
-  code
+  if (!data_name %in% names(codes)) {
+    stop("Unknown CCHS dataset name: ", data_name)
+  }
+  codes[[data_name]]
 }
 
 #' Load and harmonize CCHS PUMF cycles

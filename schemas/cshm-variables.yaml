@@ -46,7 +46,7 @@ enums:
       How the variable is used in the CSHM pipeline. A variable may carry
       multiple comma-separated roles (e.g. "predictor, table1, apc-numerator").
       This is a CSHM-specific field not present in cchsflow. The authoritative
-      role definitions, groups, and purposes are in worksheets/roles.csv.
+      role definitions, groups, and purposes are in this schema's VariableRoleEnum.
     permissible_values:
       design:
         description: Survey infrastructure variable (cycle identifier or sampling weight).
@@ -188,7 +188,7 @@ slots:
     description: >-
       Comma-separated list of roles this variable plays in the CSHM pipeline.
       Each role token must match a value in VariableRoleEnum and is defined
-      in worksheets/roles.csv. Multiple roles reflect that a single variable
+      in this schema's VariableRoleEnum. Multiple roles reflect that a single variable
       can serve different purposes at different pipeline stages — for example,
       DHH_SEX is both a model-stratifier and a table1-stratifier.
     range: VariableRoleEnum

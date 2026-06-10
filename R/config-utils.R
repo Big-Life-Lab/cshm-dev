@@ -3,7 +3,7 @@
 # survey_var(cfg, "age")        → variable name for current data_source
 # survey_bound(cfg, "age", "min") → analytical bound for a survey variable
 
-# Null-coalescing operator (base R >= 4.4 has |>; keep this for R >= 4.2 compat)
+# Null-coalescing operator (base R >= 4.4 ships %||%; keep this for R >= 4.2 compat)
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
 survey_var <- function(cfg, key) {

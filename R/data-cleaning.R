@@ -31,10 +31,14 @@ clean_study_data <- function(study_data, variables_sheet, cfg) {
   }
 
   # Step 2: Identify continuous predictor variables for skewness check
-  continuous_predictors <- variables_sheet$variable[
-    variables_sheet$variableType == "Continuous" &
-    variables_sheet$role %in% c("predictor", "model-stratifier")
-  ]
+  # Roles are comma-separated; select_vars_by_role() handles multi-role rows
+  continuous_predictors <- intersect(
+    variables_sheet$variable[variables_sheet$variableType == "Continuous"],
+    unique(c(
+      select_vars_by_role("predictor", variables_sheet),
+      select_vars_by_role("model-stratifier", variables_sheet)
+    ))
+  )
   continuous_predictors <- intersect(continuous_predictors, colnames(study_data))
 
   # Step 3: Check skewness and truncate where |skewness| >= cfg$skewness_threshold

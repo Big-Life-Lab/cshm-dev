@@ -103,24 +103,26 @@ build_initiation_data <- function(data, cfg) {
   data <- data[data$cohort >= cohort_min, ]
 
   # Identify ever-smokers: SMKDSTY_original %in% 1:5, age_first_cigarette >= min_age
-  # Never-smokers (SMKDSTY_original = 6) have a top-code placeholder of 55 — exclude
+  # Never-smokers (SMKDSTY_original = 6) carry NA(a) for age_first_cigarette;
+  # 55 is the legitimate midpoint of the "50+ years" category among ever-smokers.
   # SMKDSTY_original categories: 1=daily, 2=occ(fmr daily), 3=always occ, 4=fmr daily, 5=fmr occ, 6=never
   smkdsty <- data[[status_col]]
   ever_smoker <- !is.na(smkdsty) & smkdsty %in% 1:5
 
   age_init_raw <- data[[age_col]]
 
-  # Issue 3: warn if PUMF floor is causing early ages to be missing.
-  # survey_bound(cfg, "age_first_cigarette", "min") = 8 is the analytical decision (APC model floor).
-  # PUMF recoding bound: SMKG01C_cont recEnd = 55; PUMF category floor ~13.
-  # Genuine initiation ages 8-12 are absent from PUMF runs; exact values in Master only.
-  # Source of truth for bounds: cchsflow variable_details.csv (recEnd column).
+  # The analytic floor is survey_bound(cfg, "age_first_cigarette", "min"):
+  # 13 for PUMF, 8 for Master per config.yml. Note SMKG01C_cont has a 5-11
+  # category (midpoint 8) in all PUMF cycles, so a floor of 13 excludes that
+  # group — whether to lower the PUMF floor to 8 is an open study decision.
+  # Source of truth for category midpoints: cchsflow variable_details.csv (recEnd).
   ages_among_smokers <- age_init_raw[ever_smoker & !is.na(age_init_raw)]
   if (length(ages_among_smokers) > 0 && min(ages_among_smokers) > 10) {
     warning(
       "min(age_first_cigarette) = ", min(ages_among_smokers),
-      " among ever-smokers. PUMF category floor likely at 13; genuine ages 8-12 ",
-      "are absent. RDC Master run will use exact ages."
+      " among ever-smokers — early-initiation categories appear absent or ",
+      "excluded by the configured floor (", min_age, "). RDC Master run will ",
+      "use exact ages."
     )
   }
 

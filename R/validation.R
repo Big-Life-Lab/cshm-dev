@@ -1,6 +1,6 @@
 # validation.R
 # Compare modelled smoking prevalence against independent historic surveys.
-# Pipeline target: validation
+# Pipeline target: validation_results
 
 #' Validate modelled prevalence against historic estimates
 #'

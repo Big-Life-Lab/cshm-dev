@@ -14,7 +14,8 @@ test_that("derive_survey_year returns correct integer year for all 11 cycles", {
 
   result <- derive_survey_year(data, cfg)
 
-  expected_years <- c(2002, 2003, 2005, 2008, 2010, 2012, 2014, 2016, 2018, 2020, 2022)
+  # Cycle 1 (CCHS 1.1) collected Sept 2000 - Nov 2001: survey year 2001
+  expected_years <- c(2001, 2003, 2005, 2008, 2010, 2012, 2014, 2016, 2018, 2020, 2022)
   expect_equal(result$survey_year, expected_years)
 })
 

@@ -1,6 +1,7 @@
 # smoking-histories.R
-# Simulate individual-level smoking histories from fitted APC rate tables.
-# Pipeline target: smoking_histories
+# Generate initiation/cessation rate tables from fitted APC models (Stage 9)
+# for the shg-rcpp simulation (Stage 10, separate repo).
+# Pipeline target: rate_tables
 
 #' Generate Canadian rate tables for shg-rcpp
 #'

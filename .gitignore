@@ -61,3 +61,5 @@ resources/
 
 # Quarto project caches
 manuscript/.quarto/
+
+**/*.quarto_ipynb

@@ -52,7 +52,8 @@ default:
     # CSHM extensions: GEOGPRV and WTS_M for 2019-20 and 2022 (not yet in cchsflow v3)
     cshm_variable_details: !expr file.path(getwd(), "worksheets/cshm-variable-details.csv")
 
-  # Derived data (study_data and analysis_data are pipeline outputs stored in repo)
+  # Derived data file paths (reserved for exporting pipeline targets; the
+  # {targets} store under _targets/ is the working cache)
   derived_data:
     study_data: !expr file.path(getwd(), "data/study_data.rds")
     analysis_data: !expr file.path(getwd(), "data/analysis_data.rds")
@@ -112,7 +113,7 @@ default:
       pumf:
         var: DHHGAGE_cont         # Continuous age (years); midpoint-estimated from grouped categories
         min: 18                   # Study inclusion floor (12–17 excluded in cleaning stage)
-        max: 80                   # PUMF top-coded age group (75+, midpoint 80)
+        max: 85                   # PUMF top-coded age group (80+, midpoint 85, 2001-2018; 2019+ tops at 75)
       master:
         var: DHH_AGE              # True continuous age
         min: 18
@@ -132,9 +133,9 @@ default:
     # PUMF: binary/categorical; Master: more granular (see protocol §3.3)
     ethnicity:
       pumf:
-        var: SDC_RACEM            # Ethnicity (PUMF: 1=white, 2=non-white binary)
+        var: SDCGCGT              # Cultural/racial origin (PUMF: 1=white, 2=non-white; 2007-2014 only)
       master:
-        var: SDCFRAC              # More granular ethnicity categories
+        var: SDCGCGT              # Master granular recode TBD (protocol §3.3)
     immigration_status:
       pumf:
         var: SDCFIMM              # Born in Canada vs. immigrant
@@ -155,7 +156,8 @@ default:
     age_first_cigarette:
       pumf:
         var: age_first_cigarette  # Age smoked first whole cigarette (midpoint-estimated)
-        min: 13                   # PUMF observed floor (SMKG01C_cont midpoint ~13)
+        min: 13                   # Study floor — NOTE: SMKG01C_cont has a 5-11 category (midpoint 8);
+                                  # 13 excludes it. Lowering to 8 is an open study decision.
         max: 100
       master:
         var: age_first_cigarette  # Exact age from SMK_01C
@@ -164,7 +166,7 @@ default:
     age_start_daily:
       pumf:
         var: age_start_smoking    # Age started daily smoking (midpoint-estimated)
-        min: 13                   # PUMF observed floor
+        min: 13                   # Study floor — SMKG040_cont also has a 5-11 (midpoint 8) category
         max: 100
       master:
         var: age_start_smoking    # Exact age from SMK_040
@@ -308,7 +310,7 @@ default:
   # Survey year lookup: integer year per SurveyCycle code (1–11)
   # 2-year cycles use midpoint year (e.g. 2008 for 2007-08)
   cycle_survey_years:
-    "1":  2002    # 2001
+    "1":  2001
     "2":  2003
     "3":  2005
     "4":  2008    # 2007-08

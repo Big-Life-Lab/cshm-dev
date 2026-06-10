@@ -32,7 +32,7 @@ list(
   ),
 
   # Stage 2: Load and harmonize CCHS cycles
-  # Produces data/study_data.rds — combined harmonized cycles, study variables only
+  # Combined harmonized cycles, study variables only (stored in the _targets/ store)
   tar_target(study_data,
     load_study_data(cfg, variables_sheet, variable_details_sheet, coverage_check),
     format = "rds"
@@ -49,7 +49,7 @@ list(
   ),
 
   # Stage 5: Multiple imputation
-  # Produces data/analysis_data.rds — primary reproducibility artifact
+  # Imputed analysis data — primary reproducibility artifact (stored in the _targets/ store)
   tar_target(analysis_data,
     impute_data(cleaned_data, variables_sheet, cfg),
     format = "rds"
