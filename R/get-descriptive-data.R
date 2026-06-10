@@ -1,14 +1,42 @@
 # get-descriptive-data.R
 # Calculate descriptive statistics for the study population.
-# Ported from DemPoRT-V2-dev (origin/dev).
+# Ported from DemPoRT-V2-dev (origin/dev); extended with survey-weighted
+# statistics (weight_var) per protocol v0.3.0 §3.4.1 / Appendix D.
+
+#' Weighted quantile (midpoint-ECDF with linear interpolation)
+#'
+#' Interpolates linearly between order statistics positioned at the midpoints
+#' of their cumulative weight intervals (the standard weighted analogue of a
+#' continuous sample quantile). With equal weights the weighted median equals
+#' the type-7 sample median; other quantiles are close but not identical to
+#' type 7. Values beyond the first/last midpoint take the boundary value.
+#'
+#' @param x Numeric vector (NAs removed by caller)
+#' @param w Numeric weights aligned with x
+#' @param probs Probabilities in [0, 1]
+#' @return Numeric vector of weighted quantiles
+weighted_quantile <- function(x, w, probs) {
+  if (length(x) == 0) return(rep(NA_real_, length(probs)))
+  if (length(x) == 1) return(rep(x, length(probs)))
+  ord <- order(x)
+  x <- x[ord]; w <- w[ord]
+  cw <- cumsum(w)
+  midpoints <- (cw - w / 2) / sum(w)
+  stats::approx(midpoints, x, xout = probs, rule = 2, ties = "ordered")$y
+}
 
 get_descriptive_data <- function(
   data,
   variables_sheet,
   variables_details_sheet,
   variables,
-  stratify_config
+  stratify_config,
+  weight_var = NULL
 ) {
+  use_weights <- !is.null(weight_var)
+  if (use_weights && !weight_var %in% colnames(data)) {
+    stop("weight_var '", weight_var, "' not found in data.")
+  }
   descriptive_data <- data.frame(
     variable   = c(),
     cat        = c(),
@@ -60,7 +88,8 @@ get_descriptive_data <- function(
               current_stratifier_info$stratifier_combination[[strat]][1]
           }
           vals <- current_stratifier_info$data[[variable]]
-          vals <- vals[!is.na(vals)]
+          keep <- !is.na(vals)
+          vals <- vals[keep]
           s    <- summary(vals)
           new_row$median       <- s[[3]]
           new_row$percentile25 <- s[[2]]
@@ -68,6 +97,14 @@ get_descriptive_data <- function(
           new_row$min          <- s[[1]]
           new_row$max          <- s[[6]]
           new_row$n            <- length(vals)
+          if (use_weights) {
+            w <- current_stratifier_info$data[[weight_var]][keep]
+            wq <- weighted_quantile(vals, w, c(0.25, 0.5, 0.75))
+            new_row$wtd_percentile25 <- wq[1]
+            new_row$wtd_median       <- wq[2]
+            new_row$wtd_percentile75 <- wq[3]
+            new_row$wtd_percent      <- NA_real_
+          }
           descriptive_data <<- rbind(descriptive_data, new_row)
         }
       )
@@ -99,6 +136,13 @@ get_descriptive_data <- function(
           )
           new_row$n       <- nrow(filtered)
           new_row$percent <- new_row$n / nrow(current_stratifier_info$data)
+          if (use_weights) {
+            new_row$wtd_percentile25 <- NA_real_
+            new_row$wtd_median       <- NA_real_
+            new_row$wtd_percentile75 <- NA_real_
+            new_row$wtd_percent <- sum(filtered[[weight_var]], na.rm = TRUE) /
+              sum(current_stratifier_info$data[[weight_var]], na.rm = TRUE)
+          }
           descriptive_data <<- rbind(descriptive_data, new_row)
         }
       )
@@ -135,6 +179,13 @@ get_descriptive_data <- function(
             )
             new_row$n       <- nrow(filtered)
             new_row$percent <- new_row$n / nrow(current_stratifier_info$data)
+            if (use_weights) {
+              new_row$wtd_percentile25 <- NA_real_
+              new_row$wtd_median       <- NA_real_
+              new_row$wtd_percentile75 <- NA_real_
+              new_row$wtd_percent <- sum(filtered[[weight_var]], na.rm = TRUE) /
+                sum(current_stratifier_info$data[[weight_var]], na.rm = TRUE)
+            }
             descriptive_data <<- rbind(descriptive_data, new_row)
           }
         )

@@ -44,28 +44,36 @@ list(
   ),
 
   # Stage 4: Descriptive statistics — pre-imputation (Table 1a source data)
+  # Unweighted n + survey-weighted statistics in one table (protocol §3.4.1)
   tar_target(table_1a_data,
-    get_cshm_desc_data(cleaned_data, variables_sheet, variable_details_sheet)
+    get_cshm_desc_data(cleaned_data, variables_sheet, variable_details_sheet,
+                       weight_var = survey_var(cfg, "weight"))
   ),
 
   # Stage 5: Multiple imputation
-  # Imputed analysis data — primary reproducibility artifact (stored in the _targets/ store)
+  # Returns list(datasets = m completed data frames, m, imputed_cells,
+  # logged_events) — primary reproducibility artifact (in the _targets/ store).
+  # where-matrix MICE: only NA(b) cells imputed (protocol Appendix D).
   tar_target(analysis_data,
     impute_data(cleaned_data, variables_sheet, cfg),
     format = "rds"
   ),
 
   # Stage 6: Descriptive statistics — post-imputation (Table 1b source data)
+  # Averaged across the m completed datasets
   tar_target(table_1b_data,
-    get_cshm_desc_data(analysis_data, variables_sheet, variable_details_sheet)
+    get_cshm_desc_data_mi(analysis_data, variables_sheet, variable_details_sheet,
+                          weight_var = survey_var(cfg, "weight"))
   ),
 
   # Stage 7: Prepare APC datasets (numerator + denominator combined, by sex)
   # Single target; denominator construction is the expensive step.
   # Keeping as one target lets {targets} cache the full APC data independently
   # from Stage 8 model parameters (knots, constraints).
+  # Fitted on imputation 1 (protocol Appendix D documents the upgrade path
+  # to per-imputation fits pooled by Rubin's rules).
   tar_target(apc_data,
-    prepare_apc_data(analysis_data, cfg)
+    prepare_apc_data(analysis_data$datasets[[1]], cfg)
   ),
 
   # Stage 8: Fit APC models — four independent targets for parallel execution

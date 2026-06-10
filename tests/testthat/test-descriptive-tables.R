@@ -11,7 +11,7 @@ make_variables_sheet <- function() {
     section      = c("Sociodemographics", "Sociodemographics",
                      "Sociodemographics", "Health behaviour"),
     units        = c("N/A", "N/A", "Years", "N/A"),
-    role         = c("design", "model-stratifier", "predictor", "predictor"),
+    role         = c("design", "model-stratifier", "predictor, table1", "predictor, table1"),
     stringsAsFactors = FALSE
   )
 }
@@ -64,9 +64,9 @@ test_that("select_vars_by_role returns correct variables", {
   vs <- make_variables_sheet()
   expect_equal(select_vars_by_role("predictor", vs), c("DHH_AGE", "SMKDSTY"))
   expect_equal(select_vars_by_role("model-stratifier", vs), "DHH_SEX")
-  expect_equal(select_vars_by_role("design", vs), c("SurveyCycle", "WTS_M")[
-    c("SurveyCycle", "WTS_M") %in% select_vars_by_role("design", vs)
-  ])
+  expect_equal(select_vars_by_role("design", vs), "SurveyCycle")
+  # comma-separated multi-role rows are matched on the individual role
+  expect_equal(select_vars_by_role("table1", vs), c("DHH_AGE", "SMKDSTY"))
   expect_length(select_vars_by_role("nonexistent", vs), 0)
 })
 
