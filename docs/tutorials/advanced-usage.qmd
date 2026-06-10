@@ -1,0 +1,189 @@
+---
+title: "Advanced usage of CSHM"
+---
+> The following is a template example of a tutorial. To be developed.
+
+This tutorial covers advanced usage scenarios for the Canadian Smoking Histories Model (CSHM).
+
+## Prerequisites
+
+Before proceeding with this tutorial, you should:
+
+- Have completed the [Getting Started](getting-started.qmd) guide
+- Be familiar with the [basic usage](basic-usage.qmd) of CSHM
+- Have a good understanding of R programming
+- Be familiar with statistical concepts related to Age-Period-Cohort models
+
+## Customizing APC model specifications
+
+The default APC model specifications in CSHM are based on the original Canadian SHM study, following the Holford/CISNET approach. However, you can customize these specifications to better fit your specific research needs.
+
+### Modifying spline knots
+
+The placement of knots in the spline functions can impact the model's ability to capture temporal trends:
+
+```r
+# Custom knot placement
+custom_config <- list(
+  age_knots = c(10, 15, 20, 30, 40, 50, 60),      # More knots for age
+  period_knots = c(1940, 1960, 1980, 2000, 2020), # Different period knots
+  cohort_knots = c(1920, 1940, 1960, 1980, 2000)  # Simplified cohort knots
+)
+
+# Run APC model with custom knots
+custom_model <- run_apc_model(
+  data = harmonized_data,
+  sex = "M",
+  knots = custom_config
+)
+```
+
+### Adding covariates
+
+You can extend the basic APC model to include additional covariates:
+
+```r
+# APC model with additional covariates
+covariate_model <- run_apc_model(
+  data = harmonized_data,
+  sex = "M",
+  formula = d/pop ~ age_s + period_s + cohort_s + 
+            age_spl1 + age_spl2 + age_spl3 + 
+            period_spl1 + period_spl2 + period_spl3 + 
+            cohort_spl1 + cohort_spl2 + cohort_spl3 + 
+            education + urban  # Additional covariates
+)
+```
+
+## Advanced data preprocessing
+
+### Handling complex survey designs
+
+For proper population estimates, using the example data (the Canadian Community Health Survey) you need to account for the complex survey design of the population health survey:
+
+```r
+library(survey)
+
+...
+
+### Custom variable derivation
+
+You can create custom derived variables for specific research questions:
+
+```r
+library(dplyr)
+
+# Create a variable for time-to-event analysis
+analysis_data <- harmonized_data %>%
+  mutate(
+    # Years between first cigarette and daily smoking
+    time_to_daily = ifelse(!is.na(SMKG203_cont) & !is.na(SMKG01C_cont),
+                          SMKG203_cont - SMKG01C_cont, 
+                          NA),
+    
+    # Smoking duration for former smokers
+    smoking_duration = ifelse(!is.na(SMKG207_cont) & !is.na(SMK_09A_cont),
+                              SMK_09A_cont - SMKG207_cont,
+                              NA)
+  )
+```
+
+## Generating synthetic populations
+
+For microsimulation models, you may need to generate a synthetic population:
+
+> replace with the CISNET Smoking History Generator Model when available.
+```r
+# Generate a synthetic population
+synthetic_pop <- generate_synthetic_population(
+  n = 100000,                    # Population size
+  start_year = 1900,             # Earliest birth year
+  end_year = 2020,               # Latest birth year
+  age_distribution = "canada",   # Use Canadian age distribution
+  sex_ratio = 0.49               # Proportion male
+)
+
+# Apply smoking histories to the synthetic population
+pop_with_smoking <- generate_smoking_histories(
+  population = synthetic_pop,
+  model = apc_model_results
+)
+```
+
+## Model validation and calibration
+
+### Comparing with historical data
+
+You can validate your model against historical smoking prevalence data:
+
+```r
+# Load historical smoking prevalence data
+historical_data <- read.csv("path/to/historical_prevalence.csv")
+
+# Compare model predictions with historical data
+validation_plot <- compare_with_historical(
+  model_results = apc_model_results,
+  historical_data = historical_data,
+  by = "year"  # Compare by year
+)
+
+# Display validation plot
+print(validation_plot)
+```
+
+### Calibrating the model
+
+If needed, you can calibrate the model to better match external data sources:
+TBA...
+```r
+# Calibrate the model
+calibrated_model <- calibrate_model(
+  model = apc_model_results,
+  target_data = target_prevalence,
+  calibration_method = "multiplicative"
+)
+```
+
+## Working with secure environments
+
+When working in secure environments like Statistics Canada's RDCs, you may need to adapt your workflow:
+
+```r
+# Load secure environment configuration
+config <- config::get(file = "path/to/secure_config.yml", config = "secure")
+
+# Use configuration to access data
+secure_data_path <- config$data_path
+```
+
+## Performance optimization
+
+For large datasets or complex analyses, you may need to optimize performance:
+
+```r
+# Parallel processing for bootstrap samples
+library(parallel)
+library(future)
+
+# Set up parallel processing
+plan(multisession, workers = 4)
+
+# Run bootstrap in parallel
+bootstrap_results <- future_lapply(1:100, function(i) {
+  # Bootstrap sample
+  sample_idx <- sample(nrow(data), replace = TRUE)
+  bootstrap_data <- data[sample_idx, ]
+  
+  # Run model on bootstrap sample
+  model <- run_apc_model(bootstrap_data)
+  
+  # Return results
+  return(model$coefficients)
+})
+```
+
+## Next steps
+
+- Learn about [implementing custom models](../how-to/custom-models.qmd)
+- Explore [integration with other health models](../how-to/integration.qmd)
+- See examples of [research applications](../explanation/research-applications.qmd)

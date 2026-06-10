@@ -1,0 +1,40 @@
+# A Canadian Smoking Histories Model: a study protocol
+
+Version 0.1.0
+
+Date: 2025-03-27
+
+## Background
+
+Understanding the patterns of smoking behaviour across different birth cohorts is important for evaluating tobacco control policies and predicting smoking-related health outcomes in Canada. The Canadian Smoking Histories Model (CSHM) developed by the National Cancer Institute in the US has been instrumental in cancer risk modelling. The approach was replicated in Ontario, but a comprehensive Canadian equivalent covering all provinces has not yet been developed. Given Canada's distinct tobacco control policies and smoking patterns, developing a Canadian Smoking Histories Model helps inform future public health planning, evaluate past interventions, and project the smoking-attributable disease burden nationwide.
+
+## Objectives
+
+This study will develop a Canadian Smoking Histories Model that characterizes smoking patterns by birth cohort, sex, and province from 1965 to 2023, with projections to 2050. Specifically, this study will:
+
+1)  Estimate historical and current smoking prevalence, initiation, cessation, and intensity by birth cohort for each province and territory;
+2)  Examine regional and temporal differences in smoking patterns across Canada;
+3)  Project future smoking prevalence and related parameters under status quo conditions; and
+4)  Create a publicly-accessible open model that policy actors, researchers, and others can use and update.
+
+## Methods
+
+### Data Sources
+
+The primary data source will be the Canadian Community Health Survey (CCHS) conducted from 2001 to 2023, which provides nationally representative cross-sectional information on smoking behaviours. We will use all available cycles of the CCHS, with a combined sample size of approximately 1.4 million respondents. From these surveys, we will ascertain current smoking status, age at smoking initiation, age at cessation, and smoking intensity (cigarettes per day).
+
+### Exposure ascertainment
+
+The `cchsflow` library will harmonize smoking variables in the CCHS across all survey cycles. Appendix X has harmonization details (variables and variable details).
+
+### Analytical approach
+
+Following the approach developed by Holford et al.[ref] and adapted in Canada by Manuel et al.[ref], we will use an age-period-cohort modelling framework to generate smoking histories. The model will consist of two primary components: a smoking initiation model (for people who had not already started smoking) and a smoking cessation model (for those who are currently smoking). We will first construct retrospective smoking histories for each respondent up to the survey date based on their reported age of initiation and cessation. To address survival bias (whereby smokers are less likely to survive to be interviewed), we will apply mortality adjustments using the Mortality Population Risk Tool (MPoRT) \[tba\], which accounts for differential mortality by smoking status. Age-period-cohort models with constrained natural splines will be fitted to estimate smoking initiation and cessation probabilities by birth cohort, age, sex, and province. Additional models will estimate smoking intensity distribution. The models will be calibrated against historical survey estimates of smoking prevalence and then used to project future smoking prevalence through 2050 under status quo conditions.
+
+## Expected Outcomes
+
+The primary outcome will be a Canadian Smoking Histories Model capable of producing detailed smoking histories by birth cohort, age, sex, and region. The model will provide annual estimates of smoking prevalence, initiation rates, cessation rates, and smoking intensity, both historically (1965-2023) and projected forward (2024-2050). This model will be made available through an online interactive platform and open-source code repository, enabling researchers and policymakers to access detailed smoking parameters for health economic modelling, policy evaluation, and public health planning. The Generator will support various policy planning models, such as Oncosim and POHEM, designed to evaluate the impact of tobacco control policies and predict smoking-attributable disease burden, including cancer, cardiovascular disease, and dementia. By providing Canada-specific smoking parameters at both national and provincial levels, this Generator will enable a more precise estimation of the health and economic impacts in the Canadian context and support evidence-based tobacco control strategies.
+
+## Change log
+
+Version 0.1.0. Date: 2025-03-27 Initial 1-page outline.

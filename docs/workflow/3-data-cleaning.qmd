@@ -1,0 +1,85 @@
+---
+title: "Stage 3 — Data cleaning"
+subtitle: "Age restriction, distribution checks, and outlier truncation"
+---
+
+## Purpose
+
+After harmonization, the data needs two types of cleaning before analysis:
+
+1. **Age restriction** — the APC model is calibrated to adults. Respondents aged 12–17 (the youngest CCHS age group) are excluded because their smoking behaviour is systematically different and their age is recorded only as a group midpoint in the PUMF.
+
+2. **Distribution checks and truncation** — continuous predictors with high skewness (|skewness| ≥ 1) are truncated at the 99th percentile. This prevents extreme values from exerting undue leverage on the APC model while preserving the bulk of the distribution.
+
+Tagged NAs (from `haven::tagged_na()`) are preserved throughout — they carry information about *why* a value is missing (`NA(a)` = not applicable, `NA(b)` = don't know/refused, `NA(c)` = not asked this cycle).
+
+## Inputs
+
+| Target | Description |
+|--------|-------------|
+| `study_data` | Harmonized combined data frame (Stage 2) |
+| `variables_sheet` | Variable metadata — identifies continuous predictors by `variableType == "Continuous"` |
+
+Configuration parameters used:
+
+| Parameter | Location | Value | Meaning |
+|-----------|----------|-------|---------|
+| `age_exclusion_category` | `config.yml` | `1` | Age group code for 12–17 year olds |
+| `age_grouped` | `config.yml survey:` | `survey_var(cfg, "age_grouped")` | Grouped age variable name |
+| `skewness_threshold` | `config.yml` | `1` | |skewness| threshold triggering truncation |
+| `truncate_percentile` | `config.yml` | `99` | Upper percentile cap |
+
+## Code
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_knit$set(root.dir = normalizePath("../.."))
+cfg <- config::get(file = "config.yml")
+```
+
+```{r load-cleaned-data}
+cleaned_data <- targets::tar_read("cleaned_data")
+study_data   <- targets::tar_read("study_data")
+```
+
+```{r age-restriction}
+# Respondents excluded by age restriction
+cat("Before cleaning:", nrow(study_data), "\n")
+cat("After cleaning: ", nrow(cleaned_data), "\n")
+cat("Excluded:       ", nrow(study_data) - nrow(cleaned_data), "\n")
+```
+
+```{r skewness-check}
+# The skewness summary is printed during pipeline execution
+# To reproduce:
+variables_sheet <- targets::tar_read("variables_sheet")
+source("R/data-cleaning.R")
+
+continuous_predictors <- variables_sheet$variable[
+  variables_sheet$variableType == "Continuous" &
+  variables_sheet$role %in% c("predictor", "model-stratifier")
+]
+continuous_predictors <- intersect(continuous_predictors, colnames(study_data))
+check_skewness(study_data, continuous_predictors, cfg$skewness_threshold)$summary
+```
+
+## Outputs
+
+| Target | Description |
+|--------|-------------|
+| `cleaned_data` | Data frame with 12–17 year olds excluded and skewed variables truncated |
+
+## Key decisions
+
+**Age group 1 = 12–17.** In CCHS PUMF, the grouped age variable (`survey_var(cfg, "age_grouped")`) codes the youngest age group as `1`. The config parameter `age_exclusion_category: 1` encodes this decision explicitly so it can be changed without touching R code (e.g., if applying the model to a survey where the youngest group has a different code).
+
+**Skewness formula.** `check_skewness()` uses Pearson's moment coefficient (type 2 = unbiased, equivalent to `e1071::skewness(x, type = 2)`), which matches SAS's default. This ensures consistency when comparing results to the original SAS implementation.
+
+**99th percentile truncation, not log-transformation.** Log-transformation is common for skewed predictors but changes the interpretation of model coefficients. Truncation at the 99th percentile retains the original scale while capping extreme values that are likely measurement artifacts (e.g., implausibly high cigarettes-per-day values in the PUMF midpoint imputation).
+
+**Tagged NAs pass through.** `dplyr::if_else()` with `missing = x` ensures that `haven::tagged_na` values are not coerced to regular `NA` during truncation. This preserves missingness reason codes for the imputation stage.
+
+## Related resources
+
+- [How to process CCHS data](../how-to/processing-cchs-data.qmd)
+- `R/data-cleaning.R` — `clean_study_data()`, `check_skewness()`, `truncate_continuous()`

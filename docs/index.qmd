@@ -1,0 +1,61 @@
+---
+title: "Canadian Smoking Histories Model"
+subtitle: "An R implementation of Age-Period-Cohort smoking behavior analysis"
+---
+
+# Canadian Smoking Histories Model
+
+This website provides information about using and extending the Canadian Smoking Histories Model (CSHM) documentation for smoking behavior analysis and simulation.
+
+## About CSHM
+
+The Canadian Smoking Histories Model is an R implementation of the Age-Period-Cohort (APC) modeling approach to smoking behavior. It builds upon the work of Holford and extends the methodology developed in the Ontario SHGM study (2020).
+
+The model analyzes smoking initiation and cessation patterns from Canadian Community Health Survey (CCHS) data, accounting for age, period, and cohort effects. With this foundation, it can generate synthetic smoking histories for population health modeling.
+
+## Key features
+
+- Processes and harmonizes data from multiple CCHS cycles
+- Implements APC modeling using natural cubic splines
+- Estimates smoking initiation and cessation probabilities
+- Generates complete smoking histories for simulated populations
+- Provides validation against historical data
+- Works in various computing environments, including secure settings
+
+## Getting started
+
+New users should start with these resources:
+
+- [Getting started guide](tutorials/getting-started.qmd) - Introduction to the package
+- [Basic usage tutorial](tutorials/basic-usage.qmd) - Common analysis tasks
+- [Processing CCHS data](how-to/processing-cchs-data.qmd) - Working with survey data
+
+## Documentation structure
+
+This documentation is organized into four main sections:
+
+1. **Tutorials** - Step-by-step lessons to get started
+2. **How-to guides** - Practical instructions for specific tasks
+3. **Explanation** - Conceptual discussions of methodology
+4. **Reference** - Technical details of functions and data
+
+## Project status
+
+The CSHM is currently under active development. Contributions, bug reports, and feature requests are welcome through the [GitHub repository](https://github.com/Big-Life-Lab/cshm-dev).
+
+## Citation
+
+If you use the CSHM in your research, please cite:
+
+```
+CSHM Development Team (2024). Canadian Smoking Histories Model: 
+An R implementation of Age-Period-Cohort smoking behavior analysis.
+```
+
+## Licence
+
+The code in this repository is licensed under the [MIT License](../LICENSE).
+
+## Acknowledgments
+
+This project builds upon the foundational work of Dr. Ted Holford at Yale University and the Ontario SHGM study team at Statistics Canada.

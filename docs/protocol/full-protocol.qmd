@@ -1,0 +1,359 @@
+---
+title: "A Canadian Smoking Histories Model: a study protocol to generate smoking cohorts from 1940 and project to 2050"
+status: "Draft"
+version-summary:
+  date: "2026-02-24"
+  version: "0.2.5"
+version-history:
+  - version: "0.2.0"
+    date: "2026-03-09"
+    description: "Update to include reporting guideline placeholders. Added potential measurement error and sensitivity analyses. Equity subgroup analysis removed from primary analysis. Added total cigarettes smoked in Canada by year as an expected output. Added sensitivity analyses for spline type (NSP vs RCS) and mortality adjustment method (MPoRT vs Peto)."
+  - version: "0.1.1"
+    date: "2025-05-22"
+    description: "Detailed protocol update including APC knots, MPoRT, and equity strategy."
+  - version: "0.1.0"
+    date: "2025-03-27"
+    description: "Initial 1-page outline."
+---
+
+[{{< meta version-summary.date >}}]{.date} \| Version: [{{< meta version-summary.version >}}]{.version}
+
+# Abstract
+
+> STROBE: Clear summary of study components; ISPOR-SMDM: Overview of model purpose
+
+**Background**
+
+Understanding historical and projected smoking behaviour across Canadian populations informs the evaluation of tobacco control policies and smoking-attributable disease burden. While the U.S. Smoking History Generator (SHG) supports cancer risk modelling, a pan-Canadian equivalent does not yet exist.
+
+**Objectives**
+
+This study aims to develop a Canadian Smoking Histories Model (CSHM) that reconstructs smoking patterns by birth cohort, sex, and province from 1965 to 2023, with projections to 2050. Specifically, we will: (1) estimate historical and current smoking initiation, cessation, and intensity; (2) assess regional and temporal variations across all provinces and territories; (3) project future trends under status quo conditions; and (4) provide an open-access, reproducible model for population health modelling.
+
+**Methods**
+
+Using harmonized data from over one million respondents in the Canadian Community Health Survey (2001--2023), we will apply age-period-cohort models to estimate smoking initiation, cessation, and intensity. Mortality-adjusted estimates using the MPoRT algorithm will address survival bias. Estimates will be produced for each province and territory, and projections will extend to 2050.
+
+**Expected Outcomes**
+
+The model will be publicly accessible and used for policy evaluation and disease modelling in Canada, including projecting future smoking patterns and evaluating historic or proposed tobacco policy.
+
+:::: {.section-body line-numbers="continuous"}
+::: page-break
+:::
+
+# 1. Background
+
+Smoking behaviour varies across birth cohorts in ways that affect projections of tobacco-attributable disease and the evaluation of tobacco control policies in Canada. While smoking prevalence has declined since the mid-20th century, tobacco remains the leading cause of preventable disease and death in Canada, killing approximately 48,000 Canadians annually and costing over $11 billion per year in healthcare, lost productivity, and other costs [@HealthCanada_SmokingMortality_2024; @CSUCH_2023]. The smoking health burden is concentrated among lower-income and other equity-deserving populations, with lung cancer incidence nearly three times higher among Canadians with the lowest educational attainment [@mitra2015]. National trends mask heterogeneity across birth cohorts and provinces, driven by evolving social norms and regional tobacco control measures.
+
+The Smoking History Generator (SHG) framework, developed by the National Cancer Institute (NCI) CISNET Smoking Working Group, characterizes these patterns in the United States using Age-Period-Cohort (APC) models [@Holford_AJPM_2014]. This approach was adapted for Ontario [@Manuel_HR_2020], demonstrating that Canadian Community Health Survey (CCHS) data can be used to reconstruct birth-cohort-specific smoking histories from 1965 to 2013. A pan-Canadian equivalent covering all provinces and territories has not yet been developed.
+
+Three gaps motivate the CSHM. First, Canada’s tobacco control landscape occurs at both the national and regional levels, with provincial variation in taxation, smoke-free legislation, and cessation support. Second, Canadian smoking initiation and cessation patterns differ from those in other countries, particularly in the timing of peak prevalence and the rate of decline among younger cohorts. Third, Canadian health policy models (e.g., OncoSim, POHEM, SimSmoke) rely on behaviour transition parameters from the 1994--2004 National Population Health Survey (NPHS), now over 20 years old, with no planned replacement [@hennessy2015; @gauvreau2017; @chaiton2021]; these parameters no longer reflect contemporary patterns, particularly among younger cohorts, immigrant populations, and lower-income groups. The CCHS [@beland2002], with over 1.4 million respondents and annual data collection since 2001, provides an unparalleled opportunity to address this gap. The methods and infrastructure developed here will also expand knowledge for many countries facing the same challenge: large cross-sectional surveys but lacking population-based panel data [@kopasker2023; @vasquezlavin2022]. This study addresses these gaps with a unified, open-source framework for smoking history generation across all Canadian jurisdictions.
+
+# 2. Objectives
+
+This study will develop a Canadian Smoking Histories Model (CSHM) that describes smoking patterns by birth cohort, sex, and province from 1965 to 2023, with projections to 2050. Specifically, this study will:
+
+> Note: the starting date (1965) may need revision based on model performance.
+
+1.  **Estimate historical and current smoking parameters:** Reconstruct rates of smoking initiation, cessation, and intensity (cigarettes per day) by birth cohort (1890--2030) for each province and territory.
+2.  **Examine regional and temporal variations:** Analyse how smoking patterns have evolved across Canadian jurisdictions in response to differing policy environments and social trends.
+3.  **Project future smoking prevalence:** Model future trends in smoking prevalence and related parameters through 2050 under status quo policy conditions.
+4.  **Develop an open-access model:** Create a publicly-accessible, reproducible R-based model that can be used and updated by researchers, policy analysts, and health system planners.
+
+The model will provide demographic and geographic estimates (by single year of age and birth cohort) to interface with existing population health models. Historical reconstruction will cover the period 1965--2023, with projections extending from 2024 to 2050. Analysis will be conducted at the provincial level, with national estimates derived from aggregated provincial data.
+
+# 3. Methods
+
+## 3.1 Overall study design
+
+This study uses a retrospective population-based simulation modelling approach to reconstruct and project smoking life-course trajectories for the Canadian population. We use pooled cross-sectional data from the Canadian Community Health Survey (CCHS) to estimate transition probabilities within an Age-Period-Cohort (APC) framework.
+
+> STROBE: Study design; ISPOR-SMDM: Model type
+
+The conceptual framework for the CSHM is structured as a discrete-time Markov state-transition model. The population is divided into three primary compartments: 
+
+- **Never Smoker** (individuals who have smoked fewer than 100 cigarettes)
+- **Current Smoker** (daily or occasional use)
+- **Former Smoker** (quit for $\ge$ 1 year). 
+
+Individuals transition between these states based on annual probabilities of **initiation** (Never to Current) and **cessation** (Current to Former). To ensure precision in tobacco "dose" estimation, the Current Smoker compartment is further characterized by smoking intensity (cigarettes per day).
+
+> ISPOR-SMDM: Model structure; STRESS: Conceptualization
+
+The APC framework is implemented to separate temporal trends into three distinct components: age effects (biological and developmental influences), period effects (influences such as policy shifts or social norms), and cohort effects (generational differences). This framework is used for three reasons:
+
+1.  **Identifiability:** It addresses the fundamental APC identity ($cohort = period - age$) through constrained natural cubic splines, enabling the estimation of unique generational trends.
+2.  **Historical Reconstruction:** It allows for the back-calculation of smoking rates for birth cohorts, effectively using current survivors to understand historical patterns.
+3.  **Survival Bias Mitigation:** It provides a method to correct for differential mortality (the "healthy survivor" effect), ensuring that estimated historical initiation and cessation rates reflect the original population rather than only those who survived to be surveyed.
+
+> ISPOR-SMDM: Analytical approach; GATHER: Methods overview
+
+## 3.2 Data sources
+
+The primary data source for the CSHM is the Canadian Community Health Survey (CCHS), a national cross-sectional survey conducted by Statistics Canada. We will use all available survey cycles from 2001 to 2023. The CCHS employs a multistage stratified cluster design to provide representative estimates for the Canadian population aged 12 years and older, excluding individuals living on reserves, full-time members of the Canadian Forces, and institutionalized populations [@beland2002].
+
+The study will use two distinct computing environments and data formats:
+
+1.  **Development Environment (Public Use Microdata Files - PUMF):** Initial model development, coding, and internal validation will be performed using PUMF data (cycles 2001--2022). These files contain about 1 million respondents and are used for the open-source implementation of the model. Continuous variables in PUMF data (e.g., age at initiation) are often grouped; we will use midpoint-estimated pseudo-continuous values for these parameters.
+2.  **Production Environment (Master Files):** The final model parameters will be estimated using CCHS Master Files (2001--2023) available within Statistics Canada’s secure Regional Data Centres (RDCs). Master files provide exact continuous values for key parameters for all survey years, include age, age of smoking intitation, and age of smoking cessation.
+
+Secondary data sources for model calibration include:
+
+3.  **Canadian Human Mortality Database (CHMD):** Age- and sex-specific mortality rates and life tables for Canada and all provinces, used to apply the MPoRT mortality adjustment and construct survival weights. The CHMD is the Canadian component of the Human Mortality Database and is maintained by the Département de démographie, Université de Montréal, in collaboration with Statistics Canada. Data are freely accessible at [www.bdlc.umontreal.ca/CHMD](http://www.bdlc.umontreal.ca/CHMD). National and provincial life tables will be extracted for the period 1921 to the most recent available year.
+
+See [Appendix C: Data availability and computational environment] for data access procedures for each data source used in this study.
+
+## 3.3 Exposure ascertainment
+
+We will use the `cchsflow` R package (version 3.0) to harmonize smoking-related variables across all CCHS cycles. This library provides a standardized metadata-driven approach to recoding survey responses into unified variables, ensuring consistency despite changes in survey questions and coding over time.
+
+Compared to the US National Health Interview Survey (NHIS) used in existing CISNET models, the CCHS provides more granular data on non-daily smoking. While the NHIS categorizes current smokers as "every day" or "some days," the CCHS captures more detailed information about occasional smokers. The NHIS has fewer annual respondents (approximately 27,000 for the NHIS versus 65,000 for the CCHS), but with an earlier start date for tobacco questions (1965 for NHIS versus 2001 for the CCHS) [@backinger2008]. The potential effect of these differences are more statistically stable earlier birth cohorts for NHIS, and greater statistical power for regional estimates using the CCHS.
+
+Key smoking parameters to be extracted and harmonized include:
+
+-   **Smoking status:** Classified into six categories: daily, occasional (former-daily), occasional (never-daily), former-daily, former-occasional, and never smoker. The distinction between former-daily and never-daily occasional smokers allows for more precise characterization of the cessation process and tobacco "dose" over the life course. For the APC initiation and cessation models, these will be collapsed into Never, Current, and Former smokers.
+-   **Age at initiation:** The age at which the respondent first smoked a whole cigarette (`age_first_cigarette`) and the age at which they started smoking daily (`age_start_smoking`). In PUMF data, these are derived from categorical variables using midpoint imputation.
+-   **Time since cessation:** The number of years since the respondent last smoked (`time_quit_smoking`), used to calculate the age at cessation.
+-   **Smoking intensity:** The number of cigarettes smoked per day (CPD). Unlike the NHIS, the CCHS allows us to distinguish the intensity profiles of occasional smokers who were previously daily smokers from those who have always smoked occasionally.
+
+The following sociodemographic covariates will also be extracted for use in imputation models, descriptive analyses, and mortality adjustment:
+
+-   **Age:** Continuous age at survey (`DHHGAGE_cont`), derived from grouped categorical responses in PUMF using midpoint imputation; exact continuous age available in Master files.
+-   **Sex:** Binary (`DHH_SEX`), available in all cycles.
+-   **Ethnicity:** In Master files, detailed ethnicity categories are available. In PUMF files, the analysis will use a binary white/non-white classification consistent with Manuel et al. (2020) [@Manuel_HR_2020].
+-   **Immigration status:** Born in Canada vs. immigrant (`SDCFIMM`). Following Manuel et al. (2020), pre-immigration periods will be excluded from smoking history reconstruction for immigrants. In PUMF files, a binary Canadian-born/born outside Canada classification will be used; detailed immigration year is available in Master files only.
+-   **Education:** Three-category classification (less than high school, high school graduate, postsecondary graduate), used in imputation models. Note that education variables differ across cycles and between PUMF and Master files; harmonization will follow the `cchsflow` approach using `EDUDR03`.
+-   **Province:** Used for provincial stratification and regional imputation models (`GEOGPRV`).
+
+Inconsistent or biologically implausible responses (e.g., age at initiation greater than current age) will be identified and handled during the data cleaning stage. Missing data on smoking history parameters will be addressed using multiple imputation by chained equations (MICE), incorporating the sociodemographic and health-related predictors listed above.
+
+> STROBE: Statistical methods; GATHER: Data processing
+
+## 3.4 Analytical approach
+
+The CSHM uses a two-stage analytical framework. In the first stage, we estimate population-level smoking initiation and cessation rates from harmonized CCHS data using Age-Period-Cohort (APC) models. In the second stage, these estimated rates are used to simulate individual-level smoking histories for synthetic Canadian populations.
+
+### 3.4.1 Data preparation and imputation
+
+Analysis-ready datasets will be produced through a standardized pipeline.
+
+1.  **Cleaning:** Distribution checks and truncation of extreme values for continuous variables (e.g., smoking intensity).
+2.  **Imputation:** Missing data on smoking status, initiation age, and cessation age will be addressed using Multiple Imputation by Chained Equations (MICE). The imputation model will include sociodemographic predictors (age, sex, province, education, income) and health status indicators.
+3.  **Descriptive statistics:** Baseline characteristics will be reported pre-imputation (Table 1a) and post-imputation (Table 1b). Tables 1 will include stratification for sex and survey year. Descriptive statistics will be examined for potential discontinuities across CCHS design eras (2001–2005, 2007–2014, 2015–2021, 2022+), which reflect major changes to the survey frame, recruitment, and collection mode [@gagne2017; @backinger2008]. Although smoking variables can be harmonized across cycles, changes to the sampling frame and mode may introduce measurement differences that are not fully correctable through harmonization alone [@chen2020joinpoint].
+
+### 3.4.2 Age-period-cohort modelling
+
+Three separate APC models will be fitted by sex (men and women) to characterize smoking life-course trajectories: one for initiation, one for cessation, and one for smoking intensity (cigarettes per day). The primary analysis produces national estimates stratified by sex, as well as separate estimates for each province and territory.
+
+All models use constrained natural cubic splines to decompose temporal trends. Following the methodology of Holford et al. (2014), the fundamental APC identity is `cohort = period − age`. To address the identifiability problem, we apply constraints to the period effects, holding them constant beyond the observed data range. Period effects for initiation are held constant at the most recent observed values; period effects for cessation are similarly constrained. Cohort effects are assumed constant prior to 1920 and constant from 1985 forward, consistent with Manuel et al. (2020).
+
+Knot placement for the splines follows established standards:
+
+-   **Age knots:** [10, 15, 20, 50, 60]
+-   **Period knots:** [1940, 1950, 1960, 1970, 1980]
+-   **Cohort knots:** [1930, 1940, 1945, 1950, 1955, 1960, 1965, 1970, 1975, 1980]
+
+### 3.4.3 Smoking intensity analysis
+
+We will use a dual approach to characterize smoking intensity (cigarettes per day; CPD):
+
+1.  **Simple descriptives:** We will first calculate mean CPD and intensity distributions by age, sex, and survey year. This descriptive analysis will identify broad temporal shifts and assess whether intensity has remained stagnant across cohorts, as observed in other jurisdictions such as Brazil [@Tam_AJPM_2023].
+2.  **APC intensity model:** We will fit an APC model to estimate the expected CPD by birth cohort. These parameters will serve as the "tobacco dose" input for the simulation stage, allowing for the reconstruction of pack-year histories. For occasional smokers, we will apply a standardized CPD adjustment based on their reported frequency of use.
+
+### 3.4.4 Mortality adjustment
+
+To address survival bias (ever-smokers having lower survival to survey date than never-smokers), we will apply mortality adjustments using the Mortality Population Risk Tool (MPoRT) [@Manuel_HR_2020]. MPoRT weights are adjusted for age, sex, smoking status, years since quitting, and immigration status. For each respondent, the one-year probability of death for each historical year up to the survey date is calculated; the survival bias weight is the proportion of ever-smokers who would have died prior to the survey date. This adjustment ensures that the reconstructed historical prevalence reflects the original population rather than only the survivors, following the approach of Manuel et al. (2020) [@Manuel_HR_2020].
+
+A sensitivity analysis will be conducted using the Peto approach — a constant mortality risk ratio by smoking status — consistent with the original Holford et al. (2014) US implementation [@Holford_AJPM_2014]. This quantifies the influence of the mortality adjustment method on historical prevalence estimates.
+
+> ISPOR-SMDM: Model structure; GATHER: Statistical methods
+
+CCHS sampling weights (`WTS_M` in Master files; equivalent PUMF weights) are applied throughout the analysis. In descriptive analyses, weights are used with the `{survey}` package to produce design-based estimates with bootstrap variance estimation. In the APC models, sampling weights serve as regression weights in the binomial logistic regression, following the pseudo-likelihood approach of Manuel et al. (2020) [@Manuel_HR_2020]: weighted events (numerator) and weighted person-years (denominator) are aggregated within each age-period-cohort cell before model fitting. The MPoRT survival correction adjusts respondent weights to account for differential mortality; these adjusted weights are then used as the APC regression weights, so the two reweighting steps are applied sequentially rather than independently.
+
+### 3.4.5 Projections to 2050
+
+Estimated initiation, cessation, and intensity rates will be extrapolated to 2050. The projection engine will support the following scenarios:
+
+-  **Status quo scenarios:** Period effects are held constant at the most recent observed values. This scenario can be interpreted as... with the assumptions...
+-  **Period effect trend continue:** Period effects are extrapolated based on the historic trend. This scenario can be interpreted as... with the assumptions...
+
+### 3.4.6 Provincial and territorial estimates
+
+Separate APC models will be estimated for each province and territory, stratified by sex. Provinces and territories with limited sample sizes may require pooled CCHS cycles or adjusted model constraints to ensure stable estimates. The simulation engine runs on individual CCHS respondents, enabling regional projections that are consistent with national aggregates.
+
+> GATHER: Statistical methods; ISPOR-SMDM: Subgroup analysis
+
+## 3.5 Model validation and uncertainty analysis
+
+The model will be validated through:
+
+1.  **Internal validation:** Comparing model-estimated prevalence against the input CCHS data. 
+
+> ISPOR-SMDM: Internal validation; STRESS: Validation - internal
+
+2.  **External validation:** No external validation will be performed.
+
+> ISPOR-SMDM: External validation; STRESS: Validation - external
+
+3.  **Uncertainty analysis:** Quantifying parameter uncertainty through bootstrapping and probabilistic sensitivity analysis (PSA) to propagate APC model error through to the final population-level projections.
+
+> ISPOR-SMDM: Uncertainty analysis; STRESS: Sensitivity analysis
+
+4.  **Sensitivity testing and measurement error:**
+    -   **Self-report bias:** Assessing the impact of misclassification using Simulation Extrapolation (SIMEX) informed by CHMS biomarker (cotinine) data. Corrected parameters will be propagated through the simulation engine to quantify the impact on final projections. Consideration will also be given to sensitivity testing for measurement differences attributable to CCHS survey design changes across eras.
+
+> STROBE: Potential bias
+
+    -   **Recall bias and relapse:** Quantifying the impact of CCHS’s single-event history capture (missing relapse cycles) by comparing net transition rates against observed longitudinal dynamics in the National Population Health Survey (NPHS) panel.
+    -   **Back-casting validation:** Validating the APC model by reconstructing smoking prevalence for the 1994--2000 period and benchmarking against observed NPHS data.
+    -   **Model specification:** Testing the sensitivity of results to spline knot placement and alternative constraints for the period effects in the APC models. We will also compare two spline implementations: natural splines (`splines2::nsp()`, primary analysis) versus restricted cubic splines (`splines2::rcs()`), which may better characterize the boundary behaviour of period and cohort effects.
+    -   **Mortality adjustment method:** The primary analysis uses the MPoRT algorithm for mortality adjustment. We will conduct a sensitivity analysis using the Peto approach (a constant mortality risk ratio by smoking status), consistent with the original Holford et al. (2014) US implementation, to quantify the influence of the mortality adjustment method on historical prevalence estimates.
+    -   **Vaping transitions:** Exploring alternative assumptions for younger cohorts regarding the relationship between vaping initiation and subsequent smoking (gateway, displacement, or common liability scenarios).
+
+> STRESS: Sensitivity analysis
+
+## 3.6 Computational methods
+
+The CSHM is implemented in R (version 4.2+) using a reproducible pipeline architecture. See [Appendix C: Data availability and computational environment] for full details of the software environment, package dependencies, and code availability.
+
+> STRESS: Implementation details; ISPOR-SMDM: Computational methods
+
+# 4. Expected outcomes
+
+The primary output of this study is the CSHM: a validated, open-source tool for population health modelling.
+
+Specific outputs include:
+
+1.  **Annual rate tables:** A complete set of estimated rates for smoking initiation, cessation, and intensity by single year of age, birth cohort (1890--2030), sex, and province. These will cover the historical period (1965--2023) and future projections (2024--2050).
+2.  **Total smoking burden estimates:** Annual estimates of the total number of cigarettes smoked in Canada by calendar year, derived by combining smoking prevalence, intensity (cigarettes per day), and population counts. This aggregate measure provides a direct indicator of national tobacco exposure over time and can be used to contextualize tobacco policy impacts and project future cigarette consumption.
+
+3.  **Individual-level smoking histories:** Synthetic birth-cohort-specific smoking histories will be generated directly from the estimated APC rate tables, following the approach of Manuel et al. (2020) [@Manuel_HR_2020] and Holford et al. (2014) [@Holford_AJPM_2014]. For each birth cohort, the probability of being a current, former, or never smoker at each age is derived by combining the initiation and cessation rate tables with the mortality adjustment. These histories provide the inputs needed for microsimulation models of tobacco-attributable disease burden in Canada.
+4.  **Open-source repository:** All R code, metadata worksheets, and documentation will be made publicly available on GitHub to ensure full reproducibility and allow for future updates as new CCHS cycles are released.
+
+> GATHER: Access to data and analytics; STRESS: Implementation details
+
+5.  **Interactive online platform:** A web-based dashboard (built using R Shiny) will allow users to visualize smoking trends by province and cohort, download rate tables, and explore different projection scenarios.
+
+> GATHER: Results publication; ISPOR-SMDM: Reporting
+
+The CSHM will provide inputs for established Canadian health policy models such as Oncosim (cancer) and POHEM (chronic disease), supporting the evaluation of tobacco control policies and estimation of smoking-attributable disease burden (e.g., cancer, cardiovascular disease, and dementia) at national and provincial levels. This follows the approach to model-based policy evaluation used in other jurisdictions [@Meza_J_2021].
+
+> ISPOR-SMDM: Model application; CHEERS: Model-based evaluation
+
+# 5. Timeline and resources
+
+## Governance and collaboration
+
+The CSHM is led by the Ottawa Hospital Research Institute in collaboration with the Canadian Population Attributable Causes (CPAC) consortium, the BC Centre for Disease Control and Prevention (BCCDC), Statistics Canada's Health Analysis and Modelling Division, and academic partners. The core modelling team is responsible for analytical decisions. Partner representatives will review key milestone outputs and the final model prior to dissemination. Roles and responsibilities are documented in the project repository.
+
+> ISPOR-SMDM: Project management; STRESS: Project planning
+
+## Prespecification
+
+All analyses described in this protocol are prespecified. Any deviations from the prespecified plan will be documented in the repository changelog and reported in the methods of any resulting publications.
+
+## Key milestones
+
+| Phase | Activities | Environment |
+|---|---|---|
+| Data preparation | CCHS harmonization, variable QC, descriptive tables | PUMF |
+| Model development | APC model fitting, spline tuning, sensitivity analyses | PUMF |
+| RDC analysis | Master File replication; exact continuous-variable estimates | RDC (Statistics Canada) |
+| Validation | Internal validation; back-casting against NPHS; SIMEX | PUMF + RDC |
+| Dissemination | Open-source release; manuscript submission; Shiny dashboard | Public |
+
+## Resource and access considerations
+
+Model development uses publicly available PUMF data in an open R environment hosted on GitHub. The codebase is designed to run on both PUMF and Master File data without modification, controlled by a configuration profile. Production estimates using CCHS Master Files will be produced within a Statistics Canada RDC. RDC analysis requires institutional affiliation, an approved project proposal, and compliance with Statistics Canada disclosure control protocols. The lead analyst will apply for RDC access upon protocol approval.
+
+> ISPOR-SMDM: Project management; STRESS: Implementation details
+
+# 6. Ethical considerations
+
+This study involves the secondary analysis of de-identified survey data. Analysis of CCHS Master Files will be conducted within the secure environment of Statistics Canada’s Regional Data Centres, following all protocols for data privacy and disclosure control. No individual-level data that could identify respondents will be released. The use of PUMF data for model development follows the Statistics Canada Open Licence agreement.
+
+> GATHER: Ethics; STROBE: Ethics
+
+# 7. Dissemination plan
+
+Results will be disseminated to researchers, policy analysts, and public health decision-makers through:
+
+1.  **Peer-reviewed publications:** Results will be submitted to journals in population health, epidemiology, and tobacco control.
+2.  **Open-source release:** The CSHM R package and associated documentation will be released on GitHub.
+
+> ISPOR-SMDM: Reporting; GATHER: Technical assistance
+
+::::
+
+
+:::: {.section-body page-break="true"}
+
+# Appendices
+
+## Appendix A: Variable definitions and harmonization details
+
+Detailed documentation of the `cchsflow` harmonization rules and variable mappings used in this study will be maintained in the project repository.
+
+> GATHER: Data processing; STRESS: Input parameters
+
+## Appendix B: Mathematical model specification
+
+A full mathematical description of the APC models, spline basis functions, and mortality adjustment algorithms will be provided as supplementary material.
+
+> ISPOR-SMDM: Model specification; STRESS: Mathematical formulation
+
+## Appendix C: Data availability and computational environment {#appendix-c-data-availability}
+
+Three data sources are used in this study, each with different access procedures.
+
+## Canadian Community Health Survey — Public Use Microdata Files (PUMF)
+
+The CCHS PUMF files are publicly accessible and available without special permissions or restricted access. PUMF files can be downloaded from the [Ontario Data Documentation, Extraction Service and Infrastructure (ODESI)](https://odesi.ca) and directly from [Statistics Canada](https://www150.statcan.gc.ca/n1/en/catalogue/82M0013X). The PUMF files contain de-identified data and are released under the Statistics Canada Open Licence. These files are used for model development and the open-source implementation of the CSHM.
+
+## Canadian Community Health Survey — Master Files
+
+The CCHS Master Files, used for the production model estimates, are available at Statistics Canada's Research Data Centres (RDCs). Access is restricted to researchers affiliated with academic, government, or other recognized institutions. Researchers must apply for access through one of the RDCs across Canada; these secure facilities provide access to confidential microdata under the confidentiality provisions of the *Statistics Act*. Master files provide exact continuous values for key variables not available in the PUMF. Further information about access procedures, eligibility, and application requirements is available on the [Statistics Canada website](https://www.statcan.gc.ca/en/microdata/data-centres).
+
+## US National Health Interview Survey (NHIS)
+
+The NHIS is used for international validation of the CSHM and is conducted by the National Center for Health Statistics (NCHS). Public-use NHIS data files are freely available without special permissions and can be downloaded directly from the [NCHS website](https://www.cdc.gov/nchs/nhis/data-questionnaires-documentation.htm). The public-use files contain de-identified data. For researchers requiring access to more detailed data not available in the public-use files, the NCHS Research Data Center offers access to restricted-use files subject to an application process and strict confidentiality protocols. Further information is available at <https://www.cdc.gov/nchs/nhis/index.htm>.
+
+> *Note: The NHIS validation analyses described above are planned. The text below is retained as a placeholder pending integration of NHIS data into the study.*
+
+> GATHER: Data access; STROBE: Ethics
+
+## Computational environment
+
+The CSHM is implemented in the R programming environment (version 4.2+). The project architecture uses a reproducible data science workflow:
+
+-   **Pipeline management:** The `{targets}` R package manages the dependency graph and ensures that only outdated targets are recomputed when inputs change.
+-   **Environment management:** The `{renv}` package records the exact versions of all R packages and ensures a consistent software environment across development, production, and the Statistics Canada RDC environment.
+-   **Harmonization:** The `{cchsflow}` package (version 3.0) handles survey data harmonization across CCHS cycles.
+
+All code will be hosted on GitHub under the MIT licence. The repository will include full documentation, metadata worksheets, and instructions for replication on both PUMF and Master file environments.
+
+> STRESS: Implementation details; GATHER: Access to data and analytics
+
+::::
+
+:::: {.section-body page-break="true"}
+
+> STROBE: References; GATHER: References
+
+# References
+
+::: bibliography
+:::
+
+::::
+
+:::: {.section-body page-break="true"}
+
+# Version history
+
+::: version-history
+:::
+
+::::
+

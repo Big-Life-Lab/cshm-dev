@@ -1,0 +1,81 @@
+---
+title: "APC model reference"
+---
+
+This page provides detailed technical documentation for the Age-Period-Cohort (APC) model implementation in the CSHM package.
+
+## Overview
+
+The APC model is used to separate the effects of age, time period, and birth cohort on smoking initiation and cessation rates. This implementation follows the approach developed by Holford, using natural cubic splines to model these effects, as applied to Canadian smoking patterns in @Manuel_HR_2020.
+
+## Mathematical formulation
+
+The basic APC model can be expressed as:
+
+$$\log(\lambda_{apc}) = \mu + \alpha_a + \pi_p + \gamma_c$$
+
+where:
+- $\lambda_{apc}$ is the rate for age $a$, period $p$, and cohort $c$
+- $\mu$ is the overall mean
+- $\alpha_a$ is the age effect for age $a$
+- $\pi_p$ is the period effect for period $p$
+- $\gamma_c$ is the cohort effect for cohort $c = p - a$
+
+Due to the linear dependency between age, period, and cohort, constraints are needed to identify the model. This implementation uses natural cubic splines with constraints that make the first and last coefficients of each effect equal to zero.
+
+## Spline implementation
+
+The APC model uses natural cubic splines to model the age, period, and cohort effects. The spline functions are defined as:
+
+$$S(x) = \sum_{j=1}^{k} \beta_j B_j(x)$$
+
+where:
+- $B_j(x)$ are the basis functions for the natural cubic spline
+- $\beta_j$ are the coefficients to be estimated
+- $k$ is the number of knots
+
+## Knot placement
+
+The default knot placements for the APC model are:
+
+### Age knots
+```r
+age_knots = [10, 15, 20, 50, 60]
+```
+
+### Period knots
+```r
+period_knots = [1940, 1950, 1960, 1970, 1980]
+```
+
+### Cohort knots
+```r
+cohort_knots = [1930, 1940, 1945, 1950, 1955, 1960, 1965, 1970, 1975, 1980]
+```
+
+## Survival probability adjustments
+
+To account for differential mortality between smokers and non-smokers, the model includes adjustments for survival probabilities:
+
+$$\text{adj\_pred} = \frac{\text{pred} / \text{surv}_1}{\text{pred} / \text{surv}_1 + (1 - \text{pred}) / \text{surv}_0}$$
+
+where:
+- $\text{pred}$ is the predicted probability from the APC model
+- $\text{surv}_1$ is the survival probability for smokers
+- $\text{surv}_0$ is the survival probability for non-smokers
+
+## Implementation details
+
+The APC model is implemented using the following steps:
+
+1. Natural cubic splines are constructed for age, period, and cohort
+2. These splines are used in a generalized linear model with binomial errors
+3. Survival probabilities are used to adjust for differential mortality
+4. Separate models are fit for males and females
+
+Additional technical documentation will be added as the implementation progresses.
+
+## References
+
+::: {#refs}
+:::

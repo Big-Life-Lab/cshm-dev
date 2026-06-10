@@ -1,0 +1,50 @@
+---
+title: "Age-Period-Cohort methodology"
+subtitle: "Understanding the statistical approach behind CSHM"
+---
+
+# Age-Period-Cohort methodology
+
+This document explains the Age-Period-Cohort (APC) methodology used in the CSHM.
+
+*This page is under development. Content coming soon.*
+
+## Overview
+
+The Age-Period-Cohort (APC) model is a statistical approach used to separate the effects of three time-related variables on an outcome of interest.
+
+## The three temporal dimensions
+
+The three key dimensions in an APC model are:
+
+1. **Age effects**: How behavior changes as individuals age
+2. **Period effects**: How behavior changes across calendar time (affecting all age groups)
+3. **Cohort effects**: How behavior differs across birth cohorts (groups born in the same time period)
+
+## The identification problem
+
+A fundamental challenge in APC models is the linear dependency between the three dimensions:
+
+```
+Cohort = Period - Age
+```
+
+This creates an identification problem that requires constraints or additional modeling approaches to solve.
+
+## APC in CSHM
+
+The CSHM implements APC modeling using:
+
+1. Natural cubic splines to model age, period, and cohort effects
+2. Strategic constraints based on empirical research
+3. Separate models for smoking initiation and cessation
+4. Sex-specific modeling to capture gender differences
+
+## Statistical implementation
+
+The statistical approach involves:
+
+1. Using generalized linear models with a logit link function
+2. Incorporating natural cubic splines for flexible effect estimation
+3. Applying constraints to address the identification problem
+4. Accounting for complex survey design and weighting

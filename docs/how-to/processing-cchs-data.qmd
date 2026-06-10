@@ -1,0 +1,201 @@
+---
+title: "Processing CCHS data"
+---
+
+This guide explains how to process Canadian Community Health Survey (CCHS) data for use with the CSHM.
+
+## Overview
+
+The Canadian Community Health Survey (CCHS) is conducted by Statistics Canada and collects information on health status, health care utilization, and health determinants for the Canadian population. For CSHM, we're particularly interested in the smoking-related variables, which need to be harmonized across different survey cycles.
+
+## Obtaining CCHS data
+
+CCHS data can be accessed through:
+
+1. **Statistics Canada Research Data Centres (RDCs)**: For researchers who need access to the detailed microdata
+2. **Public Use Microdata Files (PUMFs)**: Available through academic institutions
+3. **Sample files**: For demonstration purposes, sample datasets are included with this package
+
+For this guide, we'll assume you have access to CCHS data files for the following cycles:
+
+- CCHS 2001 (Cycle 1.1)
+- CCHS 2003 (Cycle 2.1)
+- CCHS 2005 (Cycle 3.1)
+- CCHS 2007-2008
+- CCHS 2009-2010
+- CCHS 2011-2012
+- CCHS 2013-2014
+- And optionally newer cycles
+
+## Step 1: Loading CCHS data
+
+First, load the CCHS data files:
+
+```r
+# Load required packages
+library(cshm)
+library(dplyr)
+library(cchsflow)  # For harmonizing CCHS variables
+
+# Path to your data files (modify as needed)
+cchs_files <- c(
+  "path/to/cchs2001.rds",
+  "path/to/cchs2003.rds",
+  "path/to/cchs2005.rds",
+  "path/to/cchs2007_2008.rds",
+  "path/to/cchs2009_2010.rds",
+  "path/to/cchs2011_2012.rds",
+  "path/to/cchs2013_2014.rds"
+)
+
+# Load and combine CCHS datasets
+cchs_data <- list()
+for (i in seq_along(cchs_files)) {
+  cchs_data[[i]] <- readRDS(cchs_files[i])
+}
+
+# Combine datasets (assuming they have compatible structures)
+# In practice, you may need more complex data preparation
+combined_cchs <- bind_rows(cchs_data)
+```
+
+## Step 2: Harmonizing variables across cycles
+
+CCHS variable names have changed across cycles. We use the `cchsflow` package to harmonize them:
+
+```r
+# List of smoking-related variables needed for CSHM
+smoking_vars <- c(
+  "SMK_01A",        # In lifetime, smoked 100 or more cigarettes
+  "SMK_202",        # Current smoking status
+  "SMKDSTY",        # Type of smoker
+  "SMKG01C_cont",   # Age smoked first cigarette
+  "SMKG203_cont",   # Age started smoking daily (daily smokers)
+  "SMKG207_cont",   # Age started smoking daily (former daily smokers)
+  "SMK_09A_cont",   # When stopped smoking daily (former daily)
+  "SMKG09C",        # Years since stopped smoking daily
+  "SMK_204",        # Number of cigarettes smoked daily (daily smokers)
+  "SMK_208",        # Number of cigarettes smoked daily (former daily smokers)
+  "SMK_05B",        # Number of cigarettes smoked daily (occasional smokers)
+  "SMK_05C"         # Number of days smoked in past month (occasional smokers)
+)
+
+# Demographic variables
+demographic_vars <- c(
+  "DHH_SEX",        # Sex of respondent
+  "DHH_AGE",        # Age of respondent
+  "WTS_M"           # Survey weight
+)
+
+# Combine all variables
+all_vars <- c(smoking_vars, demographic_vars)
+
+# Harmonize variables using cchsflow
+harmonized_data <- rec_with_table(
+  combined_cchs,
+  all_vars
+)
+```
+
+## Step 3: Creating derived variables
+
+Some variables need to be derived for the CSHM:
+
+```r
+# Create survey date
+harmonized_data <- harmonized_data %>%
+  mutate(
+    # Convert survey year and month to a date
+    survey_year = as.numeric(substr(as.character(SAMPLEID), 1, 4)),
+    survey_month = as.numeric(substr(as.character(SAMPLEID), 5, 6)),
+    cchsbdate = as.Date(paste(survey_year, survey_month, "15", sep = "-"))
+  )
+
+# Calculate additional derived variables
+harmonized_data <- harmonized_data %>%
+  mutate(
+    # Age of first cigarette (can be NA for non-smokers)
+    agefirst = SMKG01C_cont,
+    
+    # Survey age (age at time of survey)
+    surveyage = DHH_AGE,
+    
+    # Birth cohort (year)
+    birth_year = year(cchsbdate) - surveyage,
+    
+    # Create weighting variable 
+    weighting = WTS_M,
+    
+    # Respondent ID
+    ont_id = PERSONID
+  )
+```
+
+## Step 4: Data cleaning and validation
+
+Check for data quality issues and prepare the final dataset:
+
+```r
+# Remove cases with missing key variables
+cleaned_data <- harmonized_data %>%
+  filter(!is.na(DHH_SEX)) %>%         # Remove cases missing sex
+  filter(!is.na(surveyage)) %>%       # Remove cases missing age
+  filter(surveyage >= 12) %>%         # Include only respondents aged 12+
+  filter(!is.na(weighting))           # Remove cases missing weights
+
+# Recode sex to match CSHM requirements (M/F)
+cleaned_data <- cleaned_data %>%
+  mutate(sex = ifelse(DHH_SEX == 1, "M", "F"))
+
+# Save the processed data
+saveRDS(cleaned_data, "harmonized_cchs_data.rds")
+```
+
+## Step 5: Verify variable distributions
+
+It's important to check the distributions of key variables to ensure the harmonization worked as expected:
+
+```r
+# Check smoking status distribution
+smoking_distribution <- cleaned_data %>%
+  count(SMKDSTY) %>%
+  mutate(
+    label = case_when(
+      SMKDSTY == 1 ~ "Daily smoker",
+      SMKDSTY == 2 ~ "Occasional smoker",
+      SMKDSTY == 3 ~ "Former daily smoker",
+      SMKDSTY == 4 ~ "Former occasional smoker", 
+      SMKDSTY == 5 ~ "Never smoker",
+      TRUE ~ "Unknown"
+    ),
+    percentage = 100 * n / sum(n)
+  )
+
+print(smoking_distribution)
+
+# Check age distribution
+age_distribution <- cleaned_data %>%
+  mutate(age_group = cut(surveyage, 
+                         breaks = c(12, 20, 30, 40, 50, 60, 70, 80, 999),
+                         labels = c("12-19", "20-29", "30-39", "40-49", 
+                                    "50-59", "60-69", "70-79", "80+"))) %>%
+  count(age_group) %>%
+  mutate(percentage = 100 * n / sum(n))
+
+print(age_distribution)
+```
+
+## Next steps
+
+After processing the CCHS data, you can proceed to:
+
+1. [Analyze smoking initiation patterns](../tutorials/basic-usage.qmd)
+2. [Run the Age-Period-Cohort model](running-apc-model.qmd)
+
+## Common issues and solutions
+
+**Missing data in key variables**: If you encounter high levels of missing data in key smoking variables, check whether the variables were included in all survey cycles. Some variables may be unavailable in certain cycles.
+
+**Inconsistent variable coding**: Despite harmonization, some variables may have inconsistent coding across cycles. Always check the value distributions before proceeding with analysis.
+
+**Survey design effects**: CCHS uses a complex survey design. For proper population estimates, use the survey weights provided and consider the design effect in variance estimation.

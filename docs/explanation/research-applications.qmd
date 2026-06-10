@@ -1,0 +1,42 @@
+---
+title: "Research applications"
+subtitle: "Using CSHM in population health research"
+---
+
+# Research applications
+
+This document discusses ways the Canadian Smoking Histories Model can be applied in research.
+
+*This page is under development. Content coming soon.*
+
+## Overview
+
+The CSHM has applications in various fields of research, policy analysis, and public health planning.
+
+## Population health research
+
+Applications in population health research include:
+
+1. **Smoking-attributable disease burden**: Estimating the burden of disease attributable to smoking
+2. **Health inequality assessment**: Analyzing disparities in smoking behavior across population groups
+3. **Temporal trend analysis**: Understanding how smoking patterns have changed over time
+
+## Health policy research
+
+Applications in health policy include:
+
+1. **Policy evaluation**: Assessing the impact of past tobacco control policies
+2. **Policy simulation**: Modeling the potential effects of proposed policies
+3. **Economic analysis**: Estimating costs associated with smoking and benefits of interventions
+
+## Future research directions
+
+Promising areas for future research using the CSHM include:
+
+1. Integration with e-cigarette and vaping behavior models
+2. Incorporation of social network effects on smoking behavior
+3. Analysis of interactions between smoking and other health behaviors
+
+## Case studies
+
+*This section will include examples of published research using the CSHM or similar approaches.*

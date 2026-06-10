@@ -6,11 +6,60 @@
 # Built
 _targets
 dist
+_site/
+_freeze/
+
+# renv library files (large)
+renv/library/
 
 # Mac
 .DS_Store
 
-data/prod
-.prettierrc
+# Data (raw source files — never commit; pipeline outputs kept locally only)
+data/dev/*.RData
+data/dev/*.rdata
+data/*.rds
 
+# Secure config (RDC paths — never commit)
+config/statscan.yml
+
+# Legacy SAS code (ICES copyright — not for distribution)
+resources/legacy-code/*.sas
+
+# Editor configs
+.prettierrc
 .vscode/
+
+# Manuscript rendered output
+manuscript/output/
+manuscript/_docstyle/
+
+# Generated files
+*.html
+*.pdf
+*.log
+*.aux
+
+/.quarto/
+docs/.quarto/
+
+/.luarc.json
+
+# Internal development notes (working documents, not for collaborators)
+docs/development/
+
+# Working copies
+worksheets/cshm-variables-working-copy.csv
+
+# Runtime
+logs/
+
+# Machine-local Claude Code settings
+.claude/settings.local.json
+
+resources/
+
+# Quarto project caches
+manuscript/.quarto/
+
+**/*.quarto_ipynb

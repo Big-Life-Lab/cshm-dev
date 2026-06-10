@@ -1,0 +1,37 @@
+# statscan.yml.example
+#
+# Template for Statistics Canada RDC environment.
+# Copy to config/statscan.yml and fill in actual paths.
+# config/statscan.yml is gitignored — never commit real RDC paths.
+#
+# Usage: Sys.setenv(R_CONFIG_ACTIVE = "statscan")
+
+statscan:
+  # Master file paths (exact continuous variables)
+  # SMK_01C, SMK_040 instead of PUMF midpoint estimates
+  raw_data_dir: "/path/to/rdc/cchs/master/rdata"
+  data_type: ".RData"
+  sample_proportion: 1.0
+
+  # Master cycles available at RDC (2001–2023)
+  cchs_cycles:
+    - cchs2001_master
+    - cchs2003_master
+    - cchs2005_master
+    - cchs2007_2008_master
+    - cchs2009_2010_master
+    - cchs2011_2012_master
+    - cchs2013_2014_master
+    - cchs2015_2016_master
+    - cchs2017_2018_master
+    - cchs2019_2020_master
+    - cchs2022_master
+    - cchs2023_master
+
+  # Output paths within RDC vetting folder
+  derived_data:
+    study_data: "/path/to/rdc/output/study_data.rds"
+    analysis_data: "/path/to/rdc/output/analysis_data.rds"
+
+  log_level: "WARN"
+  log_file: "/path/to/rdc/logs/cshm-statscan.log"

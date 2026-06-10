@@ -1,0 +1,64 @@
+---
+title: "Canadian Smoking Histories Model"
+---
+
+The Canadian Smoking Histories Model (CSHM) reconstructs smoking initiation, cessation, and intensity by birth cohort, sex, and province from 1965 to 2023, with projections to 2050. It uses Age-Period-Cohort (APC) models fit to 11 cycles of the Canadian Community Health Survey (CCHS; ~1.4 million respondents) and extends the Ontario analysis of Manuel et al. (2020) to all of Canada.
+
+This repository serves three purposes:
+
+:::{.grid}
+
+:::{.g-col-4}
+### 1. Study protocol
+
+A fully prespecified protocol, written before final analysis, documenting all analytical decisions in advance.
+
+- [Full protocol](docs/protocol/full-protocol.qmd)
+- [One-page summary](docs/protocol/study-summary.qmd)
+:::
+
+:::{.g-col-4}
+### 2. Transparent workflow
+
+A step-by-step walkthrough of every pipeline stage — code, outputs, and the reasoning behind each methodological decision. Designed so an undergraduate student can follow the full analysis.
+
+- [Pipeline overview](docs/workflow/index.qmd)
+- [Stage 2: Data loading](docs/workflow/2-data-loading.qmd)
+- [Stage 7: APC data prep](docs/workflow/7-apc-data-preparation.qmd)
+- [Stage 8: Model fitting](docs/workflow/8-apc-model.qmd)
+:::
+
+:::{.g-col-4}
+### 3. Reproducible manuscript
+
+A Quarto manuscript where every reported number is inline R code reading from the pipeline — no hardcoded values. Run the pipeline, render the manuscript, submit.
+
+- [Manuscript](manuscript/manuscript.qmd) *(render locally)*
+:::
+
+:::
+
+## Quick start
+
+```r
+# Restore R environment
+renv::restore()
+
+# Run the pipeline (dev profile: 10% sample, fast iteration)
+Sys.setenv(R_CONFIG_ACTIVE = "dev")
+targets::tar_make()
+
+# Preview the documentation site
+quarto preview
+
+# Render the manuscript to Word
+quarto render manuscript/manuscript.qmd
+```
+
+## Key reference
+
+> Manuel DG, Wilton AS, Bennett C, Dass R, Laporte A, Holford TR. Smoking patterns based on birth-cohort-specific histories from 1965 to 2013, with projections to 2041. *Health Reports*. 2020;31(11):16–31. [doi:10.25318/82-003-x202001100002-eng](https://doi.org/10.25318/82-003-x202001100002-eng)
+
+## Licence
+
+Code: [MIT License](LICENSE). CCHS data: [Statistics Canada Open Licence](https://www.statcan.gc.ca/eng/reference/licence).

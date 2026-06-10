@@ -1,0 +1,46 @@
+---
+title: "Function reference"
+---
+
+This page provides detailed technical documentation for the functions in the CSHM package.
+
+## Smoking initiation functions
+
+### process_smoking_initiation
+
+```r
+process_smoking_initiation(dataset, sex = "M")
+```
+
+Processes data for smoking initiation based on the Canadian Community Health Survey (CCHS) data that has been harmonized with the cchsflow package. It identifies individuals who have initiated smoking and creates a dataset with key variables needed for age-period-cohort (APC) modeling.
+
+#### Parameters
+
+- `dataset`: A data frame containing harmonized CCHS smoking history data
+- `sex`: Character string indicating sex ("M" or "F") for filtering the data
+
+#### Returns
+
+A data frame with the variables needed for smoking initiation modeling:
+- `ont_id`: Ontario resident identifier
+- `weighting`: Survey weighting factor
+- `age`: Age of smoking initiation
+- `cohort`: Birth cohort (year)
+- `period`: Period (year) when smoking initiated
+- `init`: Binary indicator of smoking initiation (1=initiated, 0=not initiated)
+
+#### Details
+
+This function replicates the SAS code used in the Canadian History Smoking Generator Model. It filters data by sex, processes the harmonized smoking status variables, and creates a dataset that serves as the numerator for age-period-cohort rates in smoking initiation modeling.
+
+#### Example
+
+```r
+# Assuming 'cchs_data' is your harmonized CCHS dataset from cchsflow
+inits_male <- process_smoking_initiation(cchs_data, sex = "M")
+inits_female <- process_smoking_initiation(cchs_data, sex = "F")
+```
+
+## Utility functions
+
+Additional function documentation will be added as the implementation progresses.

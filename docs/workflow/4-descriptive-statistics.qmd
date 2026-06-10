@@ -1,0 +1,72 @@
+---
+title: "Stage 4 — Descriptive statistics (pre-imputation)"
+subtitle: "Table 1a: study population characteristics before imputation"
+---
+
+## Purpose
+
+Before imputation, we describe the study population to document who is in the analysis, how complete the key variables are, and whether the sample composition is consistent across survey cycles. This produces the data underlying **Table 1a** in the manuscript.
+
+Generating descriptive statistics *before* imputation is important for transparency: it shows the actual observed data, including missingness patterns, rather than the imputed values. The post-imputation table (Stage 6) can then be compared to show what imputation changed.
+
+## Inputs
+
+| Target | Description |
+|--------|-------------|
+| `cleaned_data` | Age-restricted, truncated data frame (Stage 3) |
+| `variables_sheet` | Variable metadata — `table1` role selects rows for Table 1 |
+| `variable_details_sheet` | Recoding rules — provides value labels for categorical variables |
+
+## Code
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_knit$set(root.dir = normalizePath("../.."))
+cfg <- config::get(file = "config.yml")
+```
+
+```{r load-table-data}
+table_1a_data          <- targets::tar_read("table_1a_data")
+variables_sheet        <- targets::tar_read("variables_sheet")
+variable_details_sheet <- targets::tar_read("variable_details_sheet")
+```
+
+```{r render-table-1a}
+# Reproduce Table 1a
+source("R/variables-sheet-utils.R")
+source("R/variable-details-sheet-utils.R")
+source("R/get-descriptive-data.R")
+source("R/create-descriptive-tables.R")
+
+predictor_vars <- select_vars_by_role("predictor", variables_sheet)
+
+create_descriptive_table(
+  descriptive_data       = table_1a_data,
+  variables_sheet        = variables_sheet,
+  variable_details_sheet = variable_details_sheet,
+  variables              = predictor_vars,
+  column_stratifier      = survey_var(cfg, "sex"),
+  sections_order         = c("Sociodemographics", "Health behaviour")
+)
+```
+
+## Outputs
+
+| Target | Description |
+|--------|-------------|
+| `table_1a_data` | Named list of descriptive statistics: means, SDs, proportions, N by variable and sex |
+
+## Key decisions
+
+**Sex stratification.** Table 1 is stratified by `survey_var(cfg, "sex")`. This is consistent with the APC models, which are fit separately by sex. The config abstraction means the table code does not contain any hardcoded CCHS variable names.
+
+**Role filtering.** Only variables with `role` containing `"predictor"` appear in Table 1. Variables with `role = "design"` (e.g., survey weights, cycle) or `role = "intermediate"` (raw cchsflow inputs) are excluded. The `select_vars_by_role()` function handles comma-separated multi-role entries correctly.
+
+**Section ordering.** `sections_order` controls the vertical ordering of variable groups in the table. The `section` column in `variables_sheet` assigns each variable to a group (e.g., "Sociodemographics", "Health behaviour"). Groups not listed in `sections_order` appear after the listed ones.
+
+## Related resources
+
+- [Stage 6 — Post-imputation descriptives](6-descriptive-post-imputation.qmd)
+- `docs/results/table-1.qmd` — rendered Table 1 output (reads from pipeline cache)
+- `R/descriptive-data.R` — `get_cshm_desc_data()`
+- `R/create-descriptive-tables.R` — `create_descriptive_table()`

@@ -1,0 +1,67 @@
+---
+title: "Pipeline workflow"
+subtitle: "A step-by-step walkthrough of the CSHM analysis pipeline"
+---
+
+The CSHM uses a [`{targets}`](https://docs.ropensci.org/targets/) pipeline to manage the analysis workflow. Each step is defined as a *target* — a named R object with a recipe for computing it. Targets are only recomputed when their inputs change, making the pipeline fast and fully reproducible.
+
+## Pipeline overview
+
+```{r dag, eval=FALSE}
+# Visualise the pipeline dependency graph
+targets::tar_visnetwork()
+```
+
+## Pipeline stages
+
+| Step | Target | What it does |
+|------|--------|-------------|
+| [1. Variable setup](1-variable-setup.qmd) | `variables_sheet`, `variable_details_sheet` | Load the variable dictionary and recoding rules |
+| [2. Data loading](2-data-loading.qmd) | `study_data` | Load and harmonize all 11 CCHS cycles |
+| [3. Data cleaning](3-data-cleaning.qmd) | `cleaned_data` | Age restriction, distribution checks, truncation |
+| [4. Descriptive statistics](4-descriptive-statistics.qmd) | `table_1a_data` | Pre-imputation Table 1 statistics |
+| [5. Imputation](5-imputation.qmd) | `analysis_data` | Multiple imputation (MICE) |
+| [6. Post-imputation descriptives](6-descriptive-post-imputation.qmd) | `table_1b_data` | Post-imputation Table 1 statistics |
+| [7. APC data preparation](7-apc-data-preparation.qmd) | `apc_data` | Build numerator/denominator cells for APC models |
+| [8. APC model fitting](8-apc-model.qmd) | `apc_model_*` | Fit initiation and cessation APC models |
+
+## Running the pipeline
+
+```r
+# Full pipeline
+targets::tar_make()
+
+# Run through a specific stage
+targets::tar_make(apc_data)
+
+# Inspect a target's output
+targets::tar_read(apc_data)
+
+# See what is outdated
+targets::tar_outdated()
+```
+
+## Configuration
+
+All environment-specific settings live in `config.yml`. Set the profile before running:
+
+```r
+Sys.setenv(R_CONFIG_ACTIVE = "dev")   # 10% sample, fast iteration
+Sys.setenv(R_CONFIG_ACTIVE = "prod")  # Full PUMF sample
+```
+
+See `config.yml` for the full list of profiles and parameters.
+
+## Reproducibility
+
+- [`{renv}`](https://rstudio.github.io/renv/) locks all R package versions (`renv.lock`)
+- [`{targets}`](https://docs.ropensci.org/targets/) caches outputs — rerunning is safe and fast
+- `execute: freeze: auto` in `_quarto.yml` freezes rendered outputs when pipeline data is unavailable
+
+To fully reproduce the analysis from scratch:
+
+```r
+renv::restore()            # Restore R packages
+targets::tar_make()        # Run the pipeline
+quarto render              # Render the documentation site
+```

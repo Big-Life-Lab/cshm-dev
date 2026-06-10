@@ -1,0 +1,264 @@
+id: https://github.com/big-life-lab/cshm/schemas/cshm-variables
+name: cshm-variables
+title: CSHM variable dictionary
+description: >-
+  Schema for the Canadian Smoking Histories Model (CSHM) variable dictionary.
+  Defines study variables drawn from the Canadian Community Health Survey (CCHS)
+  and harmonized via cchsflow, along with CSHM-specific metadata.
+
+  This schema extends the cchsflow variable convention
+  (variables.csv / variable_details.csv) with three additional fields:
+  `role`, `source`, and `purpose`. Someone familiar with cchsflow variables.csv
+  will recognize all base fields; these three are the only additions.
+
+version: 0.1.0
+license: MIT
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  cshm: https://github.com/big-life-lab/cshm/schemas/cshm-variables/
+
+default_prefix: cshm
+default_range: string
+
+imports:
+  - linkml:types
+
+# ---------------------------------------------------------------------------
+# Enumerations
+# ---------------------------------------------------------------------------
+
+enums:
+
+  VariableTypeEnum:
+    description: >-
+      Statistical type of the variable. Matches cchsflow variableType convention.
+    permissible_values:
+      Categorical:
+        description: Categorical (nominal or ordinal)
+      Continuous:
+        description: Continuous numeric
+      Binary:
+        description: Binary (0/1)
+
+  VariableRoleEnum:
+    description: >-
+      How the variable is used in the CSHM pipeline. A variable may carry
+      multiple comma-separated roles (e.g. "predictor, table1, apc-numerator").
+      This is a CSHM-specific field not present in cchsflow. The authoritative
+      role definitions, groups, and purposes are in this schema's VariableRoleEnum.
+    permissible_values:
+      design:
+        description: Survey infrastructure variable (cycle identifier or sampling weight).
+        meaning: cshm:RoleDesign
+      intermediate:
+        description: >-
+          Raw cchsflow variable needed to derive a unified variable. Requested
+          from rec_with_table() but not referenced directly by pipeline code.
+        meaning: cshm:RoleIntermediate
+      predictor:
+        description: Covariate used directly in the APC model or descriptive analysis.
+        meaning: cshm:RolePredictor
+      model-stratifier:
+        description: Variable used to stratify the APC model into separate fits (e.g. sex).
+        meaning: cshm:RoleModelStratifier
+      table1:
+        description: Variable included as a row in Table 1 descriptive statistics.
+        meaning: cshm:RoleTable1
+      table1-stratifier:
+        description: Variable used to stratify Table 1 columns (e.g. sex, cycle).
+        meaning: cshm:RoleTable1Stratifier
+      apc-numerator:
+        description: >-
+          Variable used to define the APC event indicator (initiation or
+          cessation). Used in Stage 7 numerator construction.
+        meaning: cshm:RoleApcNumerator
+      apc-denominator:
+        description: >-
+          Variable used to construct the at-risk person-year denominator.
+          Used in Stage 7 denominator construction.
+        meaning: cshm:RoleApcDenominator
+      imputation-predictor:
+        description: Variable included in the MICE imputation model.
+        meaning: cshm:RoleImputationPredictor
+      sensitivity-analysis:
+        description: Variable used in sensitivity analyses only; not in the primary model.
+        meaning: cshm:RoleSensitivityAnalysis
+
+  DataSourceEnum:
+    description: >-
+      Whether the variable is available in PUMF files, Master files, or both.
+      PUMF files use midpoint-estimated pseudo-continuous values for sensitive
+      variables; Master files provide exact values from the RDC. This is a
+      CSHM-specific field not present in cchsflow.
+    permissible_values:
+      pumf:
+        description: Available in Public Use Microdata Files only
+      master:
+        description: Available in Statistics Canada Master files (RDC) only
+      both:
+        description: Available in both PUMF and Master files
+
+  StatusEnum:
+    description: Review and publication status of the variable definition.
+    permissible_values:
+      active:
+        description: In use; definition confirmed
+      draft:
+        description: Provisional; under review
+      deprecated:
+        description: No longer used; retained for reference
+
+# ---------------------------------------------------------------------------
+# Slots (fields shared across classes)
+# ---------------------------------------------------------------------------
+
+slots:
+
+  variable:
+    description: >-
+      Unique variable name used in the harmonized dataset. For cchsflow-derived
+      variables this matches the cchsflow variable name exactly.
+    identifier: true
+    required: true
+
+  label:
+    description: Short label (≤ 40 characters) suitable for table headings.
+
+  labelLong:
+    description: >-
+      Full descriptive label. Used in documentation and generated output.
+
+  variableType:
+    description: Statistical type of the variable.
+    range: VariableTypeEnum
+
+  databaseStart:
+    description: >-
+      Source database(s) where the raw variable is found. Uses cchsflow
+      notation: `cchs2001_p` for PUMF, `cchs2001_m` for Master.
+      Multiple databases separated by commas.
+
+  variableStart:
+    description: >-
+      Raw source variable name(s) in the original CCHS datasets. Uses cchsflow
+      notation: `cchs2001_p::SMKA_01A, cchs2007_2008_p::SMK_01A, [SMK_01A]`
+      where `[VAR]` is the fallback name and `_p`/`_m` denote PUMF/Master.
+
+  subject:
+    description: >-
+      Thematic subject area (e.g., "smoking", "demographics", "geography").
+
+  section:
+    description: CCHS questionnaire section the source variable appears in.
+
+  units:
+    description: Unit of measurement for continuous variables (e.g., "years").
+
+  notes:
+    description: >-
+      Implementation notes for developers. Not displayed in end-user
+      documentation.
+
+  description:
+    description: >-
+      Plain-language description of the variable for health researchers.
+      This is the primary documentation field — write for an epidemiologist,
+      not a programmer.
+
+  version:
+    description: Version of the variable definition (semver string, e.g., "1.0.0").
+
+  lastUpdated:
+    description: Date the variable definition was last revised (YYYY-MM-DD).
+
+  status:
+    description: Review and publication status.
+    range: StatusEnum
+
+  reviewNotes:
+    description: Notes from the most recent review cycle.
+
+  versionNotes:
+    description: Summary of changes in this version.
+
+  # CSHM-specific slots
+
+  role:
+    description: >-
+      Comma-separated list of roles this variable plays in the CSHM pipeline.
+      Each role token must match a value in VariableRoleEnum and is defined
+      in this schema's VariableRoleEnum. Multiple roles reflect that a single variable
+      can serve different purposes at different pipeline stages — for example,
+      DHH_SEX is both a model-stratifier and a table1-stratifier.
+    range: VariableRoleEnum
+    multivalued: true
+    required: true
+
+  source:
+    description: >-
+      Whether the variable is available in PUMF files, Master files, or both.
+      Variables with `source: pumf` use midpoint-estimated values; variables
+      with `source: master` require RDC access. Variables with `source: both`
+      are available in both environments (possibly with different precision).
+    range: DataSourceEnum
+    required: true
+
+  purpose:
+    description: >-
+      Plain-language explanation of why this variable is included in the study
+      and how it is used analytically. Complements `description` (which says
+      what the variable measures) by explaining its analytical role. Written
+      for an epidemiologist collaborator who wants to understand modelling
+      decisions without reading the code.
+
+# ---------------------------------------------------------------------------
+# Classes
+# ---------------------------------------------------------------------------
+
+classes:
+
+  CshmVariable:
+    description: >-
+      A study variable in the CSHM analysis. Extends the cchsflow variable
+      convention with `role`, `source`, and `purpose` fields. All other fields
+      match cchsflow variables.csv exactly, so a variable appearing in both
+      cchsflow and CSHM will have the same base fields.
+    slots:
+      - variable
+      - label
+      - labelLong
+      - variableType
+      - databaseStart
+      - variableStart
+      - subject
+      - section
+      - units
+      - notes
+      - description
+      - purpose      # CSHM addition
+      - version
+      - lastUpdated
+      - status
+      - reviewNotes
+      - versionNotes
+      - role         # CSHM addition
+      - source       # CSHM addition
+    slot_usage:
+      variable:
+        required: true
+      role:
+        required: true
+      source:
+        required: false  # NA for intermediate variables (cchsflow-internal inputs)
+
+  CshmVariableCollection:
+    description: >-
+      The full set of CSHM study variables. Corresponds to
+      worksheets/cshm-variables.csv in the repository.
+    tree_root: true
+    attributes:
+      variables:
+        range: CshmVariable
+        multivalued: true
+        inlined_as_list: true

@@ -1,0 +1,520 @@
+---
+title: "Data dictionary"
+---
+
+This page documents all variables used in the Canadian Smoking Histories Model (CSHM)
+pipeline, the synthetic cohort population, and the model output rate tables. It is generated
+from the machine-readable schemas in the [`schemas/`](https://github.com/big-life-lab/cshm/tree/main/schemas)
+directory.
+
+Three schemas cover distinct layers of the analysis:
+
+| Schema | What it covers | Pipeline stage |
+|--------|---------------|---------------|
+| [CCHS harmonization variables](#cchs-harmonization-variables) | Variables drawn from the CCHS and harmonized via cchsflow | Stages 1–7 |
+| [Synthetic cohort](#synthetic-cohort) | Synthetic Canadian population used in simulation | Stage 9 |
+| [Rate tables](#rate-tables) | APC model output; input to shg-rcpp | Stages 8–9 |
+
+---
+
+## CCHS harmonization variables
+
+Variables in `worksheets/cshm-variables.csv`. All CCHS variables are harmonized across
+survey cycles using the [cchsflow](https://github.com/Big-Life-Lab/cchsflow) R package.
+
+Each variable carries two CSHM-specific fields not present in cchsflow:
+
+- **Role** — how the variable is used in the pipeline (see [role definitions](#variable-roles))
+- **Source** — whether the variable is available in PUMF files, Master files, or both
+
+### Smoking status
+
+The primary smoking status classification uses three variables in combination.
+
+#### `SMKDSTY` — smoking status (6-category)
+
+**Label:** Type of smoker derived — 6-category (D)\
+**Type:** Categorical\
+**Role:** Predictor\
+**Source:** Both (PUMF and Master)\
+**Cycles:** 2003–2022 (all except 2001)
+
+Statistics Canada derived variable. The six categories are:
+
+| Code | Label |
+|------|-------|
+| 1 | Daily smoker |
+| 2 | Occasional smoker |
+| 3 | Former daily smoker |
+| 4 | Former occasional smoker |
+| 5 | Experimental smoker (tried but <100 cigarettes) |
+| 6 | Never smoker (abstainer) |
+
+Used as the primary smoking classification in CSHM. The initiation denominator uses
+codes 1–5 (ever exposed); the cessation denominator uses codes 1–4 (ever daily or
+occasional smoker). Never-smokers (code 6) are excluded from both numerators.
+
+---
+
+#### `SMK_01A` — smoked 100+ cigarettes lifetime
+
+**Label:** Ever smoked 100 or more cigarettes in lifetime\
+**Type:** Categorical\
+**Role:** Predictor\
+**Source:** Both\
+**Cycles:** 2001–2022
+
+| Code | Label |
+|------|-------|
+| 1 | Yes |
+| 2 | No |
+
+Gate question for ever-smoker definition. Combined with `SMK_01B` and `SMK_202` to
+derive the three-category never/current/former smoking status used in cchsflow.
+
+---
+
+#### `SMK_01B` — ever smoked a whole cigarette
+
+**Label:** Ever smoked a whole cigarette\
+**Type:** Categorical\
+**Role:** Predictor\
+**Source:** PUMF\
+**Cycles:** 2001–2022
+
+| Code | Label |
+|------|-------|
+| 1 | Yes |
+| 2 | No |
+
+Second gate for never-smoker definition. A respondent is classified as a never smoker
+if they have smoked fewer than 100 cigarettes lifetime AND have never smoked a whole
+cigarette.
+
+---
+
+#### `SMK_202` — current smoking frequency
+
+**Label:** Type of smoker presently (daily/occasional/not at all)\
+**Type:** Categorical\
+**Role:** Predictor\
+**Source:** Both\
+**Cycles:** 2001–2022 (cchsflow harmonized from `SMK_005` in 2015–16)
+
+| Code | Label |
+|------|-------|
+| 1 | Daily |
+| 2 | Occasional |
+| 3 | Not at all |
+
+---
+
+### Smoking initiation
+
+#### `age_first_cigarette` — age smoked first whole cigarette (unified)
+
+**Label:** Age smoked first whole cigarette — unified (cchsflow v3)\
+**Type:** Continuous\
+**Role:** Predictor\
+**Source:** Both\
+**Cycles:** 2001–2022\
+**Units:** Years\
+**Requires:** cchsflow v3 (PR #163)
+
+Primary input for constructing the initiation numerator. The initiation age defines
+the age-period-cohort cell in which a respondent transitions from never smoker to
+current smoker.
+
+- **Master files:** exact age (`SMK_01C`)
+- **PUMF files:** midpoint-estimated from grouped response (`SMKG01C_cont`)
+
+Derived from `SMKG01C_cont` (intermediate; see [derived inputs](#derived-inputs)).
+
+---
+
+#### `age_start_smoking` — age started smoking daily (unified)
+
+**Label:** Age started smoking daily — unified (cchsflow v3)\
+**Type:** Continuous\
+**Role:** Predictor\
+**Source:** Both\
+**Cycles:** 2001–2022\
+**Units:** Years\
+**Requires:** cchsflow v3 (PR #163)
+
+Age at which a daily smoker (or former daily smoker) began smoking daily. Used
+alongside `age_first_cigarette` when distinguishing initiation age (first cigarette)
+from daily onset.
+
+- **Master files:** exact age (`SMK_040`)
+- **PUMF files:** midpoint-estimated (`SMKG040_cont`, ±3 years)
+
+---
+
+### Smoking cessation
+
+#### `time_quit_smoking` — years since quit (unified)
+
+**Label:** Years since quit smoking — unified (cchsflow v3)\
+**Type:** Continuous\
+**Role:** Predictor\
+**Source:** Both\
+**Cycles:** 2001–2022\
+**Units:** Years\
+**Requires:** cchsflow v3 (PR #163)
+
+Primary input for the cessation numerator. Used to compute cessation age:
+`age_cessation = age − time_quit_smoking`.
+
+- **Master files:** exact years (`SMK_09C`)
+- **PUMF files:** midpoint-estimated from grouped response (`SMK_09A_cont`)
+
+Covers former daily smokers only. Former occasional smokers use `SMK_06A_cont`.
+
+---
+
+#### `SMK_09A_cont` — years quit daily (PUMF)
+
+**Label:** Years since stopped smoking daily — former daily (PUMF continuous)\
+**Type:** Continuous\
+**Role:** Predictor\
+**Source:** PUMF\
+**Cycles:** 2001–2013–14\
+**Units:** Years
+
+PUMF fallback for cessation timing before cchsflow v3. Superseded by
+`time_quit_smoking` once PR #163 merges. Retained for pre-v3 compatibility.
+
+---
+
+#### `SMKDGSTP_cont` — years since quit (all former smokers)
+
+**Label:** Years since quit smoking completely — all former smokers (continuous)\
+**Type:** Continuous\
+**Role:** Predictor\
+**Source:** Both\
+**Cycles:** 2009–10 to 2022\
+**Units:** Years
+
+Statistics Canada derived continuous variable covering both former daily and former
+occasional smokers. Preferred over `SMK_09A_cont` where available (2009+).
+
+---
+
+### Smoking intensity
+
+#### `SMK_204` — cigarettes per day (current daily smokers)
+
+**Label:** Number of cigarettes smoked daily — current daily smokers\
+**Type:** Continuous\
+**Role:** Predictor\
+**Source:** Both\
+**Cycles:** 2001–2022\
+**Units:** Cigarettes per day
+
+---
+
+#### `SMK_208` — cigarettes per day (former daily smokers)
+
+**Label:** Number of cigarettes smoked daily — former daily smokers\
+**Type:** Continuous\
+**Role:** Predictor\
+**Source:** Both\
+**Cycles:** 2001–2022\
+**Units:** Cigarettes per day
+
+Peak cigarettes per day while smoking. Used as a smoking intensity input alongside
+cessation timing.
+
+---
+
+### Demographics
+
+#### `DHH_SEX` — sex
+
+**Label:** Sex\
+**Type:** Categorical\
+**Role:** Model stratifier\
+**Source:** PUMF (extended to 2019–20 and 2022 in `cshm-variable-details.csv`)\
+**Cycles:** 2001–2022
+
+| Code | Label |
+|------|-------|
+| 1 | Male |
+| 2 | Female |
+
+APC models are fitted separately for men and women because period effect constraint
+years differ by sex (initiation women: from 1999; initiation men: from 2003).
+
+---
+
+#### `DHHGAGE_cont` — age (continuous)
+
+**Label:** Age — continuous\
+**Type:** Continuous\
+**Role:** Predictor\
+**Source:** PUMF\
+**Cycles:** 2001–2022\
+**Units:** Years
+
+Preferred continuous age variable for the APC model. In PUMF files, derived as a
+midpoint estimate from grouped age categories (e.g., 5-year bands in 2019–20 and
+2022, 16-category scale in earlier cycles). Master files provide exact age.
+
+---
+
+#### `DHHGAGE_A` — age (grouped)
+
+**Label:** Age (grouped)\
+**Type:** Categorical\
+**Role:** Predictor\
+**Source:** PUMF\
+**Cycles:** 2001–2022\
+**Units:** Years
+
+Grouped age category. Used in data cleaning for age-based exclusion filters
+(e.g., excluding respondents aged 12–17, category 1).
+
+---
+
+#### `GEOGPRV` — province of residence
+
+**Label:** Province of residence\
+**Type:** Categorical\
+**Role:** Predictor\
+**Source:** PUMF\
+**Cycles:** 2001–2022
+
+Statistics Canada province/territory codes. Used for provincial APC stratification.
+Territories are pooled due to small sample sizes. See [rate tables schema](#rate-tables)
+for province code definitions.
+
+---
+
+#### `WTS_M` — survey weight
+
+**Label:** Master survey weight\
+**Type:** Continuous\
+**Role:** Design\
+**Source:** PUMF\
+**Cycles:** 2001–2022
+
+CCHS sampling and post-stratification weight. Applied during APC model fitting.
+See protocol §3.4.4 for the weighting method used (Peto / case weight in logistic
+regression vs. `svyglm()`).
+
+---
+
+#### `SurveyCycle` — survey cycle
+
+**Label:** Survey cycle\
+**Type:** Categorical\
+**Role:** Design\
+**Source:** Both\
+**Cycles:** 2001–2022
+
+| Code | Survey | Midpoint year used |
+|------|--------|--------------------|
+| 1 | CCHS 2001 | 2002 |
+| 2 | CCHS 2003 | 2003 |
+| 3 | CCHS 2005 | 2005 |
+| 4 | CCHS 2007–08 | 2008 |
+| 5 | CCHS 2009–10 | 2010 |
+| 6 | CCHS 2011–12 | 2012 |
+| 7 | CCHS 2013–14 | 2014 |
+| 8 | CCHS 2015–16 | 2016 |
+| 9 | CCHS 2017–18 | 2018 |
+| 10 | CCHS 2019–20 | 2020 |
+| 11 | CCHS 2022 | 2022 |
+
+Derived from the dataset name at harmonization time. Used to compute `survey_year`,
+which in turn defines `period` for the APC model.
+
+---
+
+#### `SDCFIMM` — immigrant status
+
+**Label:** Immigrant status (D)\
+**Type:** Categorical\
+**Role:** Predictor\
+**Source:** PUMF\
+**Cycles:** 2007–08 to 2013–14 only
+
+| Code | Label |
+|------|-------|
+| 1 | Non-immigrant |
+| 2 | Immigrant |
+| 3 | Non-permanent resident |
+
+Used in the MPoRT mortality correction. Not available in 2001–2005 or 2015–2022
+PUMF files (coded as `NA(c)` — not asked this cycle).
+
+---
+
+#### `EDUDR03` — education (3-category)
+
+**Label:** Highest education level — 3 categories\
+**Type:** Categorical\
+**Role:** Predictor\
+**Source:** PUMF\
+**Cycles:** 2001–2017–18 (not available 2019–20 or 2022)
+
+| Code | Label |
+|------|-------|
+| 1 | Less than high school |
+| 2 | High school graduate |
+| 3 | Post-secondary |
+
+cchsflow harmonized variable. Used for subgroup analyses, not a primary APC model
+covariate.
+
+---
+
+### Derived inputs
+
+These variables are intermediate outputs of cchsflow harmonization. They are not used
+directly in the APC model but are required inputs for the unified smoking variables above.
+
+| Variable | Role | Description |
+|----------|------|-------------|
+| `SMKG01C_cont` | Derived input | Age smoked first cigarette — PUMF grouped continuous (midpoint estimate for `age_first_cigarette`) |
+| `SMKG040_cont` | Derived input | Age started smoking daily — PUMF grouped continuous (midpoint estimate for `age_start_smoking`) |
+| `SMKDVSTP` | Derived input | Time since quit — Master exact value (exact input for `time_quit_smoking` in RDC environment) |
+| `SMK_06A_cont` | Predictor | Years since quit — former occasional smokers (PUMF, 2001–2013–14) |
+
+---
+
+### Variable roles
+
+| Role | Meaning |
+|------|---------|
+| `predictor` | Covariate used as a model input |
+| `outcome` | Dependent variable (initiation or cessation event) |
+| `derived-input` | Intermediate variable; input to a unified variable but not directly in the model |
+| `weight` | Survey sampling weight |
+| `design` | Survey design variable (cycle, weight) used to set up the analysis |
+| `model-stratifier` | Variable on which separate models are fitted (sex) |
+| `apc-internal` | Variable computed during APC preparation with no counterpart in the source survey |
+
+---
+
+## Synthetic cohort
+
+Variables in the synthetic Canadian population used for simulation (Stage 9, shg-rcpp).
+These records are generated from Statistics Canada demographic projections, not from the
+CCHS. See `schemas/cshm-cohort.yaml` for the full schema.
+
+### Person-level attributes
+
+| Variable | Type | Description |
+|----------|------|-------------|
+| `person_id` | Integer | Unique identifier for the synthetic individual within a simulation run |
+| `birth_year` | Integer (1900–2023) | Year of birth; defines the birth cohort (`cohort = period − age`) |
+| `sex` | Categorical (1/2) | Biological sex: 1 = male, 2 = female |
+| `province` | Categorical | Province/territory of residence (Statistics Canada GEOGPRV codes; territories pooled as 60) |
+| `weight` | Float (≥ 0) | Population weight from demographic projections; used to scale simulation results to population estimates |
+| `simulation_run` | Integer | Monte Carlo run identifier; multiple runs quantify uncertainty |
+
+### Smoking history record
+
+One record per person per age in the simulation. A complete smoking history is a
+sequence of these records from birth to the projection end year.
+
+| Variable | Type | Description |
+|----------|------|-------------|
+| `person_id` | Integer | Links to person-level record |
+| `age` | Integer (0–110) | Age at this time point |
+| `period` | Integer | Calendar year: `birth_year + age` |
+| `smoking_status` | Categorical | `never` / `current` / `former` |
+| `age_initiation` | Integer | Age first smoked a whole cigarette (null if never smoker) |
+| `age_cessation` | Integer | Age of most recent quit (null if never or current smoker) |
+
+### Smoking status definitions
+
+| Status | Definition |
+|--------|-----------|
+| Never smoker | Fewer than 100 lifetime cigarettes AND never smoked a whole cigarette |
+| Current smoker | ≥ 100 lifetime cigarettes AND currently smoking (daily or occasionally) |
+| Former smoker | ≥ 100 lifetime cigarettes AND not currently smoking |
+
+These definitions match the CCHS-derived classification in the APC model.
+
+### Simulation provenance
+
+Each simulation run carries metadata for reproducibility and traceability.
+
+| Field | Description |
+|-------|-------------|
+| `run_id` | Unique run identifier (e.g., `cshm-prod-20260301-001`) |
+| `run_date` | Date the simulation was executed |
+| `config_profile` | `{config}` profile used (`prod`, `statscan`, etc.) |
+| `rate_table_version` | Version of the rate tables used as input |
+| `random_seed` | Random seed for reproducibility |
+
+---
+
+## Rate tables
+
+Model output from Stage 8 (APC model fitting), formatted as input to the
+[shg-rcpp](https://github.com/NCI-CISNET/shg-rcpp) Smoking History Generator.
+See `schemas/cshm-rate-tables.yaml` for the full schema.
+
+A complete Canadian shg-rcpp run requires four rate tables:
+initiation × {male, female} and cessation × {male, female}.
+
+### Rate table columns
+
+| Variable | Type | Description |
+|----------|------|-------------|
+| `model_type` | Categorical | `initiation` or `cessation` |
+| `sex` | Categorical (1/2) | 1 = male, 2 = female |
+| `province` | Categorical | `national` or Statistics Canada GEOGPRV code (territories pooled as 60) |
+| `age` | Integer | Age in years (0–110) |
+| `period` | Integer | Calendar year |
+| `cohort` | Integer | Birth year: `period − age`; included for shg-rcpp compatibility |
+| `rate` | Float (0–1) | Conditional probability of the smoking transition |
+| `rate_lower` | Float (0–1) | Lower bound of 95% confidence interval |
+| `rate_upper` | Float (0–1) | Upper bound of 95% confidence interval |
+| `mortality_correction` | String | Method applied: `peto` (default) or `mport` (not yet implemented) |
+
+### Rate definitions
+
+**Initiation rate:** P(initiate at age *a* | never smoker at age *a*−1).
+Zero for ages below `survey_bound(cfg, "age_first_cigarette", "min")` (PUMF: 13, Master: 8).
+
+**Cessation rate:** P(quit at age *a* | current smoker at age *a*−1).
+Zero for ages below `survey_bound(cfg, "age_first_cigarette", "min")` for cessation as well.
+
+### Period constraint years
+
+Period effects are held constant beyond the observed data range. Rates at ages/periods
+beyond these constraints use the last estimated period effect.
+
+| Model | Sex | Constant from |
+|-------|-----|--------------|
+| Initiation | Women | 1999 |
+| Initiation | Men | 2003 |
+| Cessation | Both | 2013 |
+| Cohort (initiation) | Both | Prior to 1920 |
+| Cohort (cessation) | Both | 1985 onward |
+
+See Manuel et al. (2020) and Holford et al. (2014) for the methodological basis.
+
+### Rate table provenance
+
+Each rate table file includes a metadata block for traceability.
+
+| Field | Description |
+|-------|-------------|
+| `table_id` | Unique identifier encoding stratum (e.g., `cshm-initiation-male-national-v0.1.0`) |
+| `cshm_version` | CSHM software version |
+| `cchs_cycles` | CCHS cycles used to fit the model |
+| `data_source` | `pumf` or `master` |
+| `date_produced` | Date the table was generated |
+| `config_profile` | `{config}` profile used |
+| `shgrcpp_compatible` | Whether the table has been validated against the shg-rcpp input specification |
+
+PUMF-derived national tables (`province = national`, `data_source = pumf`) are the
+primary shareable artifact. They can be distributed under the
+[Statistics Canada Open Licence](https://www.statcan.gc.ca/eng/reference/licence)
+and used directly with shg-rcpp without requiring access to restricted Master files.
