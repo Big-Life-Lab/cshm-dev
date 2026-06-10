@@ -40,6 +40,7 @@ website:
       contents:
         - docs/protocol/full-protocol.qmd
         - docs/protocol/study-summary.qmd
+        - docs/protocol/appendix-imputation.qmd
 
     - title: "Workflow"
       contents:

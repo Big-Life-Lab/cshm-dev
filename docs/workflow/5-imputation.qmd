@@ -1,26 +1,26 @@
 ---
 title: "Stage 5 — Multiple imputation"
-subtitle: "Handling missing data with MICE"
+subtitle: "Handling missing data with where-matrix MICE"
 ---
 
 ## Purpose
 
-The CCHS has substantial missingness in sociodemographic variables, primarily because some variables are only collected in certain cycles (e.g., immigration status is absent from 2019–20 and 2022) or were refused/unknown by some respondents. Complete-case analysis would discard a large fraction of respondents and introduce selection bias.
+The CCHS has missingness from two distinct mechanisms: item non-response (a respondent was asked but did not answer — tagged `NA(b)`) and structural missingness (the question did not apply — `NA(a)` — or was not asked in that cycle — `NA(c)`). Complete-case analysis would discard respondents and introduce selection bias; imputing *structural* missingness would invent values that should not exist (for example, a quit age for a never-smoker).
 
-Multiple imputation by chained equations (MICE) fills in missing values by iteratively fitting a model for each incomplete variable given all other variables. The result is `m = 5` complete datasets, which are later combined using Rubin's rules. This stage produces `analysis_data` — the primary input for all downstream modelling.
+This stage applies multiple imputation by chained equations (MICE) to **item non-response only**. An explicit `where` matrix marks the `NA(b)` cells as the only cells MICE may fill; `NA(a)` and `NA(c)` survive the round trip untouched. The result is `m` completed datasets. The full specification, including the diagnostic and sensitivity-analysis plan, is the protocol's [Appendix D](../protocol/appendix-imputation.qmd).
 
 ## Inputs
 
 | Target | Description |
 |--------|-------------|
 | `cleaned_data` | Age-restricted, truncated data frame (Stage 3) |
-| `variables_sheet` | Variable metadata — `imputation-predictor` role identifies variables for the MICE model |
+| `variables_sheet` | Variable metadata — `imputation-predictor` role identifies variables in the MICE model |
 
 Configuration parameters:
 
 | Parameter | Value | Meaning |
 |-----------|-------|---------|
-| `imputation_m` | 5 | Number of imputed datasets |
+| `imputation_m` | 5 | Number of imputed datasets (1 in `dev`/`draft`) |
 | `imputation_maxit` | 5 | MICE iterations per imputation |
 
 ## Code
@@ -32,15 +32,16 @@ cfg <- config::get(file = "config.yml")
 ```
 
 ```{r load-analysis-data}
-# analysis_data is a mids object (multiple imputation dataset)
+# analysis_data is a list: datasets (m completed data frames), m,
+# imputed_cells (audit of filled cells), logged_events (mice diagnostics)
 analysis_data <- targets::tar_read("analysis_data")
 ```
 
 ```{r inspect-imputation}
-# Summary of imputation
-print(analysis_data)
+# Which cells were imputed (NA(b) only, by construction)
+analysis_data$imputed_cells
 
-# Missingness before imputation
+# Missingness before imputation, by type
 cleaned_data    <- targets::tar_read("cleaned_data")
 variables_sheet <- targets::tar_read("variables_sheet")
 
@@ -48,7 +49,7 @@ source("R/variables-sheet-utils.R")
 imputation_vars <- select_vars_by_role("imputation-predictor", variables_sheet)
 imputation_vars <- intersect(imputation_vars, colnames(cleaned_data))
 
-# Proportion missing per variable
+# Proportion missing per variable (all NA types combined)
 sort(sapply(cleaned_data[, imputation_vars], function(x) mean(is.na(x))), decreasing = TRUE)
 ```
 
@@ -56,22 +57,24 @@ sort(sapply(cleaned_data[, imputation_vars], function(x) mean(is.na(x))), decrea
 
 | Target | Description |
 |--------|-------------|
-| `analysis_data` | `mids` object (mice): `m = 5` imputed datasets, stored as `data/analysis_data.rds` |
+| `analysis_data` | List: `datasets` (the `m` completed data frames), `m`, `imputed_cells`, `logged_events` |
 
-`analysis_data.rds` is the **primary reproducibility artefact** — sharing it allows others to reproduce all downstream analyses without access to the raw CCHS files.
+The completed datasets differ from `cleaned_data` only at the `NA(b)` cells. Table 1b (Stage 6) averages descriptive statistics across all `m` datasets; the APC stage (Stages 7–8) is fitted on imputation 1, with a documented upgrade path to per-imputation fits pooled by Rubin's rules (Appendix D).
 
 ## Key decisions
 
-**MICE over single imputation.** Single imputation (e.g., mean substitution) underestimates variability and produces overconfident standard errors. MICE preserves uncertainty about missing values by propagating it across `m` imputed datasets and combining results with Rubin's rules.
+**`where`-matrix MICE.** `haven::tagged_na()` values are plain `NA` to `mice()`, so without the `where` matrix MICE would impute structural missingness. Only `NA(b)` cells are flagged for imputation; tagged `NA(a)`/`NA(c)` cells and the original factor levels are preserved by construction, because the write-back copies only `where`-matrix cells into the original data. If MICE declines to impute a flagged cell (constant or collinear variable), the stage stops with an error rather than silently degrading an `NA(b)` tag to plain `NA`.
 
-**Imputation predictor selection.** Only variables with `role` containing `"imputation-predictor"` enter the MICE model. This excludes variables derived from others (e.g., `smoking_status` is derived from raw smoking items) and APC-specific construction variables, which would create circular dependencies.
+**Design variables as predictors.** The survey cycle and sampling weight (`WTS_M`) enter the imputation model as predictors alongside age, sex, province, and education, making the imputation design-consistent and congenial with the APC analysis models.
 
-**`m = 1` in dev/draft profiles.** The `dev` and `draft` config profiles use `imputation_m: 1` and `imputation_maxit: 1` to speed up iteration. The production run uses `m = 5, maxit = 5` per the protocol.
+**Imputation predictor selection.** Variables with the `imputation-predictor` role enter the MICE model. Derived variables (e.g., `pack_years_der`) are not imputed directly — they are recomputed from their imputed feeders.
 
-**Cycle-specific missingness.** Some variables (e.g., immigration status, ethnicity) are structurally absent from certain CCHS cycles. These are `NA(c)` (tagged NA: not asked this cycle) in the harmonized data. MICE treats these as missing and imputes them — this is appropriate because the variable *would* have had a value if collected. Tagged NA codes are stripped to regular `NA` before MICE is run.
+**`m = 1` in dev/draft profiles.** The `dev` and `draft` config profiles use `imputation_m: 1` and `imputation_maxit: 1` for fast iteration. Production uses `m = 5, maxit = 5`; adequacy is checked against the fraction of missing information (Appendix D, Phase 2).
+
+**Structural missingness is an analysis decision, not an imputation default.** `NA(c)` cycle-level absence (e.g., `age_start_smoking` in 2019–20 PUMF) is *not* imputed in the base pipeline. Whether to impute across cycle-level absence — a stronger MAR assumption — is evaluated with the delta-adjustment sensitivity analysis in Appendix D, with the RDC Master files as an external check.
 
 ## Related resources
 
-- `R/imputation.R` — `impute_data()`
+- `R/imputation.R` — `impute_data()`, `prepare_for_mice()`
+- [Protocol Appendix D — Missing data and imputation plan](../protocol/appendix-imputation.qmd)
 - [mice R package](https://www.rdocumentation.org/packages/mice)
-- Protocol §3.3 — missing data strategy

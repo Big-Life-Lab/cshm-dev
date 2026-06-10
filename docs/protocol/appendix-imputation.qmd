@@ -53,6 +53,9 @@ Predictors are selected by the `imputation-predictor` role in `worksheets/cshm-v
 
 -   **Survey design and demographics:** survey cycle, sampling weight (`WTS_M`), sex, age (`DHHGAGE_cont`), province, education
 -   **Smoking history:** smoking status (`SMKDSTY_original`), `age_first_cigarette`, `age_start_smoking`, `time_quit_smoking_daily`, `cigs_per_day`
+-   **Auxiliary covariates** (all harmonized in cchsflow v3 through the 2019–20 PUMF): marital status (`DHHGMS`), drinker type and drinks last week (`ALCDTTM`, `ALWDWKY`), body mass index (`HWTGBMI_der`), self-rated general and mental health (`GEN_01`, `GEN_02B`), life stress and community belonging (`GEN_07`, `GEN_10`), chronic conditions (hypertension, COPD/emphysema, diabetes, heart disease, stroke, mood disorder: `CCC_071`, `CCC_091`, `CCC_101`, `CCC_121`, `CCC_151`, `CCC_280`), and daily energy expenditure (`energy_exp`)
+
+The auxiliary covariates serve two purposes: they strengthen the MAR assumption for item non-response on the smoking variables, and they describe the study base in Tables 1a/1b — groundwork for planned related studies (smoking initiation and cessation prediction models, pseudo-cohort analyses) that will draw on the same harmonized platform. Household income is the one classic non-response auxiliary not yet included: cchsflow harmonizes it only through 2017–18, and extending it to 2019–20 is a pending upstream task.
 
 Including the sampling weight and survey cycle as *predictors* makes the imputation design-consistent without requiring a weighted imputation algorithm — a second improvement over the DemPoRTv2 implementation, which omits design variables. Age, sex, and cycle jointly encode the cohort dimension of the APC analysis model, preserving congeniality with the Stage 8 models.
 
