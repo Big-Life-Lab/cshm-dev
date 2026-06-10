@@ -58,3 +58,6 @@ logs/
 .claude/settings.local.json
 
 resources/
+
+# Quarto project caches
+manuscript/.quarto/
