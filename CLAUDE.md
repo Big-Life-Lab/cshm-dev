@@ -148,6 +148,10 @@ Role vocabulary (single source of truth): [schemas/cshm-variables.yaml](schemas/
 
 `haven::tagged_na()` throughout: **NA(a)** = not applicable · **NA(b)** = don't know/refused · **NA(c)** = not asked this cycle
 
+## Protocol versioning
+
+The study protocol is prespecified: any change under `docs/protocol/` (including Appendix D) must bump `version-summary.version` in [docs/protocol/full-protocol.qmd](docs/protocol/full-protocol.qmd) and add a dated `version-history` entry describing the change — in the same commit. Enforced on PRs by `.github/workflows/protocol-version.yml`.
+
 ## Code style
 
 - Follow tidyverse design principles; snake_case for all function and variable names
