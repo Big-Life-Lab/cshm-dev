@@ -1,17 +1,17 @@
 ---
 title: "Integrating with other models"
-subtitle: "Using CSHGM outputs in broader health and policy models"
+subtitle: "Using CSHM outputs in broader health and policy models"
 ---
 
 # Integrating with other models
 
-This guide explains how to integrate the CSHGM with other health and policy models.
+This guide explains how to integrate the CSHM with other health and policy models.
 
 *This page is under development. Content coming soon.*
 
 ## Overview
 
-The CSHGM can serve as an input to various health policy and disease models, providing realistic smoking histories for population simulations.
+The CSHM can serve as an input to various health policy and disease models, providing realistic smoking histories for population simulations.
 
 ## Integration scenarios
 

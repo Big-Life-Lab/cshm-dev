@@ -30,6 +30,10 @@ resources/legacy-code/*.sas
 .prettierrc
 .vscode/
 
+# Manuscript rendered output
+manuscript/output/
+manuscript/_docstyle/
+
 # Generated files
 *.html
 *.pdf
@@ -49,3 +53,8 @@ worksheets/cshm-variables-working-copy.csv
 
 # Runtime
 logs/
+
+# Machine-local Claude Code settings
+.claude/settings.local.json
+
+resources/

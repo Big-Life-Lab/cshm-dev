@@ -1,11 +1,11 @@
 ---
 title: "Age-Period-Cohort methodology"
-subtitle: "Understanding the statistical approach behind CSHGM"
+subtitle: "Understanding the statistical approach behind CSHM"
 ---
 
 # Age-Period-Cohort methodology
 
-This document explains the Age-Period-Cohort (APC) methodology used in the CSHGM.
+This document explains the Age-Period-Cohort (APC) methodology used in the CSHM.
 
 *This page is under development. Content coming soon.*
 
@@ -31,9 +31,9 @@ Cohort = Period - Age
 
 This creates an identification problem that requires constraints or additional modeling approaches to solve.
 
-## APC in CSHGM
+## APC in CSHM
 
-The CSHGM implements APC modeling using:
+The CSHM implements APC modeling using:
 
 1. Natural cubic splines to model age, period, and cohort effects
 2. Strategic constraints based on empirical research

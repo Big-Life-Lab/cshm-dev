@@ -1,0 +1,7 @@
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-copy: true
+    code-tools: true
+    highlight-style: github

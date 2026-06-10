@@ -1,0 +1,150 @@
+---
+title: "Smoking patterns in Canada by birth cohort, 1965–2023, with projections to 2050: the Canadian Smoking Histories Model"
+status: "Draft"
+version-summary:
+  date: "2026-03-16"
+  version: "0.1.0"
+version-history:
+  - version: "0.1.0"
+    date: "2026-03-16"
+    description: "Initial manuscript stub — inline result placeholders."
+---
+
+[{{< meta version-summary.date >}}]{.date} \| Version: [{{< meta version-summary.version >}}]{.version}
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+# Set working directory to repo root so tar_read() finds the pipeline store
+knitr::opts_knit$set(root.dir = normalizePath(".."))
+
+library(targets)
+library(dplyr)
+
+cfg <- config::get(file = here::here("config.yml"))
+source(here::here("R/config-utils.R"))
+
+# Helper: format large numbers with commas
+fmt_n <- function(x) format(round(x), big.mark = ",", scientific = FALSE)
+
+# Helper: format proportions as percentages
+fmt_pct <- function(x, digits = 1) paste0(round(x * 100, digits), "%")
+```
+
+```{r load-pipeline-results, include=FALSE}
+# Load cached pipeline targets — all numbers in this manuscript come from here.
+# Run targets::tar_make() first if results are not available.
+study_data    <- tar_read("study_data")
+cleaned_data  <- tar_read("cleaned_data")
+analysis_data <- tar_read("analysis_data")
+```
+
+```{r derived-values, include=FALSE}
+# Sample size
+n_respondents_total   <- nrow(study_data)
+n_respondents_cleaned <- nrow(cleaned_data)
+n_excluded_age        <- n_respondents_total - n_respondents_cleaned
+
+# Cycle counts
+n_cycles <- length(unique(study_data[[cfg$survey$cycle]]))
+```
+
+::: author-plate
+:::
+
+::: toc
+:::
+
+# Abstract
+
+**Background.** Smoking behaviour varies across birth cohorts in ways that affect projections of tobacco-attributable disease and evaluation of tobacco control policies in Canada. A pan-Canadian smoking histories model does not yet exist.
+
+**Objectives.** To develop a Canadian Smoking Histories Model (CSHM) describing smoking initiation, cessation, and intensity by birth cohort, sex, and province from 1965 to 2023, with projections to 2050.
+
+**Methods.** We used `r n_cycles` cycles of the Canadian Community Health Survey (CCHS; 2001–2022), comprising `r fmt_n(n_respondents_cleaned)` respondents after exclusions. Age-period-cohort logistic regression models with constrained natural cubic splines were fit separately for men and women to estimate annual probabilities of smoking initiation and cessation. Mortality-adjusted weights were applied to correct for survival bias. Projections were extended to 2050 under status quo conditions.
+
+**Results.** [To be completed when pipeline is fully run.]
+
+**Conclusions.** [To be completed.]
+
+::: {.section-body}
+
+# 1. Introduction
+
+Smoking remains the leading cause of preventable death in Canada, responsible for approximately 48,000 deaths annually [@HealthCanada_SmokingMortality_2024]. Smoking behaviour is not uniform across the population — it varies markedly by birth cohort, sex, province, and socioeconomic position, reflecting decades of evolving social norms, tobacco control policies, and industry marketing [@Manuel_HR_2020; @Holford_AJPM_2014].
+
+Population health models used to evaluate tobacco control policies and project disease burden (e.g., OncoSim, POHEM, SimSmoke) require current smoking histories as inputs. The most recent Canadian parameters were derived from the 1994–2004 National Population Health Survey (NPHS), now over 20 years old [@hennessy2015; @gauvreau2017; @chaiton2021]. Meanwhile, smoking patterns have continued to evolve — particularly among younger cohorts, immigrant populations, and equity-deserving groups.
+
+The CCHS, with `r fmt_n(n_respondents_total)` respondents across `r n_cycles` survey cycles (2001–2022), provides an unparalleled opportunity to address this gap. We apply the age-period-cohort (APC) framework developed by Holford et al. [-@Holford_AJPM_2014] and adapted for Ontario by Manuel et al. [-@Manuel_HR_2020] to all Canadian provinces and territories.
+
+# 2. Methods
+
+## 2.1 Data
+
+We used all available cycles of the CCHS (2001–2022 PUMF; 2001–2023 Master files), comprising `r fmt_n(n_respondents_total)` respondents. After excluding respondents aged 12–17 years (`r fmt_n(n_excluded_age)` excluded), the analytic sample comprised `r fmt_n(n_respondents_cleaned)` respondents. Variables were harmonized across cycles using the `cchsflow` R package [@cchsflow].
+
+## 2.2 Smoking status definitions
+
+| Status | Definition |
+|--------|-----------|
+| Never smoker | <100 lifetime cigarettes AND never smoked a whole cigarette |
+| Current smoker | ≥100 lifetime cigarettes AND currently smokes daily or occasionally |
+| Former smoker | ≥100 lifetime cigarettes AND not currently smoking |
+
+## 2.3 Analytical approach
+
+We fit two logistic regression models using an age-period-cohort framework:
+
+1. **Initiation model** — annual probability of transitioning from never smoker to current smoker, conditional on being a never smoker at age *a*−1. Probability assumed zero before age `r survey_bound(cfg, "age_first_cigarette", "min")`.
+
+2. **Cessation model** — conditional probability of a current smoker quitting at age *a*. Probability assumed zero before `r survey_bound(cfg, "years_since_quit", "min")` years since quitting.
+
+Both models used constrained natural cubic splines with the knot structure from Holford et al. [-@Holford_AJPM_2014]: age knots `r paste0("[", paste(cfg$apc$age_knots, collapse = ", "), "]")`, period knots `r paste0("[", paste(cfg$apc$period_knots, collapse = ", "), "]")`, and cohort knots `r paste0("[", paste(cfg$apc$cohort_knots, collapse = ", "), "]")`.
+
+Period effects were held constant beyond observed data: men's initiation from `r cfg$apc$period_constraints$initiation_men_from`, women's initiation from `r cfg$apc$period_constraints$initiation_women_from`, and cessation from `r cfg$apc$period_constraints$cessation_from`. Cohort effects were held constant prior to `r cfg$apc$cohort_constraints$initiation_prior_to` (initiation) and from `r cfg$apc$cohort_constraints$cessation_from` (cessation).
+
+## 2.4 Missing data
+
+Missing sociodemographic variables were handled using multiple imputation by chained equations (MICE; `m = `r cfg$imputation_m`, maxit = `r cfg$imputation_maxit`). Variables structurally absent from some cycles (e.g., immigration status) were imputed using available cycle data.
+
+# 3. Results
+
+[To be completed when pipeline is fully run.]
+
+## 3.1 Study population
+
+[Table 1 — characteristics of `r fmt_n(n_respondents_cleaned)` respondents]
+
+## 3.2 Smoking initiation rates by cohort
+
+[Figures and tables — to be added at Stage 9]
+
+## 3.3 Smoking cessation rates by cohort
+
+[Figures and tables — to be added at Stage 9]
+
+## 3.4 Projected smoking prevalence to 2050
+
+[Projections to `r cfg$apc$projection_max` — to be added at Stage 9]
+
+# 4. Discussion
+
+[To be completed.]
+
+# 5. Conclusions
+
+[To be completed.]
+
+# References
+
+::: bibliography
+:::
+
+:::
+
+::: {.section-body page-break="true"}
+
+::: version-history
+:::
+
+:::

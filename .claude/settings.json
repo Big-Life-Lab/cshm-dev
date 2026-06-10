@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed 's/.*\"\"Package\"\": \"\"//')",
+      "Bash(R_CONFIG_ACTIVE=draft Rscript -e \":*)",
+      "Bash(ps -p 50426 -o pid,command)",
+      "Bash(while kill -0 50426)",
+      "Bash(do sleep 3)",
+      "Bash(DOCSTYLE_DEBUG=1 quarto render full-study-protocol.qmd)",
+      "Bash(Rscript -e \"cat\\(system.file\\(package=''docstyle''\\)\\)\")",
+      "Bash(Rscript -e \"ls\\(getNamespace\\(''docstyle''\\)\\)\")",
+      "Bash(Rscript -e \"packageVersion\\(''docstyle''\\)\")",
+      "Bash(Rscript -e \"renv::install\\(''~/github/docstyle''\\)\")",
+      "Bash(Rscript -e \"renv::install\\(''splines2''\\)\")",
+      "Bash(Rscript -e \"testthat::test_file\\(''tests/testthat/test-apc-data.R''\\)\")",
+      "Bash(Rscript -e \"testthat::test_dir\\(''tests/testthat/''\\)\")",
+      "Bash(R_CONFIG_ACTIVE=draft Rscript -e \"targets::tar_make\\(names = c\\(''apc_data'', ''apc_model_initiation_men'', ''apc_model_initiation_women'', ''apc_model_cessation_men'', ''apc_model_cessation_women''\\)\\)\")",
+      "Bash(Rscript -e \"docstyle::update_extension\\(\\)\")",
+      "Bash(Rscript -e \"renv::install\\(''DougManuel/docstyle''\\)\")",
+      "Bash(Rscript -e \"docstyle::update_extension\\(''/Users/dmanuel/github/cshgm-dev/docs''\\)\")",
+      "Bash(R_CONFIG_ACTIVE=draft Rscript -e \"targets::tar_make\\(names = c\\(''apc_model_initiation_men'', ''apc_model_initiation_women'', ''apc_model_cessation_men'', ''apc_model_cessation_women''\\)\\)\")",
+      "Read(//Users/dmanuel/github/cshgm-dev/**)",
+      "Bash(du -h data/dev/*.RData)",
+      "Read(//Users/dmanuel/github/cchsflow/.claude/worktrees/smoking-cleanup/**)",
+      "Read(//Users/dmanuel/github/cchsflow/.claude/worktrees/smoking-cleanup/$1 ~ /^\\(age_start_smoking|age_first_cigarette|cigs_per_day|time_quit_smoking|pack_years|SMKDSTY_cat5|smoke_simple\\)$/**)"
+    ],
+    "additionalDirectories": [
+      "/Users/dmanuel/.claude/projects/-Users-dmanuel-github-cshgm-dev"
+    ]
+  }
+}

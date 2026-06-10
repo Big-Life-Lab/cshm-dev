@@ -71,6 +71,7 @@ create_cycle_specific_descriptive_table(
   variables_sheet       = variables_sheet,
   variable_details_sheet = variable_details_sheet,
   variables             = predictor_vars,
+  cycle_col             = survey_var(cfg, "cycle"),
   cycle_labels          = cfg$cycle_labels,
   column_stratifier     = survey_var(cfg, "sex"),
   sections_order        = c("Sociodemographics", "Health behaviour")

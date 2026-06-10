@@ -1,7 +1,7 @@
 ---
 title: "Data loading and harmonizing"
-subtitle: "Preparing CCHS data for the Smoking History Generator Model"
-author: "CSHGM Development Team"
+subtitle: "Preparing CCHS data for the Smoking Histories Model"
+author: "CSHM Development Team"
 date: "Last Updated: `r Sys.Date()`"
 format:
   html:
@@ -22,12 +22,12 @@ knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(ggplot2)
 # If you have installed the cshgm package, uncomment this:
-# library(cshgm)
+# library(cshm)
 ```
 
 # Introduction
 
-This guide focuses on the initial steps of the CSHGM workflow: loading Canadian Community Health Survey (CCHS) data and harmonizing variables across survey cycles. These steps are critical for ensuring consistent analysis across different time periods.
+This guide focuses on the initial steps of the CSHM workflow: loading Canadian Community Health Survey (CCHS) data and harmonizing variables across survey cycles. These steps are critical for ensuring consistent analysis across different time periods.
 
 ## Purpose of data harmonization
 
@@ -70,7 +70,7 @@ First, set up your environment with the necessary packages:
 
 ```{r load-packages, eval=FALSE}
 # Load required packages
-library(cshgm)
+library(cshm)
 library(dplyr)
 library(cchsflow)  # For harmonizing CCHS variables
 library(haven)     # For reading SAS or SPSS files
@@ -126,7 +126,7 @@ cchs_list <- list(
 
 ## Core smoking variables
 
-For the CSHGM, we need to harmonize several key smoking-related variables:
+For the CSHM, we need to harmonize several key smoking-related variables:
 
 | Type | Variables | Description |
 |------|-----------|-------------|
@@ -140,7 +140,7 @@ For the CSHGM, we need to harmonize several key smoking-related variables:
 The `cchsflow` package provides tools for harmonizing CCHS variables across cycles:
 
 ```{r harmonize, eval=FALSE}
-# Define the variables needed for CSHGM
+# Define the variables needed for CSHM
 smoking_vars <- c(
   "SMK_01A",        # In lifetime, smoked 100 or more cigarettes
   "SMK_202",        # Current smoking status
@@ -182,7 +182,7 @@ harmonized_data <- bind_rows(harmonized_list)
 
 ## Step 5: Create derived variables
 
-Some additional variables need to be created for the CSHGM:
+Some additional variables need to be created for the CSHM:
 
 ```{r derived-vars, eval=FALSE}
 # Create survey date and additional variables
@@ -224,7 +224,7 @@ cleaned_data <- harmonized_data %>%
   filter(surveyage >= 12) %>%         # Include only respondents aged 12+
   filter(!is.na(weighting))           # Remove cases missing weights
 
-# Recode sex to match CSHGM requirements (M/F)
+# Recode sex to match CSHM requirements (M/F)
 cleaned_data <- cleaned_data %>%
   mutate(sex = ifelse(DHH_SEX == 1, "M", "F"))
 ```

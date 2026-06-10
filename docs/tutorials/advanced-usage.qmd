@@ -1,25 +1,26 @@
 ---
-title: "Advanced usage of CSHGM"
+title: "Advanced usage of CSHM"
 ---
+> The following is a template example of a tutorial. To be developed.
 
-This tutorial covers advanced usage scenarios for the Canadian Smoking History Generator Model (CSHGM).
+This tutorial covers advanced usage scenarios for the Canadian Smoking Histories Model (CSHM).
 
 ## Prerequisites
 
 Before proceeding with this tutorial, you should:
 
 - Have completed the [Getting Started](getting-started.qmd) guide
-- Be familiar with the [basic usage](basic-usage.qmd) of CSHGM
+- Be familiar with the [basic usage](basic-usage.qmd) of CSHM
 - Have a good understanding of R programming
 - Be familiar with statistical concepts related to Age-Period-Cohort models
 
 ## Customizing APC model specifications
 
-The default APC model specifications in CSHGM are based on the original Ontario SHGM study. However, you can customize these specifications to better fit your specific research needs.
+The default APC model specifications in CSHM are based on the original Canadian SHM study, following the Holford/CISNET approach. However, you can customize these specifications to better fit your specific research needs.
 
 ### Modifying spline knots
 
-The placement of knots in the spline functions can significantly impact the model's ability to capture temporal trends:
+The placement of knots in the spline functions can impact the model's ability to capture temporal trends:
 
 ```r
 # Custom knot placement
@@ -58,28 +59,12 @@ covariate_model <- run_apc_model(
 
 ### Handling complex survey designs
 
-For proper population estimates, you may need to account for the complex survey design of the CCHS:
+For proper population estimates, using the example data (the Canadian Community Health Survey) you need to account for the complex survey design of the population health survey:
 
 ```r
 library(survey)
 
-# Create a survey design object
-svy_design <- svydesign(
-  id = ~CLUSTER,
-  strata = ~STRATA,
-  weights = ~weighting,
-  data = harmonized_data,
-  nest = TRUE
-)
-
-# Estimate smoking prevalence accounting for survey design
-smoking_prev <- svyby(
-  ~I(SMKDSTY == 1 | SMKDSTY == 2),  # Current smokers (daily or occasional)
-  ~AGE_GROUP + sex,                 # By age group and sex
-  svy_design,
-  svymean
-)
-```
+...
 
 ### Custom variable derivation
 
@@ -107,6 +92,7 @@ analysis_data <- harmonized_data %>%
 
 For microsimulation models, you may need to generate a synthetic population:
 
+> replace with the CISNET Smoking History Generator Model when available.
 ```r
 # Generate a synthetic population
 synthetic_pop <- generate_synthetic_population(
@@ -148,7 +134,7 @@ print(validation_plot)
 ### Calibrating the model
 
 If needed, you can calibrate the model to better match external data sources:
-
+TBA...
 ```r
 # Calibrate the model
 calibrated_model <- calibrate_model(

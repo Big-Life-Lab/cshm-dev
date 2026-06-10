@@ -2,11 +2,11 @@
 title: "Processing CCHS data"
 ---
 
-This guide explains how to process Canadian Community Health Survey (CCHS) data for use with the CSHGM.
+This guide explains how to process Canadian Community Health Survey (CCHS) data for use with the CSHM.
 
 ## Overview
 
-The Canadian Community Health Survey (CCHS) is conducted by Statistics Canada and collects information on health status, health care utilization, and health determinants for the Canadian population. For CSHGM, we're particularly interested in the smoking-related variables, which need to be harmonized across different survey cycles.
+The Canadian Community Health Survey (CCHS) is conducted by Statistics Canada and collects information on health status, health care utilization, and health determinants for the Canadian population. For CSHM, we're particularly interested in the smoking-related variables, which need to be harmonized across different survey cycles.
 
 ## Obtaining CCHS data
 
@@ -33,7 +33,7 @@ First, load the CCHS data files:
 
 ```r
 # Load required packages
-library(cshgm)
+library(cshm)
 library(dplyr)
 library(cchsflow)  # For harmonizing CCHS variables
 
@@ -64,7 +64,7 @@ combined_cchs <- bind_rows(cchs_data)
 CCHS variable names have changed across cycles. We use the `cchsflow` package to harmonize them:
 
 ```r
-# List of smoking-related variables needed for CSHGM
+# List of smoking-related variables needed for CSHM
 smoking_vars <- c(
   "SMK_01A",        # In lifetime, smoked 100 or more cigarettes
   "SMK_202",        # Current smoking status
@@ -99,7 +99,7 @@ harmonized_data <- rec_with_table(
 
 ## Step 3: Creating derived variables
 
-Some variables need to be derived for the CSHGM:
+Some variables need to be derived for the CSHM:
 
 ```r
 # Create survey date
@@ -143,7 +143,7 @@ cleaned_data <- harmonized_data %>%
   filter(surveyage >= 12) %>%         # Include only respondents aged 12+
   filter(!is.na(weighting))           # Remove cases missing weights
 
-# Recode sex to match CSHGM requirements (M/F)
+# Recode sex to match CSHM requirements (M/F)
 cleaned_data <- cleaned_data %>%
   mutate(sex = ifelse(DHH_SEX == 1, "M", "F"))
 

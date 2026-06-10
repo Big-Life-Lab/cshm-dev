@@ -1,0 +1,104 @@
+---
+title: "Stage 8 — APC model fitting"
+subtitle: "Fitting the Age-Period-Cohort logistic regression models"
+---
+
+## Purpose
+
+This stage fits four logistic regression models — initiation and cessation, separately for men and women — using the person-year data from Stage 7. Each model estimates how the probability of initiating or quitting smoking varies by age, calendar period, and birth cohort, after accounting for the APC identification constraint.
+
+The models use constrained natural cubic splines (Holford knot structure) with period and cohort effects held constant beyond the observed data range. This produces smooth, interpretable rate curves that can be projected forward to 2050.
+
+## Inputs
+
+| Target | Description |
+|--------|-------------|
+| `apc_data$initiation_men` | Person-year initiation data, men (Stage 7) |
+| `apc_data$initiation_women` | Person-year initiation data, women (Stage 7) |
+| `apc_data$cessation_men` | Person-year cessation data, men (Stage 7) |
+| `apc_data$cessation_women` | Person-year cessation data, women (Stage 7) |
+
+Configuration used:
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| `apc$age_knots` | `[10, 15, 20, 50, 60]` | Natural spline knots for age effect |
+| `apc$period_knots` | `[1940, 1950, 1960, 1970, 1980]` | Natural spline knots for period effect |
+| `apc$cohort_knots` | `[1930, ..., 1980]` | Natural spline knots for cohort effect (10 knots) |
+| `apc$period_constraints$initiation_men_from` | `1999` | Period effect constant from this year (men) |
+| `apc$period_constraints$initiation_women_from` | `2003` | Period effect constant from this year (women) |
+| `apc$period_constraints$cessation_from` | `2013` | Period effect constant from this year |
+| `apc$cohort_constraints$initiation_prior_to` | `1920` | Cohort effect constant before this year |
+| `apc$cohort_constraints$cessation_from` | `1985` | Cohort effect constant from this year |
+| `apc$spline_library` | `"splines2"` | Primary: `splines2::nsp()` |
+| `apc$spline_type` | `"nsp"` | Natural spline type |
+| `apc$mortality_method` | `"peto"` | Current: Peto (development); primary: MPoRT |
+
+## Code
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_knit$set(root.dir = normalizePath("../.."))
+cfg <- config::get(file = "config.yml")
+```
+
+```{r load-models}
+model_init_men   <- targets::tar_read("apc_model_initiation_men")
+model_init_women <- targets::tar_read("apc_model_initiation_women")
+model_cess_men   <- targets::tar_read("apc_model_cessation_men")
+model_cess_women <- targets::tar_read("apc_model_cessation_women")
+```
+
+```{r inspect-models}
+# Model summaries
+summary(model_init_men)$coefficients |> head(10)
+
+# Model fit statistics
+cat("Initiation men AIC:   ", AIC(model_init_men), "\n")
+cat("Initiation women AIC: ", AIC(model_init_women), "\n")
+cat("Cessation men AIC:    ", AIC(model_cess_men), "\n")
+cat("Cessation women AIC:  ", AIC(model_cess_women), "\n")
+```
+
+```{r plot-age-effects, eval=FALSE}
+# Plot estimated age effects (requires rate table generation — Stage 9)
+# Placeholder: will be populated when Stage 9 is implemented
+```
+
+## Outputs
+
+| Target | Description |
+|--------|-------------|
+| `apc_model_initiation_men` | Fitted `glm` object — initiation model, men |
+| `apc_model_initiation_women` | Fitted `glm` object — initiation model, women |
+| `apc_model_cessation_men` | Fitted `glm` object — cessation model, men |
+| `apc_model_cessation_women` | Fitted `glm` object — cessation model, women |
+
+## Key decisions
+
+**Four independent targets, not one.** Each model is a separate `{targets}` target. This means changing the cessation constraints only reruns the cessation models — not the initiation models. It also allows the four models to run in parallel with `tar_make(callr_function = callr::r)`.
+
+**Natural cubic splines (`nsp`), not restricted cubic splines (`rcs`).** The primary analysis uses `splines2::nsp()` (natural splines with zero second derivatives at the boundary). Restricted cubic splines (`rms::rcs()`) are a prespecified sensitivity analysis (`cfg$apc$spline_type = "rcs"`). Both impose the same APC identification constraint but differ in boundary behaviour.
+
+**Period constraints.** The period effect is held constant beyond the most recent observed data to prevent extrapolation artifacts in projections. Men's initiation period effect is held constant from 1999; women's from 2003 (reflecting the later peak in women's smoking uptake). These constraint years are based on the original Ontario analysis (Manuel et al. 2020).
+
+**Cohort constraint.** The initiation cohort effect is held constant prior to 1920 (small sample, sparse data). The cessation cohort effect is held constant from 1985 forward (insufficient follow-up time for younger cohorts to accumulate cessation history).
+
+**Mortality method: Peto (current).** The primary analysis specifies MPoRT mortality correction. MPoRT is not yet implemented; the Peto constant risk ratio is used during development. A sensitivity analysis compares Peto and MPoRT results (`cfg$apc$mortality_method`).
+
+## Sensitivity analyses
+
+| Analysis | Parameter | Primary | Alternative |
+|----------|-----------|---------|-------------|
+| Spline type | `cfg$apc$spline_type` | `"nsp"` | `"rcs"` |
+| Mortality method | `cfg$apc$mortality_method` | `"mport"` | `"peto"` |
+| Period constraints | `cfg$apc$period_constraints` | See above | Extended to 2003/2007/2015 |
+
+## Related resources
+
+- [Stage 7 — APC data preparation](7-apc-data-preparation.qmd)
+- [APC methodology explanation](../explanation/apc-method.qmd)
+- `R/apc-model.R` — `fit_apc_model()`
+- Protocol §3.4.3 — APC model specification
+- Holford et al. (2014) — foundational APC methodology
+- Manuel et al. (2020) — Ontario adaptation

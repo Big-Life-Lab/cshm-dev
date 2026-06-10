@@ -2,7 +2,7 @@
 title: "Function reference"
 ---
 
-This page provides detailed technical documentation for the functions in the CSHGM package.
+This page provides detailed technical documentation for the functions in the CSHM package.
 
 ## Smoking initiation functions
 

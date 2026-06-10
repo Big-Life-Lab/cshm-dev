@@ -2,10 +2,10 @@
 title: "Reference documentation"
 ---
 
-This section provides technical reference information for the CSHGM project:
+This section provides technical reference information for the CSHM project:
 
 - [Variables](variables.qmd): Detailed information on all variables used in the project
 - [Functions](functions.qmd): Complete API reference for all functions
 - [Model](model.qmd): Technical details of the APC model implementation
 
-Use this section when you need precise information about specific components of the CSHGM.
+Use this section when you need precise information about specific components of the CSHM.

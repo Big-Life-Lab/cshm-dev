@@ -2,7 +2,7 @@
 title: "Explanation"
 ---
 
-This section provides conceptual explanations of the methodology and approach used in CSHGM:
+This section provides conceptual explanations of the methodology and approach used in CSHM:
 
 - [Smoking history modelling](smoking-history.qmd): Conceptual overview of smoking history modelling
 - [APC methodology](apc-method.qmd): Explanation of the Age-Period-Cohort methodology

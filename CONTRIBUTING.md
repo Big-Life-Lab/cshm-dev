@@ -1,6 +1,6 @@
-# Contributing to CSHGM
+# Contributing to CSHM
 
-Thank you for your interest in contributing to the Canadian Smoking History Generator Model (CSHGM) project! This document provides guidelines for contributions to help maintain consistency and quality across the project.
+Thank you for your interest in contributing to the Canadian Smoking Histories Model (CSHM) project! This document provides guidelines for contributions to help maintain consistency and quality across the project.
 
 ## Code of Conduct
 
@@ -8,7 +8,7 @@ All contributors are expected to adhere to the project's code of conduct, which 
 
 ## How to Contribute
 
-There are many ways to contribute to the CSHGM project:
+There are many ways to contribute to the CSHM project:
 
 1. **Report issues**: Submit bug reports or feature requests through the GitHub issue tracker.
 2. **Suggest improvements**: Share ideas for enhancing the code, documentation, or workflow.
@@ -118,7 +118,7 @@ If your changes require documentation updates:
    git push origin your-branch-name
    ```
 
-2. Create a pull request from your branch to the main CSHGM repository
+2. Create a pull request from your branch to the main CSHM repository
 3. Provide a clear title and description for your pull request, explaining:
    - What changes you've made
    - Why these changes are necessary
@@ -151,11 +151,9 @@ Implements the processing for smoking cessation data based on the APC model.
 Function extracts cessation age and calculates cessation probabilities.
 ```
 
-## License
+## Licence
 
-By contributing to CSHGM, you agree that your contributions will be licensed under the project's licenses:
-- CC BY-NC-SA 4.0 for documentation and non-code assets
-- GPL-3.0 for code
+By contributing to CSHM, you agree that your contributions will be licensed under the [MIT License](LICENSE).
 
 ## Questions?
 

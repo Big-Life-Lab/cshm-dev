@@ -1,17 +1,17 @@
 ---
 title: "Creating custom models"
-subtitle: "Extending the CSHGM for specialized analyses"
+subtitle: "Extending the CSHM for specialized analyses"
 ---
 
 # Creating custom models
 
-This guide explains how to create custom models that extend the core functionality of the CSHGM.
+This guide explains how to create custom models that extend the core functionality of the CSHM.
 
 *This page is under development. Content coming soon.*
 
 ## Overview
 
-The CSHGM can be extended in various ways to address specific research questions or incorporate additional factors.
+The CSHM can be extended in various ways to address specific research questions or incorporate additional factors.
 
 ## Customization approaches
 

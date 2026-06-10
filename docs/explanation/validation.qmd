@@ -5,13 +5,13 @@ subtitle: "Methods for assessing model accuracy and reliability"
 
 # Validation approaches
 
-This document explains the validation approaches used in the CSHGM.
+This document explains the validation approaches used in the CSHM.
 
 *This page is under development. Content coming soon.*
 
 ## Overview
 
-Validation is a critical step in ensuring that the CSHGM produces accurate and reliable results that reflect real-world smoking patterns.
+Validation is a critical step in ensuring that the CSHM produces accurate and reliable results that reflect real-world smoking patterns.
 
 ## Validation goals
 
@@ -24,7 +24,7 @@ The primary goals of validation are to ensure:
 
 ## Validation methods
 
-The CSHGM employs several validation methods:
+The CSHM employs several validation methods:
 
 1. **Historical comparison**: Comparing model-generated prevalence with historical survey data
 2. **Cross-validation**: Testing the model on different subsets of data

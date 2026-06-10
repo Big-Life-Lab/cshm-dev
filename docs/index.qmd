@@ -1,15 +1,15 @@
 ---
-title: "Canadian Smoking History Generator Model"
+title: "Canadian Smoking Histories Model"
 subtitle: "An R implementation of Age-Period-Cohort smoking behavior analysis"
 ---
 
-# Canadian Smoking History Generator Model
+# Canadian Smoking Histories Model
 
-Welcome to the Canadian Smoking History Generator Model (CSHGM) documentation. This website provides comprehensive information about using and extending the CSHGM for smoking behavior analysis and simulation.
+This website provides information about using and extending the Canadian Smoking Histories Model (CSHM) documentation for smoking behavior analysis and simulation.
 
-## About CSHGM
+## About CSHM
 
-The Canadian Smoking History Generator Model is an R implementation of the Age-Period-Cohort (APC) modeling approach to smoking behavior. It builds upon the work of Holford and extends the methodology developed in the Ontario SHGM study (2020).
+The Canadian Smoking Histories Model is an R implementation of the Age-Period-Cohort (APC) modeling approach to smoking behavior. It builds upon the work of Holford and extends the methodology developed in the Ontario SHGM study (2020).
 
 The model analyzes smoking initiation and cessation patterns from Canadian Community Health Survey (CCHS) data, accounting for age, period, and cohort effects. With this foundation, it can generate synthetic smoking histories for population health modeling.
 
@@ -41,20 +41,20 @@ This documentation is organized into four main sections:
 
 ## Project status
 
-The CSHGM is currently under active development. Contributions, bug reports, and feature requests are welcome through the [GitHub repository](https://github.com/cshgm/cshgm).
+The CSHM is currently under active development. Contributions, bug reports, and feature requests are welcome through the [GitHub repository](https://github.com/Big-Life-Lab/cshm-dev).
 
 ## Citation
 
-If you use the CSHGM in your research, please cite:
+If you use the CSHM in your research, please cite:
 
 ```
-CSHGM Development Team (2024). Canadian Smoking History Generator Model: 
+CSHM Development Team (2024). Canadian Smoking Histories Model: 
 An R implementation of Age-Period-Cohort smoking behavior analysis.
 ```
 
-## License
+## Licence
 
-The CSHGM is released under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+The code in this repository is licensed under the [MIT License](../LICENSE).
 
 ## Acknowledgments
 

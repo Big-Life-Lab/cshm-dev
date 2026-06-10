@@ -1,0 +1,78 @@
+project:
+  type: default
+  output-dir: output
+  pre-render: ../_extensions/docstyle/generate-reference.R
+  post-render: ../_extensions/docstyle/update-field-codes.R
+
+bibliography: ../references.bib
+
+format:
+  docstyle-docx:
+    toc: false
+    number-sections: false
+    reference-doc: ../_docstyle/reference.docx
+
+docstyle:
+  css:
+    - ../styles.css
+  sidecar-dir: ../_docstyle
+  header:
+    enabled: true
+    left: "Canadian Smoking Histories Model"
+    first-page: false
+    style: header
+  footer:
+    enabled: true
+    left: "DRAFT"
+    right: "Page {page} of {pages}"
+    first-page: false
+    style: footer
+  author-plate:
+    enabled: false
+  authors:
+    - name:
+        given: "Douglas"
+        family: "Manuel"
+      email: "dmanuel@ohri.ca"
+      orcid: "0000-0003-0912-0845"
+      corresponding: true
+      affiliations:
+        - ref: ohri
+    - name:
+        given: "Rafael"
+        family: "Meza"
+      orcid: "0000-0002-1076-5037"
+      affiliations:
+        - ref: bccancer
+        - ref: ubc
+    - name:
+        given: "Rochelle E."
+        family: "Garner"
+      email: "rochelle.garner@statcan.gc.ca"
+      affiliations:
+        - ref: statscan
+    - name:
+        given: "Maikol"
+        family: "Diasparra"
+      email: "maikol.diasparra@statcan.gc.ca"
+      affiliations:
+        - ref: statscan
+  affiliations:
+    - id: ohri
+      name: "Ottawa Hospital Research Institute"
+      city: "Ottawa"
+      country: "Canada"
+    - id: bccancer
+      name: "BC Cancer Research Institute"
+      city: "Vancouver"
+      country: "Canada"
+    - id: ubc
+      name: "University of British Columbia"
+      department: "School of Population and Public Health"
+      city: "Vancouver"
+      country: "Canada"
+    - id: statscan
+      name: "Statistics Canada"
+      department: "Health Analysis Division"
+      city: "Ottawa"
+      country: "Canada"

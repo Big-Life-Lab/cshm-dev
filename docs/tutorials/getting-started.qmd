@@ -1,15 +1,15 @@
 ---
-title: "Getting started with CSHGM"
-subtitle: "A step-by-step guide to the Canadian Smoking History Generator Model"
+title: "Getting started with CSHM"
+subtitle: "A step-by-step guide to the Canadian Smoking Histories Model"
 ---
 
 ## Introduction
 
-This tutorial will help you get started with the Canadian Smoking History Generator Model (CSHGM). The CSHGM is an R implementation of an Age-Period-Cohort (APC) model for analyzing smoking behavior patterns across different generations and time periods.
+This tutorial will help you get started with the Canadian Smoking Histories Model (CSHM). The CSHM is an R implementation of an Age-Period-Cohort (APC) model for analyzing smoking behavior patterns across different generations and time periods.
 
-## What is CSHGM?
+## What is CSHM?
 
-The Canadian Smoking History Generator Model:
+The Canadian Smoking Histories Model:
 
 1. Analyzes smoking initiation and cessation patterns from survey data
 2. Incorporates age, period, and cohort effects on smoking behavior
@@ -35,7 +35,7 @@ To install the development version from GitHub:
 # Install remotes package if you don't have it
 install.packages("remotes")
 
-# Install CSHGM from GitHub
+# Install CSHM from GitHub
 remotes::install_github("cshgm/cshgm")
 ```
 
@@ -45,7 +45,7 @@ If you want to work with the source code directly:
 
 ```r
 # Clone the GitHub repository
-git clone https://github.com/cshgm/cshgm.git
+git clone https://github.com/Big-Life-Lab/cshm-dev.git
 cd cshgm
 
 # Install renv package if you don't have it
@@ -55,9 +55,9 @@ install.packages("renv")
 renv::restore()
 ```
 
-## CSHGM workflow
+## CSHM workflow
 
-The CSHGM follows a sequential workflow:
+The CSHM follows a sequential workflow:
 
 1. **Accessing and loading CCHS data**: Obtaining CCHS data from appropriate sources and loading it into R
 2. **Creating a working file**: Selecting required variables and preparing data for analysis
@@ -68,11 +68,11 @@ The CSHGM follows a sequential workflow:
 7. **Generating smoking histories**: Creating synthetic smoking histories based on the model
 8. **Model validation**: Comparing model results with historical data
 
-![CSHGM Workflow](../images/workflow-diagram.png)
+![CSHM Workflow](../images/workflow-diagram.png)
 
 ## Configuration
 
-CSHGM uses configuration files to manage paths and parameters:
+CSHM uses configuration files to manage paths and parameters:
 
 ```r
 # Load the default configuration
@@ -90,7 +90,7 @@ Here's a simple example to get you started:
 
 ```r
 # Load required packages
-library(cshgm)
+library(cshm)
 library(dplyr)
 library(ggplot2)
 
@@ -115,7 +115,7 @@ ggplot(init_data, aes(x = cohort, y = age)) +
 
 ## Step-by-step guides
 
-The CSHGM documentation provides detailed guides for each step of the workflow:
+The CSHM documentation provides detailed guides for each step of the workflow:
 
 1. [Data loading and harmonizing](../how-to/data-loading-and-harmonizing.qmd) - Prepare CCHS data for analysis
 2. [Processing CCHS data](../how-to/processing-cchs-data.qmd) - Convert raw survey data into format needed for modeling
@@ -128,5 +128,5 @@ The CSHGM documentation provides detailed guides for each step of the workflow:
 If you encounter issues or have questions:
 
 - Check the [FAQ](../reference/faq.qmd)
-- Submit an issue on [GitHub](https://github.com/cshgm/cshgm/issues)
+- Submit an issue on [GitHub](https://github.com/Big-Life-Lab/cshm-dev/issues)
 - Contact the project maintainers

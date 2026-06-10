@@ -4,13 +4,13 @@ title: "Frequently asked questions"
 
 ## General questions
 
-### What is the Canadian Smoking History Generator Model?
+### What is the Canadian Smoking Histories Model?
 
-The Canadian Smoking History Generator Model (CSHGM) is an R implementation of an Age-Period-Cohort model for analyzing smoking behavior patterns across different generations and time periods. It builds on the original work developed for the Ontario SHGM study (2020) and the methodological approach pioneered by Holford.
+The Canadian Smoking Histories Model (CSHM) is an R implementation of an Age-Period-Cohort model for analyzing smoking behavior patterns across different generations and time periods. It builds on the original work developed for the Ontario SHGM study (2020) and the methodological approach pioneered by Holford.
 
-### Who should use CSHGM?
+### Who should use CSHM?
 
-CSHGM is primarily designed for:
+CSHM is primarily designed for:
 
 - Epidemiologists studying smoking trends
 - Health policy researchers
@@ -18,31 +18,31 @@ CSHGM is primarily designed for:
 - Population health modelers
 - Researchers interested in age-period-cohort effects
 
-### Is CSHGM specific to Canadian data?
+### Is CSHM specific to Canadian data?
 
-While CSHGM was designed for use with Canadian Community Health Survey data, the methodology can be adapted for use with other survey data sources that contain similar smoking history information.
+While CSHM was designed for use with Canadian Community Health Survey data, the methodology can be adapted for use with other survey data sources that contain similar smoking history information.
 
 ## Technical questions
 
 ### What R version is required?
 
-CSHGM requires R version 4.1.0 or higher.
+CSHM requires R version 4.1.0 or higher.
 
-### Can I use CSHGM in secure environments?
+### Can I use CSHM in secure environments?
 
-Yes, CSHGM is designed to work in secure computing environments like Statistics Canada's Research Data Centres (RDCs). The package uses configuration files to manage paths and dependencies, making it adaptable to different environments.
+Yes, CSHM is designed to work in secure computing environments like Statistics Canada's Research Data Centres (RDCs). The package uses configuration files to manage paths and dependencies, making it adaptable to different environments.
 
-### How does CSHGM handle missing data?
+### How does CSHM handle missing data?
 
-CSHGM has built-in strategies for handling missing data in smoking variables, including:
+CSHM has built-in strategies for handling missing data in smoking variables, including:
 
 - Filtering out cases with missing key variables
 - Imputation options for less critical variables
 - Clear documentation of data limitations
 
-### Can I extend CSHGM with my own models?
+### Can I extend CSHM with my own models?
 
-Yes, CSHGM is designed to be modular. You can:
+Yes, CSHM is designed to be modular. You can:
 
 - Modify the spline specifications for the APC model
 - Add additional covariates to the models
@@ -59,9 +59,9 @@ APC analysis is a statistical approach that attempts to disentangle three time-r
 - **Period effects**: How external factors affect everyone at a specific point in time
 - **Cohort effects**: How being born in a specific generation influences behavior
 
-### How does CSHGM handle the identification problem in APC models?
+### How does CSHM handle the identification problem in APC models?
 
-The APC identification problem arises because age, period, and cohort have a linear relationship (period = age + cohort). CSHGM addresses this by:
+The APC identification problem arises because age, period, and cohort have a linear relationship (period = age + cohort). CSHM addresses this by:
 
 1. Using natural cubic splines to model non-linear effects
 2. Applying constraints to the spline coefficients
@@ -75,12 +75,12 @@ The generated smoking histories are based on statistical models fitted to survey
 2. The appropriateness of the APC modeling approach
 3. The validity of assumptions about smoking behavior
 
-CSHGM includes validation procedures to compare the generated histories against historical data and reference studies.
+CSHM includes validation procedures to compare the generated histories against historical data and reference studies.
 
 ## Getting help
 
 If your question isn't answered here, please:
 
 1. Check the [documentation](../index.qmd)
-2. Submit an issue on [GitHub](https://github.com/cshgm/cshgm/issues)
+2. Submit an issue on [GitHub](https://github.com/Big-Life-Lab/cshm-dev/issues)
 3. Contact the project maintainers directly

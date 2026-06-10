@@ -1,8 +1,8 @@
 ---
-title: "Basic usage of CSHGM"
+title: "Basic usage of CSHM"
 ---
 
-This tutorial provides basic usage examples for the Canadian Smoking History Generator Model (CSHGM).
+This tutorial provides basic usage examples for the Canadian Smoking Histories Model (CSHM).
 
 ## Prerequisites
 
@@ -13,7 +13,7 @@ Before you begin, make sure you have:
 
 ## Basic workflow
 
-The typical CSHGM workflow consists of four main steps:
+The typical CSHM workflow consists of four main steps:
 
 1. **Data preparation**: Load and harmonize CCHS data
 2. **Smoking behavior analysis**: Extract smoking initiation and cessation data
@@ -24,7 +24,7 @@ The typical CSHGM workflow consists of four main steps:
 
 ```r
 # Load the required packages
-library(cshgm)
+library(cshm)
 library(dplyr)
 library(ggplot2)
 
@@ -67,6 +67,6 @@ ggplot(init_male, aes(x = cohort, y = age)) +
 
 ## Next steps
 
-- Learn how to interpret the results in [Understanding CSHGM Output](../how-to/interpreting-results.qmd)
+- Learn how to interpret the results in [Understanding CSHM Output](../how-to/interpreting-results.qmd)
 - Explore [advanced usage options](advanced-usage.qmd) for customizing the model
 - See how to [validate your results](../how-to/validating-results.qmd) against reference data

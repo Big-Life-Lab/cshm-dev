@@ -1,42 +1,55 @@
 project:
   type: website
   output-dir: _site
-  
+
 website:
   title: "Canadian Smoking Histories Model"
   site-url: https://big-life-lab.github.io/cshm-dev/
   repo-url: https://github.com/Big-Life-Lab/cshm-dev
   repo-actions: [edit, issue]
   page-navigation: true
-  
+
   navbar:
     background: primary
     search: true
     left:
       - text: "Home"
         file: index.qmd
-      - text: "Getting Started"
-        file: docs/tutorials/getting-started.qmd
-      - text: "Reference"
-        file: docs/reference/index.qmd
-      - text: "How-To Guides"
+      - text: "Protocol"
+        file: docs/protocol/full-protocol.qmd
+      - text: "Workflow"
+        file: docs/workflow/index.qmd
+      - text: "How-to guides"
         file: docs/how-to/index.qmd
       - text: "Explanations"
         file: docs/explanation/index.qmd
+      - text: "Reference"
+        file: docs/reference/index.qmd
     right:
       - icon: github
         href: https://github.com/Big-Life-Lab/cshm-dev
         aria-label: GitHub
 
   sidebar:
-    - title: "Tutorials"
+    - title: "Protocol"
       style: "docked"
       contents:
-        - docs/tutorials/getting-started.qmd
-        - docs/tutorials/basic-usage.qmd
-        - docs/tutorials/advanced-usage.qmd
-    
-    - title: "How-To Guides"
+        - docs/protocol/full-protocol.qmd
+        - docs/protocol/study-summary.qmd
+
+    - title: "Workflow"
+      contents:
+        - docs/workflow/index.qmd
+        - docs/workflow/1-variable-setup.qmd
+        - docs/workflow/2-data-loading.qmd
+        - docs/workflow/3-data-cleaning.qmd
+        - docs/workflow/4-descriptive-statistics.qmd
+        - docs/workflow/5-imputation.qmd
+        - docs/workflow/6-descriptive-post-imputation.qmd
+        - docs/workflow/7-apc-data-preparation.qmd
+        - docs/workflow/8-apc-model.qmd
+
+    - title: "How-to guides"
       contents:
         - docs/how-to/index.qmd
         - docs/how-to/data-loading-and-harmonizing.qmd
@@ -47,7 +60,8 @@ website:
         - docs/how-to/validating-results.qmd
         - docs/how-to/custom-models.qmd
         - docs/how-to/integration.qmd
-    
+        - docs/how-to/reproducing-ontario-study.qmd
+
     - title: "Explanations"
       contents:
         - docs/explanation/index.qmd
@@ -55,13 +69,20 @@ website:
         - docs/explanation/apc-method.qmd
         - docs/explanation/validation.qmd
         - docs/explanation/research-applications.qmd
-    
+
     - title: "Reference"
       contents:
         - docs/reference/index.qmd
         - docs/reference/variables.qmd
         - docs/reference/functions.qmd
         - docs/reference/model.qmd
+        - docs/reference/faq.qmd
+
+    - title: "Tutorials"
+      contents:
+        - docs/tutorials/getting-started.qmd
+        - docs/tutorials/basic-usage.qmd
+        - docs/tutorials/advanced-usage.qmd
 
 bibliography: references.bib
 

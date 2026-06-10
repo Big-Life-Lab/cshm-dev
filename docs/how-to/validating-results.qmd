@@ -1,17 +1,17 @@
 ---
 title: "Validating model results"
-subtitle: "Assessing the accuracy of CSHGM predictions"
+subtitle: "Assessing the accuracy of CSHM predictions"
 ---
 
 # Validating model results
 
-This guide explains how to validate the results from the Canadian Smoking History Generator Model.
+This guide explains how to validate the results from the Canadian Smoking Histories Model.
 
 *This page is under development. Content coming soon.*
 
 ## Overview
 
-Validation is a critical step in ensuring that the CSHGM accurately reflects historical smoking patterns and can generate plausible future scenarios.
+Validation is a critical step in ensuring that the CSHM accurately reflects historical smoking patterns and can generate plausible future scenarios.
 
 ## Validation approaches
 

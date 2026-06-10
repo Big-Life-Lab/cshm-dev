@@ -26,8 +26,8 @@ Configuration used:
 | `survey$smoking_status` | `config.yml` | 6-category smoking status |
 | `survey$age_first_cigarette` | `config.yml` | Age at first whole cigarette |
 | `survey$years_since_quit` | `config.yml` | Years since quitting (former daily smokers) |
-| `survey$min_age_initiation` | `config.yml` | APC floor for initiation (8 years) |
-| `survey$min_age_cessation` | `config.yml` | APC floor for cessation (8 years) |
+| `survey_bound(cfg, "age_first_cigarette", "min")` | `config.yml` | APC floor for initiation age (PUMF: 13, Master: 8) |
+| `survey_bound(cfg, "years_since_quit", "min")` | `config.yml` | APC floor for cessation years since quit (0) |
 | `apc$age_knots` | `config.yml` | `[10, 15, 20, 50, 60]` |
 | `apc$period_knots` | `config.yml` | `[1940, 1950, 1960, 1970, 1980]` |
 | `apc$cohort_knots` | `config.yml` | `[1930, 1940, 1945, 1950, 1955, 1960, 1965, 1970, 1975, 1980]` |

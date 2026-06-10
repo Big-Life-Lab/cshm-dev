@@ -58,7 +58,7 @@ create_descriptive_table(
 
 ## Key decisions
 
-**Sex stratification.** Table 1 is stratified by `survey_var(cfg, "sex")` (mapped to `DHH_SEX`). This is consistent with the APC models, which are fit separately by sex. The config abstraction means the table code does not contain any hardcoded CCHS variable names.
+**Sex stratification.** Table 1 is stratified by `survey_var(cfg, "sex")`. This is consistent with the APC models, which are fit separately by sex. The config abstraction means the table code does not contain any hardcoded CCHS variable names.
 
 **Role filtering.** Only variables with `role` containing `"predictor"` appear in Table 1. Variables with `role = "design"` (e.g., survey weights, cycle) or `role = "intermediate"` (raw cchsflow inputs) are excluded. The `select_vars_by_role()` function handles comma-separated multi-role entries correctly.
 

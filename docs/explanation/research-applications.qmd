@@ -1,17 +1,17 @@
 ---
 title: "Research applications"
-subtitle: "Using CSHGM in population health research"
+subtitle: "Using CSHM in population health research"
 ---
 
 # Research applications
 
-This document discusses ways the Canadian Smoking History Generator Model can be applied in research.
+This document discusses ways the Canadian Smoking Histories Model can be applied in research.
 
 *This page is under development. Content coming soon.*
 
 ## Overview
 
-The CSHGM has applications in various fields of research, policy analysis, and public health planning.
+The CSHM has applications in various fields of research, policy analysis, and public health planning.
 
 ## Population health research
 
@@ -31,7 +31,7 @@ Applications in health policy include:
 
 ## Future research directions
 
-Promising areas for future research using the CSHGM include:
+Promising areas for future research using the CSHM include:
 
 1. Integration with e-cigarette and vaping behavior models
 2. Incorporation of social network effects on smoking behavior
@@ -39,4 +39,4 @@ Promising areas for future research using the CSHGM include:
 
 ## Case studies
 
-*This section will include examples of published research using the CSHGM or similar approaches.*
+*This section will include examples of published research using the CSHM or similar approaches.*
