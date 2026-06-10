@@ -1,6 +1,10 @@
 project:
   type: website
   output-dir: _site
+  # The manuscript is its own render product (Word via docstyle) and reads
+  # pipeline targets that fresh clones will not have — keep it out of the site.
+  render:
+    - "!manuscript/"
 
 website:
   title: "Canadian Smoking Histories Model"
