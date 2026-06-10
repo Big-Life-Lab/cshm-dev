@@ -129,3 +129,49 @@ test_that("weighted_quantile interpolates and matches type-7 median under equal 
   expect_equal(weighted_quantile(numeric(0), numeric(0), 0.5), NA_real_)
   expect_equal(weighted_quantile(7, 3, c(0.25, 0.75)), c(7, 7))
 })
+
+test_that("impute_data stops when MICE declines to impute a flagged cell", {
+  d <- make_imputation_test_data()
+  d$flat <- 1                                   # constant: mice sets method ""
+  d$flat[5] <- haven::tagged_na("b")
+  vs <- rbind(make_imputation_variables_sheet(),
+              data.frame(variable = "flat", variableType = "Continuous",
+                         role = "imputation-predictor", source = "both"))
+  cfg <- list(imputation_m = 1, imputation_maxit = 1)
+  # Either guard may fire first: the declined-cell write-back stop or the
+  # scoped chain-mean degeneracy stop — both protect the same contract.
+  expect_error(suppressWarnings(impute_data(d, vs, cfg)), "unimputed|degenerate fit")
+})
+
+test_that("structural-NA variables are excluded as predictors, not as targets", {
+  d <- make_imputation_test_data()
+  vs <- make_imputation_variables_sheet()
+  cfg <- list(imputation_m = 1, imputation_maxit = 1)
+  msgs <- capture_messages(suppressWarnings(impute_data(d, vs, cfg)))
+  excl <- msgs[grepl("Excluded as predictors", msgs)]
+  expect_length(excl, 1)
+  # years_quit (NA(a)/(c)) and status (NA(a) level) carry structural missingness
+  expect_match(excl, "years_quit")
+  expect_match(excl, "status")
+  expect_false(grepl("\\bage\\b", excl))        # complete variables stay predictors
+})
+
+test_that("pack_years_der is recomputed from imputed feeders", {
+  skip_if_not(all(c("calculate_pack_years") %in% getNamespaceExports("cchsflow")))
+  n <- 12
+  d <- data.frame(
+    SMKDSTY_original    = factor(rep("6", n), levels = c("1", "4", "6")),
+    DHHGAGE_cont        = rep(50, n),
+    age_start_smoking   = rep(NA_real_, n),
+    cigs_per_day        = rep(NA_real_, n),
+    time_quit_smoking   = rep(NA_real_, n),
+    SMK_05B             = rep(NA_real_, n),
+    SMK_05C             = rep(NA_real_, n),
+    age_first_cigarette = rep(NA_real_, n),
+    smoked_100_lifetime = rep(2, n),
+    pack_years_der      = rep(99, n)            # stale value to be overwritten
+  )
+  out <- recompute_derived(d)
+  # never-smokers: pack-years recomputed to 0, replacing the stale 99
+  expect_true(all(out$pack_years_der == 0))
+})

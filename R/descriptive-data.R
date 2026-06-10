@@ -9,7 +9,7 @@
 
 #' Calculate descriptive statistics for the CSHM study population
 #'
-#' Computes statistics for all predictor variables stratified by
+#' Computes statistics for all table1-role variables stratified by
 #' model-stratifier. No row stratification is applied in the base table.
 #'
 #' @param data Cleaned or imputed study data frame
@@ -20,8 +20,8 @@
 get_cshm_desc_data <- function(data, variables_sheet, variable_details_sheet,
                                weight_var = NULL) {
   # Table rows are selected by the table1 role (the documented wiring);
-  # columns are stratified by model-stratifier (sex). table1-stratifier
-  # drives the cycle-specific appendix table, not this base table.
+  # columns are stratified by model-stratifier (sex). The cycle-specific
+  # appendix table is wired from config (survey_var cycle/sex), not roles.
   predictor_vars <- select_vars_by_role("table1", variables_sheet)
   sex_stratifier <- select_vars_by_role("model-stratifier", variables_sheet)[1]
   stopifnot(!is.na(sex_stratifier))
@@ -71,6 +71,10 @@ get_cshm_desc_data_mi <- function(imputation_result, variables_sheet,
   if (length(per_imp) == 1) return(per_imp[[1]])
 
   stacked <- dplyr::bind_rows(per_imp, .id = ".imp")
+  # All imputations must produce identical row sets (worksheet-driven rows;
+  # factor levels preserved by the write-back) — averaging mismatched groups
+  # would be silent corruption.
+  stopifnot(nrow(stacked) == nrow(per_imp[[1]]) * length(per_imp))
 
   mean_cols <- intersect(
     c("median", "percentile25", "percentile75", "n", "percent",

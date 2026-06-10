@@ -73,17 +73,55 @@ impute_data <- function(cleaned_data, variables_sheet, cfg) {
   maxit <- cfg$imputation_maxit %||% 5
   message("Running MICE: m=", m, ", maxit=", maxit)
 
+  # Predictor matrix: variables with structural missingness (plain NA in the
+  # modelling frame at where = FALSE cells, i.e. NA(a)/NA(c) in the source)
+  # may BE imputed but must not SERVE as predictors. mice excludes rows with
+  # missing predictors from each conditional model, so a structural-NA
+  # predictor (e.g. time-since-quit, NA(a) for current and never-smokers)
+  # would make most NA(b) cells in other variables unpredictable. The
+  # complete design and auxiliary variables form the predictor core.
+  has_structural <- vapply(impute_vars, function(v) {
+    any(is.na(prep$data[[v]]) & !prep$where[, v])
+  }, logical(1))
+  pred_matrix <- mice::make.predictorMatrix(prep$data)
+  if (any(has_structural)) {
+    pred_matrix[, impute_vars[has_structural]] <- 0L
+    message(
+      "Excluded as predictors (structural missingness): ",
+      paste(impute_vars[has_structural], collapse = ", ")
+    )
+  }
+
   mice_result <- mice::mice(
     prep$data,
-    m         = m,
-    maxit     = maxit,
-    where     = prep$where,
-    printFlag = FALSE
+    m               = m,
+    maxit           = maxit,
+    where           = prep$where,
+    predictorMatrix = pred_matrix,
+    printFlag       = FALSE
   )
 
-  # Surface silently dropped/altered variables (constant, collinear, etc.)
+  # Surface silently dropped/altered variables (constant, collinear, etc.).
+  # Dropping a prespecified design predictor (weight, cycle, sex) silently
+  # voids a protocol property — that is an error, not a warning.
   logged <- mice_result$loggedEvents
   if (!is.null(logged) && nrow(logged) > 0) {
+    design_vars <- intersect(
+      c("WTS_M", "SurveyCycle", "DHH_SEX", "DHHGAGE_cont"), impute_vars
+    )
+    dropped <- unique(unlist(strsplit(as.character(logged$out), ",\\s*")))
+    # mice logs factor predictors as variable+level (e.g. "SurveyCycle10")
+    design_dropped <- design_vars[vapply(design_vars, function(v) {
+      any(dropped == v)
+    }, logical(1))]
+    if (length(design_dropped) > 0) {
+      stop(
+        "MICE dropped prespecified design predictor(s) from the imputation ",
+        "model: ", paste(design_dropped, collapse = ", "),
+        " — the design-consistency property of the protocol no longer holds. ",
+        "Inspect loggedEvents and the predictor matrix.", call. = FALSE
+      )
+    }
     warning(
       "MICE logged events (variables dropped or altered in the imputation model):\n",
       paste(capture.output(print(logged)), collapse = "\n"),
@@ -91,12 +129,22 @@ impute_data <- function(cleaned_data, variables_sheet, cfg) {
     )
   }
 
-  # Convergence check: mice() does not error on pathological chains, so a
-  # quick guard on non-finite chain means catches degenerate fits.
-  if (any(!is.finite(mice_result$chainMean), na.rm = FALSE) &&
-      any(is.nan(mice_result$chainMean))) {
-    warning("Non-finite MICE chain means detected — inspect convergence ",
-            "(mice::plot) before using these imputations.", call. = FALSE)
+  # Convergence check, scoped to the variables that were actually imputed.
+  # (Variables with zero where-TRUE cells always have NaN chain means, so an
+  # unscoped check would warn on every healthy run.)
+  imputed_vars <- imputed_cells$variable[imputed_cells$n_imputed > 0]
+  cm <- mice_result$chainMean[
+    intersect(imputed_vars, dimnames(mice_result$chainMean)[[1]]), , ,
+    drop = FALSE
+  ]
+  if (length(cm) > 0 && any(!is.finite(cm))) {
+    bad <- dimnames(cm)[[1]][apply(!is.finite(cm), 1, any)]
+    stop(
+      "Non-finite MICE chain means for imputed variable(s): ",
+      paste(bad, collapse = ", "),
+      " — degenerate fit; inspect mice::plot() before proceeding.",
+      call. = FALSE
+    )
   }
 
   # Write back: for each imputation, copy ONLY where-matrix cells into the
@@ -129,7 +177,7 @@ impute_data <- function(cleaned_data, variables_sheet, cfg) {
         out[[var]][cells] <- imputed_vals
       }
     }
-    out
+    recompute_derived(out)
   })
 
   message("Imputation complete: ", m, " datasets.")
@@ -137,6 +185,48 @@ impute_data <- function(cleaned_data, variables_sheet, cfg) {
     datasets = datasets, m = m,
     imputed_cells = imputed_cells, logged_events = logged
   )
+}
+
+#' Recompute derived variables from imputed feeders
+#'
+#' Derived variables are not imputed directly (protocol Appendix D): their
+#' feeders are imputed and the derived values are recomputed with the same
+#' cchsflow function used at harmonization, guaranteeing internal consistency
+#' by construction. Currently covers pack_years_der, the one derived variable
+#' in the Table 1 set whose feeders are imputation targets.
+#'
+#' TODO(worksheet-driven): generalize by walking the DerivedVar chain in the
+#' variable-details worksheet instead of naming feeders here.
+#'
+#' @param data A completed (imputed) data frame
+#' @return Data frame with derived variables recomputed
+recompute_derived <- function(data) {
+  if (!"pack_years_der" %in% colnames(data)) return(data)
+
+  as_num <- function(x) {
+    if (is.factor(x)) suppressWarnings(as.numeric(as.character(x))) else x
+  }
+  feeders <- c("SMKDSTY_original", "DHHGAGE_cont", "age_start_smoking",
+               "cigs_per_day", "time_quit_smoking", "SMK_05B", "SMK_05C",
+               "age_first_cigarette", "smoked_100_lifetime")
+  if (!all(feeders %in% colnames(data))) {
+    warning("pack_years_der not recomputed — missing feeders: ",
+            paste(setdiff(feeders, colnames(data)), collapse = ", "),
+            call. = FALSE)
+    return(data)
+  }
+  data$pack_years_der <- cchsflow::calculate_pack_years(
+    smoking_status      = as_num(data$SMKDSTY_original),
+    age                 = as_num(data$DHHGAGE_cont),
+    age_start_smoking   = as_num(data$age_start_smoking),
+    cigs_per_day        = as_num(data$cigs_per_day),
+    time_quit_smoking   = as_num(data$time_quit_smoking),
+    cigs_occasional     = as_num(data$SMK_05B),
+    days_per_month      = as_num(data$SMK_05C),
+    age_first_cigarette = as_num(data$age_first_cigarette),
+    smoked_100_lifetime = as_num(data$smoked_100_lifetime)
+  )
+  data
 }
 
 #' Prepare the MICE modelling frame and where matrix

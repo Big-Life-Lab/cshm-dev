@@ -9,7 +9,7 @@ This appendix specifies the missing-data strategy for the Canadian Smoking Histo
 
 **Method:** Multiple imputation by chained equations (MICE)
 
-**Number of imputations:** *m* = 5, with *maxit* = 5 iterations (production configuration; *m* = 1 in the `dev` profile for fast iteration). The adequacy of *m* will be assessed by examining the fraction of missing information (FMI) for key APC model coefficients; if FMI exceeds 0.5 for any coefficient, *m* will be increased.
+**Number of imputations:** *m* = 5, with *maxit* = 5 iterations (production configuration; *m* = 1 and *maxit* = 1 in the `dev` and `draft` profiles for fast iteration). The adequacy of *m* will be assessed by examining the fraction of missing information (FMI) for key APC model coefficients; if FMI exceeds 0.5 for any coefficient, *m* will be increased.
 
 **Key dependencies:** mice, haven, naniar, VIM
 
@@ -21,7 +21,7 @@ The CSHM pipeline preserves the reason for missingness throughout, using `haven:
 |-----|---------|-----------|
 | NA(a) | Not applicable (e.g., initiation age for never-smokers) | Structural — never imputed |
 | NA(b) | Don't know / refused / not stated | Item non-response — imputed under MAR |
-| NA(c) | Not asked in this survey cycle | Cycle-level absence — imputed under a stronger MAR assumption, with sensitivity analysis |
+| NA(c) | Not asked in this survey cycle | Cycle-level absence — not imputed in the base pipeline; imputing across cycles is evaluated in Phase 4 (delta-adjustment, RDC check) |
 
 Three sources of missingness are specific to this study:
 
@@ -43,9 +43,9 @@ Three sources of missingness are specific to this study:
 
 ### Cells eligible for imputation: the `where` matrix
 
-MICE will be called with an explicit `where` matrix in which a cell is `TRUE` only if its value is tagged NA(b) (or NA(c), for variables imputed across cycle-level absence). This differs from the DemPoRTv2 implementation, which converts all tagged NAs to plain `NA` before imputation: because `haven::tagged_na()` values *are* `NA` to `mice()`, that approach silently imputes structural missingness — for example, inventing quit times for never-smokers. The `where` matrix makes the universe logic automatic: a never-smoker's NA(a) on `age_first_cigarette` is never a candidate cell, while an ever-smoker's NA(b) on the same variable is.
+MICE will be called with an explicit `where` matrix in which a cell is `TRUE` only if its value is tagged NA(b). (Extending the matrix to NA(c) cells for prespecified variables is the mechanism by which cycle-level imputation would be enabled, if the Phase 4 evaluation supports it.) This differs from the DemPoRTv2 implementation, which converts all tagged NAs to plain `NA` before imputation: because `haven::tagged_na()` values *are* `NA` to `mice()`, that approach silently imputes structural missingness — for example, inventing quit times for never-smokers. The `where` matrix makes the universe logic automatic: a never-smoker's NA(a) on `age_first_cigarette` is never a candidate cell, while an ever-smoker's NA(b) on the same variable is.
 
-For categorical variables, the `"NA(a)"` and `"NA(c)"` factor levels are removed from the modelling frame before imputation (and restored afterward) so that polytomous regression cannot assign a structural-missing label as an imputed value.
+For categorical variables, all `"NA(x)"` factor levels are removed from the modelling frame so that polytomous regression cannot assign a structural-missing label as an imputed value; the original levels are preserved in the output because only `where`-matrix cells are written back into the original data.
 
 ### Variables in the imputation model
 
@@ -57,6 +57,8 @@ Predictors are selected by the `imputation-predictor` role in `worksheets/cshm-v
 
 The auxiliary covariates serve two purposes: they strengthen the MAR assumption for item non-response on the smoking variables, and they describe the study base in Tables 1a/1b — groundwork for planned related studies (smoking initiation and cessation prediction models, pseudo-cohort analyses) that will draw on the same harmonized platform. Household income is the one classic non-response auxiliary not yet included: cchsflow harmonizes it only through 2017–18, and extending it to 2019–20 is a pending upstream task.
 
+Variables that carry structural missingness (NA(a)/NA(c)) may *be imputed* but do not *serve as predictors*: mice excludes rows with missing predictor values from each conditional model, so a structural-NA predictor (for example, time since quitting, which is not applicable for current and never-smokers) would make most item non-response in other variables unpredictable. The predictor matrix therefore restricts prediction to the complete design, demographic, and auxiliary variables. A refinement using universe-nested smoking predictors is a documented follow-up.
+
 Including the sampling weight and survey cycle as *predictors* makes the imputation design-consistent without requiring a weighted imputation algorithm — a second improvement over the DemPoRTv2 implementation, which omits design variables. Age, sex, and cycle jointly encode the cohort dimension of the APC analysis model, preserving congeniality with the Stage 8 models.
 
 ### Derived variables
@@ -65,7 +67,7 @@ Derived smoking variables (`pack_years_der`, and any variable with a cchsflow de
 
 ### Imputed data storage and downstream use
 
-All *m* completed datasets are retained (long format keyed by imputation number).
+All *m* completed datasets are retained (a list of completed data frames).
 
 -   **Table 1b** statistics are computed within each completed dataset and averaged across imputations.
 -   **APC models (Stage 8)** are initially fitted on the first completed dataset, with a documented upgrade path to fitting per imputation and pooling coefficients by Rubin's rules. FMI from the pooled fits (Phase 2.3) determines whether the pooled analysis is required for the primary results.
@@ -143,11 +145,11 @@ Fit the APC models on (a) cycles where all key variables are observed (2001–20
 
 ## Implementation checklist
 
--   [ ] Assign `imputation-predictor` roles in `worksheets/cshm-variables.csv` (prespecified set above)
--   [ ] Rewrite `impute_data()` with the `where` matrix, factor-level protection, tag restoration on write-back, and `loggedEvents` surfacing (cshm-dev issue #3)
--   [ ] Extend the descriptive engine with a `weight_var` argument (weighted %, weighted median/IQR); Tables 1a/1b present unweighted n with weighted statistics
--   [ ] Recompute derived variables from imputed feeders via the cchsflow derivation chain
--   [ ] Retain all *m* completed datasets; average Table 1b across imputations
+-   [x] Assign `imputation-predictor` roles in `worksheets/cshm-variables.csv` (prespecified set above)
+-   [x] Rewrite `impute_data()` with the `where` matrix, factor-level protection, tag restoration on write-back, `loggedEvents` surfacing, and the structural-missingness predictor matrix (cshm-dev issue #3)
+-   [x] Extend the descriptive engine with a `weight_var` argument (weighted %, weighted median/IQR); Tables 1a/1b present unweighted n with weighted statistics
+-   [x] Recompute derived variables from imputed feeders via the cchsflow derivation chain (pack_years_der; worksheet-driven generalization pending)
+-   [x] Retain all *m* completed datasets; average Table 1b across imputations
 -   [ ] Add an imputation-diagnostics target and Quarto report (trace plots, density plots, FMI table)
 -   [ ] Golden-record and tagged-NA preservation tests (cshm-dev issue #4)
 -   [ ] Delta-adjustment sensitivity analysis for cycle-absent variables; RDC cross-check at the Master-file stage

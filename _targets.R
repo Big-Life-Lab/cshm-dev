@@ -66,6 +66,14 @@ list(
                           weight_var = survey_var(cfg, "weight"))
   ),
 
+  # Fully unweighted variants (protocol §3.4.1 appendix tables)
+  tar_target(table_1a_unweighted_data,
+    get_cshm_desc_data(cleaned_data, variables_sheet, variable_details_sheet)
+  ),
+  tar_target(table_1b_unweighted_data,
+    get_cshm_desc_data_mi(analysis_data, variables_sheet, variable_details_sheet)
+  ),
+
   # Stage 7: Prepare APC datasets (numerator + denominator combined, by sex)
   # Single target; denominator construction is the expensive step.
   # Keeping as one target lets {targets} cache the full APC data independently

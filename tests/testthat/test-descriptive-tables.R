@@ -255,6 +255,63 @@ test_that("get_cshm_desc_data returns rows only for predictor variables", {
   returned_vars <- unique(result$variable)
   expect_true("DHH_AGE"  %in% returned_vars)
   expect_true("SMKDSTY"  %in% returned_vars)
-  expect_false("WTS_M"   %in% returned_vars)
+  # DHH_SEX is the column stratifier, never a row variable
+  expect_false("DHH_SEX" %in% returned_vars)
   expect_false("SurveyCycle" %in% returned_vars)
+})
+
+# ---- Weighted statistics and MI averaging (protocol v0.3.1) -----------------
+
+test_that("weighted percent and weighted median use the survey weights", {
+  vs  <- make_variables_sheet()
+  vds <- make_variable_details_sheet()
+  d <- data.frame(
+    DHH_SEX  = factor(rep("1", 4), levels = c("1", "2")),
+    DHH_AGE  = c(10, 20, 30, 40),
+    SMKDSTY  = factor(c("1", "1", "2", "2"), levels = c("1", "2")),
+    WTS_M    = c(1, 1, 1, 7)
+  )
+  out <- get_descriptive_data(
+    d, vs, vds, c("DHH_AGE", "SMKDSTY"),
+    stratify_config = list(all = list("DHH_SEX")),
+    weight_var = "WTS_M"
+  )
+  cat2 <- out[out$variable == "SMKDSTY" & out$cat == "2" & out$groupByValue_1 == "1", ]
+  expect_equal(cat2$percent, 0.5)
+  expect_equal(cat2$wtd_percent, 0.8)            # (1 + 7) / 10
+  cont <- out[out$variable == "DHH_AGE" & is.na(out$cat) & out$groupByValue_1 == "1", ]
+  expect_equal(cont$median, 25)                  # unweighted type-7
+  expect_gt(cont$wtd_median, 30)                 # pulled toward upweighted 40
+  expect_error(
+    get_descriptive_data(d, vs, vds, "DHH_AGE",
+                         list(all = list("DHH_SEX")), weight_var = "nope"),
+    "not found"
+  )
+})
+
+test_that("get_cshm_desc_data_mi averages estimates across imputations", {
+  vs  <- make_variables_sheet()
+  vds <- make_variable_details_sheet()
+  base <- data.frame(
+    DHH_SEX = factor(rep("1", 10), levels = c("1", "2")),
+    DHH_AGE = as.numeric(1:10)
+  )
+  d1 <- base; d1$SMKDSTY <- factor(c(rep("1", 4), rep("2", 6)), levels = c("1", "2"))
+  d2 <- base; d2$SMKDSTY <- factor(c(rep("1", 6), rep("2", 4)), levels = c("1", "2"))
+  d2$DHH_AGE <- as.numeric(3:12)
+
+  out <- get_cshm_desc_data_mi(list(datasets = list(d1, d2), m = 2L), vs, vds)
+  daily <- out[out$variable == "SMKDSTY" & out$cat == "1" & out$groupByValue_1 == "1", ]
+  expect_equal(daily$percent, 0.5)               # mean of 0.4 and 0.6
+  expect_equal(daily$n, 5)                       # mean of 4 and 6
+  age <- out[out$variable == "DHH_AGE" & is.na(out$cat) & out$groupByValue_1 == "1", ]
+  expect_equal(age$min, 1)                       # min of minima
+  expect_equal(age$max, 12)                      # max of maxima
+  expect_equal(age$median, 6.5)                  # mean of 5.5 and 7.5
+
+  # m = 1 reduces to the single-dataset call
+  expect_identical(
+    get_cshm_desc_data_mi(list(datasets = list(d1), m = 1L), vs, vds),
+    get_cshm_desc_data(d1, vs, vds)
+  )
 })

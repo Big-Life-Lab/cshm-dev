@@ -21,7 +21,7 @@ Configuration parameters:
 | Parameter | Value | Meaning |
 |-----------|-------|---------|
 | `imputation_m` | 5 | Number of imputed datasets (1 in `dev`/`draft`) |
-| `imputation_maxit` | 5 | MICE iterations per imputation |
+| `imputation_maxit` | 5 | MICE iterations per imputation (1 in `dev`/`draft`) |
 
 ## Code
 

@@ -20,7 +20,11 @@ continuous_predictor_footnote <- paste0(
 # per protocol v0.3.0 §3.4.1. Without weights they fall back to unweighted stats.
 
 format_cat_descriptive_data <- function(descriptive_data_row) {
-  if (is.na(descriptive_data_row[1, "n"]) || descriptive_data_row[1, "n"] == 0) {
+  if (nrow(descriptive_data_row) == 0 || is.na(descriptive_data_row[1, "n"])) {
+    stop("Descriptive table lookup matched no engine row — worksheet/data ",
+         "category mismatch (wiring bug), not an empty stratum.", call. = FALSE)
+  }
+  if (descriptive_data_row[1, "n"] == 0) {
     return("No data")
   }
   pct <- if ("wtd_percent" %in% colnames(descriptive_data_row) &&
@@ -29,12 +33,17 @@ format_cat_descriptive_data <- function(descriptive_data_row) {
   } else {
     descriptive_data_row[1, "percent"]
   }
-  formatted_n <- format(descriptive_data_row[1, "n"], big.mark = ",")
+  # MI-averaged n can be fractional; display as a rounded count
+  formatted_n <- format(round(descriptive_data_row[1, "n"]), big.mark = ",")
   paste0(formatted_n, "\n (", round(pct * 100, 1), ")")
 }
 
 format_cont_descriptive_data <- function(descriptive_data_row) {
-  if (is.na(descriptive_data_row[1, "n"]) || descriptive_data_row[1, "n"] == 0) {
+  if (nrow(descriptive_data_row) == 0 || is.na(descriptive_data_row[1, "n"])) {
+    stop("Descriptive table lookup matched no engine row — worksheet/data ",
+         "mismatch (wiring bug), not an empty stratum.", call. = FALSE)
+  }
+  if (descriptive_data_row[1, "n"] == 0) {
     return("No data")
   }
   weighted <- "wtd_median" %in% colnames(descriptive_data_row) &&
@@ -405,6 +414,7 @@ create_cycle_specific_descriptive_table <- function(
   cycle_col,
   cycle_labels,
   column_stratifier = NULL,
+  weight_var        = NULL,
   sections_order    = NULL,
   include_na        = TRUE
 ) {
@@ -428,7 +438,7 @@ create_cycle_specific_descriptive_table <- function(
 
     cycle_desc <- get_descriptive_data(
       cycle_data, variables_sheet, variable_details_sheet,
-      variables, stratify_config
+      variables, stratify_config, weight_var = weight_var
     )
     cycle_tables[[key]] <- .build_descriptive_table_data(
       cycle_desc, variables_sheet, variable_details_sheet,

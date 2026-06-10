@@ -1,3 +1,7 @@
+# cchsflow must be attached (its derivation functions resolve unqualified
+# dplyr/rlang helpers via Depends) — mirrors tar_option_set in _targets.R
+suppressPackageStartupMessages(library(cchsflow))
+
 # setup.R — loaded automatically by testthat before all test files
 # Sources all R functions from the project root, making them available in tests.
 

@@ -133,10 +133,10 @@ Roles are comma-separated in `cshm-variables.csv`. A variable may carry multiple
 |------|-------|---------|
 | `design` | Survey design | Survey infrastructure (SurveyCycle, WTS_M) |
 | `intermediate` | Harmonization | Raw cchsflow input needed to derive a unified variable; not used directly by pipeline code |
-| `predictor` | Model | Covariate in the APC model or descriptive analysis |
+| `predictor` | Model | Covariate in the APC model |
 | `model-stratifier` | Model | Stratifies APC into separate fits (e.g. DHH_SEX) |
-| `table1` | Descriptive | Row in Table 1 descriptive statistics |
-| `table1-stratifier` | Descriptive | Stratifies Table 1 columns |
+| `table1` | Descriptive | Row in Table 1 (drives row selection in `get_cshm_desc_data()`) |
+| `table1-stratifier` | Descriptive | Reserved for cycle/extra stratification of descriptive tables (not yet consumed by code) |
 | `apc-numerator` | APC data prep | Defines the event indicator in Stage 7 |
 | `apc-denominator` | APC data prep | Constructs the at-risk person-year denominator in Stage 7 |
 | `imputation-predictor` | Imputation | Included in MICE imputation model |

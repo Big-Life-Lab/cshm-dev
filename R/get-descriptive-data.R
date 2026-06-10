@@ -16,6 +16,11 @@
 #' @param probs Probabilities in [0, 1]
 #' @return Numeric vector of weighted quantiles
 weighted_quantile <- function(x, w, probs) {
+  if (anyNA(w) || any(w <= 0)) {
+    stop("weighted_quantile: weights must be positive and non-missing ",
+         "(found ", sum(is.na(w)), " NA and ", sum(!is.na(w) & w <= 0),
+         " non-positive of ", length(w), ").", call. = FALSE)
+  }
   if (length(x) == 0) return(rep(NA_real_, length(probs)))
   if (length(x) == 1) return(rep(x, length(probs)))
   ord <- order(x)
@@ -34,8 +39,18 @@ get_descriptive_data <- function(
   weight_var = NULL
 ) {
   use_weights <- !is.null(weight_var)
-  if (use_weights && !weight_var %in% colnames(data)) {
-    stop("weight_var '", weight_var, "' not found in data.")
+  if (use_weights) {
+    if (!weight_var %in% colnames(data)) {
+      stop("weight_var '", weight_var, "' not found in data.")
+    }
+    w_all <- data[[weight_var]]
+    if (anyNA(w_all) || any(w_all <= 0, na.rm = TRUE)) {
+      stop("Survey weight '", weight_var, "' has ", sum(is.na(w_all)),
+           " missing and ", sum(!is.na(w_all) & w_all <= 0),
+           " non-positive values — weighted statistics would silently ",
+           "renormalize over a different population than the displayed n. ",
+           "Resolve upstream (harmonization/cleaning) first.", call. = FALSE)
+    }
   }
   descriptive_data <- data.frame(
     variable   = c(),
