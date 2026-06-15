@@ -1,8 +1,10 @@
 # A Canadian Smoking Histories Model: a study protocol
 
-Version 0.1.0
+Version 0.2.0
 
-Date: 2025-03-27
+Date: 2026-06-15
+
+Corresponds to full protocol v0.3.2. This one-page summary is versioned on its own track; see [the full protocol](full-protocol.qmd) for the detailed version history.
 
 ## Background
 
@@ -25,7 +27,7 @@ The primary data source will be the Canadian Community Health Survey (CCHS) cond
 
 ### Exposure ascertainment
 
-The `cchsflow` library will harmonize smoking variables in the CCHS across all survey cycles. Appendix X has harmonization details (variables and variable details).
+The `cchsflow` library will harmonize smoking variables in the CCHS across all survey cycles. Appendix A of the full protocol has harmonization details (variables and variable details).
 
 ### Analytical approach
 
@@ -33,8 +35,10 @@ Following the approach developed by Holford et al.[ref] and adapted in Canada by
 
 ## Expected Outcomes
 
-The primary outcome will be a Canadian Smoking Histories Model capable of producing detailed smoking histories by birth cohort, age, sex, and region. The model will provide annual estimates of smoking prevalence, initiation rates, cessation rates, and smoking intensity, both historically (1965-2023) and projected forward (2024-2050). This model will be made available through an online interactive platform and open-source code repository, enabling researchers and policymakers to access detailed smoking parameters for health economic modelling, policy evaluation, and public health planning. The Generator will support various policy planning models, such as Oncosim and POHEM, designed to evaluate the impact of tobacco control policies and predict smoking-attributable disease burden, including cancer, cardiovascular disease, and dementia. By providing Canada-specific smoking parameters at both national and provincial levels, this Generator will enable a more precise estimation of the health and economic impacts in the Canadian context and support evidence-based tobacco control strategies.
+The primary outcome will be a Canadian Smoking Histories Model capable of producing detailed smoking histories by birth cohort, age, sex, and region. The model will provide annual estimates of smoking prevalence, initiation rates, cessation rates, and smoking intensity, both historically (1965-2023) and projected forward (2024-2050). This model will be made available through an online interactive platform and open-source code repository, enabling researchers and policymakers to access detailed smoking parameters for health economic modelling, policy evaluation, and public health planning. The CSHM will support various policy planning models, such as OncoSim and POHEM, designed to evaluate the impact of tobacco control policies and predict smoking-attributable disease burden, including cancer, cardiovascular disease, and dementia. By providing Canada-specific smoking parameters at both national and provincial levels, this Generator will enable a more precise estimation of the health and economic impacts in the Canadian context and support evidence-based tobacco control strategies.
 
 ## Change log
 
-Version 0.1.0. Date: 2025-03-27 Initial 1-page outline.
+Version 0.2.0. Date: 2026-06-15. Refreshed to correspond to full protocol v0.3.2: corrected the harmonization appendix reference (Appendix A) and aligned terminology (CSHM, OncoSim). No change to study scope or methods.
+
+Version 0.1.0. Date: 2025-03-27. Initial 1-page outline.

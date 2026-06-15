@@ -1,9 +1,18 @@
 name: Protocol version check
 
 # The study protocol is a prespecified governance document: any change to
-# docs/protocol/ must be recorded in the version history, not edited silently.
-# This check fails a PR that touches protocol files without bumping
-# version-summary.version in full-protocol.qmd.
+# docs/protocol/ must be recorded in a version bump, not edited silently.
+#
+# Two documents are versioned on independent tracks:
+#   - full-protocol.qmd       — version-summary.version frontmatter; also the
+#                               version of record for appendices and any other
+#                               docs/protocol/ file without its own stamp.
+#   - study-summary.qmd       — a plain-text "Version X.Y.Z" stamp on its own
+#                               track (it summarizes a given full-protocol
+#                               version but advances independently).
+#
+# This check fails a PR that changes either document without bumping that
+# document's own version.
 
 on:
   pull_request:
@@ -18,31 +27,57 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Require a version bump when protocol files change
+      - name: Require a version bump for each changed protocol document
         env:
           BASE_REF: ${{ github.base_ref }}
         run: |
+          set -euo pipefail
           base="origin/${BASE_REF}"
           git fetch origin "${BASE_REF}" --depth=1
 
           changed=$(git diff --name-only "$base"...HEAD -- docs/protocol/)
           echo "Protocol files changed:"
-          echo "$changed"
+          echo "${changed:-<none>}"
+          [ -z "$changed" ] && { echo "No protocol files changed."; exit 0; }
 
-          get_version() {
+          # full-protocol.qmd: version-summary.version frontmatter
+          full_version() {
             git show "$1:docs/protocol/full-protocol.qmd" 2>/dev/null \
               | awk '/^version-summary:/{f=1; next} f && /version:/{gsub(/[" ]/, "", $2); print $2; exit}'
           }
-          base_version=$(get_version "$base")
-          head_version=$(get_version HEAD)
-          echo "Base version: ${base_version:-<none>} | Head version: ${head_version:-<none>}"
+          # study-summary.qmd: first plain-text "Version X.Y.Z" stamp
+          summary_version() {
+            git show "$1:docs/protocol/study-summary.qmd" 2>/dev/null \
+              | grep -m1 -oE 'Version [0-9]+\.[0-9]+\.[0-9]+' | awk '{print $2}'
+          }
 
-          if [ -z "$head_version" ]; then
-            echo "::error::Could not parse version-summary.version from full-protocol.qmd"
-            exit 1
+          fail=0
+
+          # study-summary.qmd is on its own track
+          if echo "$changed" | grep -qx "docs/protocol/study-summary.qmd"; then
+            b=$(summary_version "$base"); h=$(summary_version HEAD)
+            echo "study-summary.qmd: ${b:-<none>} -> ${h:-<none>}"
+            if [ -z "$h" ]; then
+              echo "::error file=docs/protocol/study-summary.qmd::Could not parse a 'Version X.Y.Z' stamp."
+              fail=1
+            elif [ "$b" = "$h" ]; then
+              echo "::error file=docs/protocol/study-summary.qmd::study-summary.qmd changed but its Version stamp is still ${h}. Bump it and add a change-log entry."
+              fail=1
+            fi
           fi
-          if [ "$base_version" = "$head_version" ]; then
-            echo "::error::docs/protocol/ changed but version-summary.version is still ${head_version}. Bump the version and add a version-history entry describing the change."
-            exit 1
+
+          # Any other protocol file (full protocol, appendices, ...) is versioned
+          # via full-protocol.qmd.
+          if echo "$changed" | grep -vx "docs/protocol/study-summary.qmd" | grep -q .; then
+            b=$(full_version "$base"); h=$(full_version HEAD)
+            echo "full-protocol.qmd: ${b:-<none>} -> ${h:-<none>}"
+            if [ -z "$h" ]; then
+              echo "::error file=docs/protocol/full-protocol.qmd::Could not parse version-summary.version."
+              fail=1
+            elif [ "$b" = "$h" ]; then
+              echo "::error file=docs/protocol/full-protocol.qmd::A protocol file changed but version-summary.version is still ${h}. Bump it and add a version-history entry."
+              fail=1
+            fi
           fi
-          echo "Version bumped: ${base_version:-<none>} -> ${head_version}"
+
+          exit $fail

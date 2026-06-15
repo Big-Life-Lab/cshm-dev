@@ -150,7 +150,12 @@ Role vocabulary (single source of truth): [schemas/cshm-variables.yaml](schemas/
 
 ## Protocol versioning
 
-The study protocol is prespecified: any change under `docs/protocol/` (including Appendix D) must bump `version-summary.version` in [docs/protocol/full-protocol.qmd](docs/protocol/full-protocol.qmd) and add a dated `version-history` entry describing the change — in the same commit. Enforced on PRs by `.github/workflows/protocol-version.yml`.
+The study protocol is prespecified: any change under `docs/protocol/` must be recorded in a version bump, in the same commit. Two documents version on **independent tracks**:
+
+- [docs/protocol/full-protocol.qmd](docs/protocol/full-protocol.qmd) — bump `version-summary.version` and add a dated `version-history` entry. This is also the version of record for appendices (e.g. `appendix-imputation.qmd`) and any other `docs/protocol/` file without its own stamp.
+- [docs/protocol/study-summary.qmd](docs/protocol/study-summary.qmd) — bump its plain-text `Version X.Y.Z` stamp and add a `## Change log` entry. The summary notes which full-protocol version it corresponds to, but advances on its own track.
+
+Enforced on PRs by `.github/workflows/protocol-version.yml`, which requires each changed document to bump its own version.
 
 ## Code style
 
