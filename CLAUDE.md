@@ -4,6 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 For project overview, methodology, and architecture see [README.md](README.md) and [docs/development/project-architecture.md](docs/development/project-architecture.md).
 
+Machine-local setup notes, if present, are in `CLAUDE.local.md` (gitignored).
+
 ## Common commands
 
 ```r
