@@ -122,7 +122,7 @@ The `variableStart` worksheet column uses cchsflow notation: `cchs2001_p::SMKA_0
 
 ### cchsflow dependency
 
-Branch: `v3` (smoking work merged 2026-04-29, commit bd0df3ac; PR #163 closed in favour of direct merge). The pipeline reads recoding rules from the in-repo snapshot `worksheets/cchsflow-variable-details.csv` (taken from `~/github/cchsflow/inst/extdata/variable_details.csv` with local fixes for cchsflow #184/#185); refresh it when upstream merges the fixes. renv installs the cchsflow *package* from the local `~/github/cchsflow` checkout on `v3` (CRAN 2.1.0 lacks the v3 derivation functions). Key smoking files:
+Branch: upstream `dev` (locally named `v3`; smoking work merged 2026-04-29, PR #163 closed in favour of direct merge). The pipeline reads recoding rules from the in-repo snapshot `worksheets/cchsflow-variable-details.csv` (taken from `~/github/cchsflow/inst/extdata/variable_details.csv` with local fixes for cchsflow #184/#185); refresh it when upstream merges the fixes. renv installs the cchsflow *package* from GitHub, pinned by SHA in `renv.lock` (`Big-Life-Lab/cchsflow@2d3c1cad`, version 3.0.0 — CRAN 2.1.0 lacks the v3 derivation functions); `renv::restore()` needs no local checkout or credentials. Key smoking files:
 `R/smoke-start.R`, `R/smoke-stop.R`, `R/smoke-intensity.R`, `R/smoking-status.R`, `R/smoking-cessation.R`, `R/clean-variables.R`, `R/missing-data-functions.R`
 
 cchsflow must be *attached* (not just `::`-qualified) when calling `rec_with_table()` — v3 derivation functions use unqualified dplyr/rlang helpers that resolve through its `Depends`. `_targets.R` handles this with `tar_option_set(packages = "cchsflow")`.
