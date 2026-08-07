@@ -47,8 +47,10 @@ validate_cycle_coverage <- function(variables_sheet,
   }
 
   # Build lookup: for each variable in variable_details, which cycles are covered?
-  vd_coverage <- split(variable_details_sheet$databaseStart,
-                        variable_details_sheet$variable)
+  vd_coverage <- split(
+    variable_details_sheet$databaseStart,
+    variable_details_sheet$variable
+  )
   vd_coverage <- lapply(vd_coverage, function(db_strings) {
     unique(trimws(unlist(strsplit(db_strings, ","))))
   })
@@ -68,7 +70,7 @@ validate_cycle_coverage <- function(variables_sheet,
   for (i in seq_len(nrow(active_vars))) {
     var_name <- active_vars$variable[i]
     var_start <- active_vars$variableStart[i]
-    var_role  <- active_vars$role[i]
+    var_role <- active_vars$role[i]
 
     # Skip DerivedVar-only variables (e.g. SurveyCycle)
     if (!is.na(var_start) && grepl("^DerivedVar::", var_start)) next
@@ -129,9 +131,11 @@ validate_cycle_coverage <- function(variables_sheet,
       paste(cycles, collapse = ", ")
     })
     msg_lines <- vapply(names(gap_summary), function(v) {
-      sprintf("  %s [%s]: missing %s", v,
-              critical_gaps$role[critical_gaps$variable == v][1],
-              gap_summary[[v]])
+      sprintf(
+        "  %s [%s]: missing %s", v,
+        critical_gaps$role[critical_gaps$variable == v][1],
+        gap_summary[[v]]
+      )
     }, character(1))
     msg <- paste0(
       "Critical coverage gaps (pipeline-essential variables missing for some cycles):\n",

@@ -10,7 +10,9 @@ survey_var <- function(cfg, key) {
   entry <- cfg$survey[[key]]
   if (is.null(entry)) stop("survey_var: unknown key '", key, "'")
   # Scalar values (e.g. cycle) are stored directly, not as pumf/master lists
-  if (!is.list(entry)) return(entry)
+  if (!is.list(entry)) {
+    return(entry)
+  }
   src <- cfg$data_source %||% "pumf"
   src_entry <- entry[[src]]
   if (is.null(src_entry)) stop("survey_var: no '", src, "' entry for key '", key, "'")

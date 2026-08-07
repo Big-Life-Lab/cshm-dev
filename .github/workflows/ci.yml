@@ -72,10 +72,9 @@ jobs:
           test "$PAGES" -ge 30
 
   style:
-    # Advisory until R/ is restyled (11 of 15 files currently fail styler;
-    # tracked as Phase 0 follow-up). Flip continue-on-error to false then.
+    # Blocking: R/ was restyled in Phase 0 and must stay styler-clean
+    # (CONTRIBUTING.md mandates styler formatting).
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
 

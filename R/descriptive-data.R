@@ -29,10 +29,12 @@ get_cshm_desc_data <- function(data, variables_sheet, variable_details_sheet,
   # Only describe variables that were actually harmonized into data
   # (some variables in the sheet may be absent if no variable_details rows matched)
   available <- intersect(predictor_vars, colnames(data))
-  absent    <- setdiff(predictor_vars, colnames(data))
+  absent <- setdiff(predictor_vars, colnames(data))
   if (length(absent) > 0) {
-    message("Descriptive table: skipping ", length(absent),
-            " variables not in data: ", paste(absent, collapse = ", "))
+    message(
+      "Descriptive table: skipping ", length(absent),
+      " variables not in data: ", paste(absent, collapse = ", ")
+    )
   }
 
   stratify_config <- list()
@@ -68,7 +70,9 @@ get_cshm_desc_data_mi <- function(imputation_result, variables_sheet,
   per_imp <- lapply(datasets, function(d) {
     get_cshm_desc_data(d, variables_sheet, variable_details_sheet, weight_var)
   })
-  if (length(per_imp) == 1) return(per_imp[[1]])
+  if (length(per_imp) == 1) {
+    return(per_imp[[1]])
+  }
 
   stacked <- dplyr::bind_rows(per_imp, .id = ".imp")
   # All imputations must produce identical row sets (worksheet-driven rows;
@@ -77,8 +81,10 @@ get_cshm_desc_data_mi <- function(imputation_result, variables_sheet,
   stopifnot(nrow(stacked) == nrow(per_imp[[1]]) * length(per_imp))
 
   mean_cols <- intersect(
-    c("median", "percentile25", "percentile75", "n", "percent",
-      "wtd_percentile25", "wtd_median", "wtd_percentile75", "wtd_percent"),
+    c(
+      "median", "percentile25", "percentile75", "n", "percent",
+      "wtd_percentile25", "wtd_median", "wtd_percentile75", "wtd_percent"
+    ),
     colnames(stacked)
   )
   key_cols <- setdiff(colnames(stacked), c(".imp", mean_cols, "min", "max"))
