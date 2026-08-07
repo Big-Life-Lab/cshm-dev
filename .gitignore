@@ -45,9 +45,6 @@ docs/.quarto/
 
 /.luarc.json
 
-# Internal development notes (working documents, not for collaborators)
-docs/development/
-
 # Working copies
 worksheets/cshm-variables-working-copy.csv
 

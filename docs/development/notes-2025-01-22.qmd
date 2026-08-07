@@ -1,0 +1,110 @@
+---
+title: "Development notes: 22 January 2025"
+author: "Doug Manuel"
+date: 2025-01-22
+format:
+  html:
+    toc: true
+---
+
+## Summary
+
+Initial planning discussion to orient the CSHM project relative to related repositories and establish the development approach.
+
+## Repositories reviewed
+
+### shg-rcpp (CISNET Smoking History Generator)
+
+**Repository:** [NCI-CISNET/shg-rcpp](https://github.com/NCI-CISNET/shg-rcpp)
+
+An R package wrapping the CISNET Smoking History Generator C++ engine. Key capabilities:
+
+- Simulates smoking initiation age, cessation age, cigarettes per day, and age at death
+- Accepts demographic inputs: race, sex, birth cohort year
+- Uses calibrated probability tables (currently US populations)
+- Supports reproducible simulations via configurable RNG seeds
+
+**Main interface:**
+```r
+shg <- SmokingHistoryGenerator::SHGInterface$new()
+results <- shg$runSimFromDataFrame(population_df)  # columns: race, sex, birth_cohort
+```
+
+**Input probability tables** (in `inst/inputs/default/`):
+
+- `lbc_smokehist_initiation.txt` - Initiation probabilities by race, sex, cohort, age
+- `lbc_smokehist_cessation.txt` - Cessation probabilities
+- `lbc_smokehist_cpd.txt` - Cigarettes per day distributions
+- `lbc_smokehist_oc_mortality.txt` - Other-cause mortality
+
+**Key question:** Can Canadian-calibrated probability tables replace the US tables to generate Canadian smoking histories?
+
+### cchsflow (PR #163 - Smoking harmonisation)
+
+**Pull request:** [Big-Life-Lab/cchsflow#163](https://github.com/Big-Life-Lab/cchsflow/pull/163)
+
+Comprehensive smoking variable harmonisation for CCHS cycles 2001-2023. Adds:
+
+| Variable group | Key variables | Description |
+|---------------|---------------|-------------|
+| Status | `SMKDSTY_cat6` | Six-category smoking classification |
+| Initiation | `age_start_smoking` | Age began daily smoking |
+| Cessation | `time_quit_smoking` | Years since quitting |
+| Intensity | `cigs_per_day` | Daily cigarette consumption |
+| Pack-years | `pack_years_der` | Cumulative lifetime exposure |
+
+**Architectural pattern:** Standardised three-step derived variable approach (input preprocessing, domain calculations, output validation).
+
+This PR supersedes the older smoking variable code in cshgm-dev.
+
+### cshgm-dev
+
+**Repository:** [Big-Life-Lab/cshgm-dev](https://github.com/Big-Life-Lab/cshgm-dev)
+
+Current state assessment:
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| R smoking functions | Obsolete | Superseded by cchsflow PR #163 |
+| APC modelling code | Early stage | R translation from SAS, still relevant |
+| Documentation structure | Heavy | May simplify |
+| Project specifications | Draft | Needs updating to reflect architecture |
+
+## Revised architecture
+
+The CSHM project should focus on Canadian calibration, with data handling and simulation delegated to other packages:
+
+```
+cchsflow (PR #163)           →  CCHS smoking variables (harmonised)
+         ↓
+CSHM (this repo)            →  APC models for Canadian probabilities
+         ↓
+shg-rcpp (CISNET)            →  Smoking history simulation
+```
+
+**CSHM scope:**
+
+- APC modelling to estimate Canadian initiation/cessation probabilities from CCHS
+- Generate probability tables in shg-rcpp format
+- Validation comparing simulated vs observed CCHS smoking patterns
+- Integration glue between cchsflow and shg-rcpp
+
+**Out of scope:**
+
+- CCHS variable harmonisation (cchsflow)
+- Core simulation engine (shg-rcpp)
+
+## Open technical questions
+
+1. **Probability table format:** What is the exact specification for shg-rcpp input files? Need to review format to ensure Canadian tables are compatible.
+
+2. **Race/ethnicity:** CISNET uses US race categories. Canadian data uses different ethnicity/Indigenous status variables. How to map or handle?
+
+3. **Validation:** What benchmarks for validating Canadian-calibrated simulations?
+
+## Next steps
+
+1. Continue development in cshgm-dev repo with updated architecture
+2. Review shg-rcpp probability table format in detail
+3. Update project specifications to reflect streamlined scope
+4. Begin APC modelling workflow documentation

@@ -84,7 +84,7 @@ The pipeline follows the DemPoRT-V2-dev pattern (`~/github/DemPoRT-V2-dev`); its
 | [docs/explanation/](docs/explanation/) | Conceptual explanations of APC methodology |
 | [docs/reference/](docs/reference/) | Variable, function, and model reference |
 
-**Development artefacts** (`docs/development/` — gitignored, local only): planning documents, meeting notes, protocol drafts, pipeline progress notes.
+**Development artefacts** (`docs/development/` — tracked, excluded from the rendered site): planning documents, meeting notes, protocol drafts, pipeline progress notes.
 
 `config.yml` profiles (set via `R_CONFIG_ACTIVE`):
 - **default** — PUMF data from `~/github/cchsflow-data/data/sources/rdata/` (renamed via scripts/rename-pumf-objects.R); full sample
