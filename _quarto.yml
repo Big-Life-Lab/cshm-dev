@@ -3,8 +3,13 @@ project:
   output-dir: _site
   # The manuscript is its own render product (Word via docstyle) and reads
   # pipeline targets that fresh clones will not have — keep it out of the site.
+  # A render list needs positive entries: a negation-only list matches nothing
+  # and the site builds empty (remediation task 0.7).
   render:
+    - "*.qmd"
+    - "docs/**/*.qmd"
     - "!manuscript/"
+    - "!docs/development/"
 
 website:
   title: "Canadian Smoking Histories Model"

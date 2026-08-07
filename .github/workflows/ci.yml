@@ -1,0 +1,86 @@
+# CI for remediation tasks 0.2-0.5: a fresh runner restoring from renv.lock is
+# the clean-machine verification of the lockfile (0.2); tests (0.3), style
+# (0.4, advisory until the repo is restyled), and a site render check (0.5).
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    env:
+      # Posit Package Manager serves Linux binaries; without this, renv builds
+      # 193 packages from source on every cache miss.
+      RENV_CONFIG_REPOS_OVERRIDE: https://packagemanager.posit.co/cran/__linux__/noble/latest
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.4.2"
+
+      - name: Cache renv packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/R/renv
+          key: renv-${{ runner.os }}-${{ hashFiles('renv.lock') }}
+          restore-keys: renv-${{ runner.os }}-
+
+      - name: Install renv
+        run: Rscript -e "install.packages('renv', repos = 'https://cloud.r-project.org')"
+
+      - name: Restore R packages with renv
+        run: Rscript -e "renv::restore(prompt = FALSE)"
+
+      - name: Run tests
+        run: Rscript -e "testthat::test_dir('tests/testthat', stop_on_failure = TRUE)"
+
+  render:
+    # Structural render check: no R execution (see _quarto-ci.yml), so it needs
+    # no package library. Catches render-list and site-config breaks like 0.7.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Render site (no execution)
+        run: quarto render --profile ci
+
+      - name: Site must not be empty
+        run: |
+          test -f _site/index.html
+          PAGES=$(find _site -name '*.html' | wc -l)
+          echo "rendered $PAGES pages"
+          test "$PAGES" -ge 30
+
+  style:
+    # Advisory until R/ is restyled (11 of 15 files currently fail styler;
+    # tracked as Phase 0 follow-up). Flip continue-on-error to false then.
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.4.2"
+          use-public-rspm: true
+
+      - name: Install styler
+        run: Rscript -e "install.packages('styler')"
+
+      - name: Check style (report only)
+        run: |
+          Rscript -e '
+            res <- styler::style_dir("R", dry = "on")
+            changed <- res$file[res$changed]
+            if (length(changed)) {
+              cat("Files needing restyle:\n"); writeLines(paste(" -", changed))
+              quit(status = 1)
+            }
+            cat("R/ is styler-clean\n")
+          '

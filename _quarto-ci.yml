@@ -1,0 +1,7 @@
+# CI profile: quarto render --profile ci
+# Renders the site without executing R chunks, so the structural render check
+# (remediation tasks 0.5/0.7) does not require pipeline outputs. The workflow
+# and results pages execute locally against the targets store (freeze: auto);
+# task 0.6 upgrades CI to an executed draft-profile render.
+execute:
+  enabled: false
