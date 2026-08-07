@@ -322,6 +322,20 @@ default:
     "10": 2020    # 2019-20
     "11": 2022
 
+ci:
+  # Committed 200-row fixtures (data/dev/, canonical cchs*_p.RData naming) so a
+  # fresh clone or CI runner completes an end-to-end pipeline run with no
+  # access to full PUMF extracts (remediation task 0.6). Regenerate fixtures
+  # with scripts/make-dev-fixtures.R. Estimates from this profile are
+  # meaningless; it verifies pipeline mechanics only.
+  # Usage: Sys.setenv(R_CONFIG_ACTIVE = "ci"); targets::tar_make()
+  sample_proportion: 1.0
+  log_level: "DEBUG"
+  log_file: !expr file.path(tempdir(), "cshm-ci.log")
+  raw_data_dir: "data/dev"
+  imputation_m: 1
+  imputation_maxit: 1
+
 draft:
   # 5% sample from cchsflow-data release files (all 11 cycles).
   # Files named CCHS_2001.RData with internal object `table`.
