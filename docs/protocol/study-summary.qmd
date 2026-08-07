@@ -1,10 +1,10 @@
 # A Canadian Smoking Histories Model: a study protocol
 
-Version 0.2.0
+Version 0.3.0
 
-Date: 2026-06-15
+Date: 2026-08-07
 
-Corresponds to full protocol v0.3.2. This one-page summary is versioned on its own track; see [the full protocol](full-protocol.qmd) for the detailed version history.
+Corresponds to full protocol v0.4.0. This one-page summary is versioned on its own track; see [the full protocol](full-protocol.qmd) for the detailed version history.
 
 ## Background
 
@@ -31,13 +31,15 @@ The `cchsflow` library will harmonize smoking variables in the CCHS across all s
 
 ### Analytical approach
 
-Following the approach developed by Holford et al.[ref] and adapted in Canada by Manuel et al.[ref], we will use an age-period-cohort modelling framework to generate smoking histories. The model will consist of two primary components: a smoking initiation model (for people who had not already started smoking) and a smoking cessation model (for those who are currently smoking). We will first construct retrospective smoking histories for each respondent up to the survey date based on their reported age of initiation and cessation. To address survival bias (whereby smokers are less likely to survive to be interviewed), we will apply mortality adjustments using the Mortality Population Risk Tool (MPoRT) \[tba\], which accounts for differential mortality by smoking status. Age-period-cohort models with constrained natural splines will be fitted to estimate smoking initiation and cessation probabilities by birth cohort, age, sex, and province. Additional models will estimate smoking intensity distribution. The models will be calibrated against historical survey estimates of smoking prevalence and then used to project future smoking prevalence through 2050 under status quo conditions.
+Following the approach developed by Holford et al.[ref] and adapted in Canada by Manuel et al.[ref], we will use an age-period-cohort modelling framework to generate smoking histories. The model estimates transitions between three smoking states — never, current, and former — where initiation is the age at first whole cigarette and cessation means stopping smoking completely; daily smoking and intensity are modelled as attributes of current smoking. We will first construct retrospective smoking histories for each respondent up to the survey date based on their reported age of initiation and cessation. To address survival bias (whereby smokers are less likely to survive to be interviewed), we will apply mortality adjustments using the Mortality Population Risk Tool (MPoRT) \[tba\], which accounts for differential mortality by smoking status. Age-period-cohort models with natural splines, identified through an explicitly declared parameterization, will be fitted to estimate smoking initiation and cessation probabilities by birth cohort, age, sex, and province. Additional models will estimate smoking intensity distribution. Uncertainty is quantified with the CCHS bootstrap replicate weights in the Master-file analysis (approximate methods in public-use analyses). The models will be validated against observed CCHS prevalence — including survey cycles held out from fitting — and then used to project future smoking prevalence through 2050 under status quo conditions.
 
 ## Expected Outcomes
 
 The primary outcome will be a Canadian Smoking Histories Model capable of producing detailed smoking histories by birth cohort, age, sex, and region. The model will provide annual estimates of smoking prevalence, initiation rates, cessation rates, and smoking intensity, both historically (1965-2023) and projected forward (2024-2050). This model will be made available through an online interactive platform and open-source code repository, enabling researchers and policymakers to access detailed smoking parameters for health economic modelling, policy evaluation, and public health planning. The CSHM will support various policy planning models, such as OncoSim and POHEM, designed to evaluate the impact of tobacco control policies and predict smoking-attributable disease burden, including cancer, cardiovascular disease, and dementia. By providing Canada-specific smoking parameters at both national and provincial levels, the model will enable a more precise estimation of the health and economic impacts in the Canadian context and support evidence-based tobacco control strategies.
 
 ## Change log
+
+Version 0.3.0. Date: 2026-08-07. Corresponds to full protocol v0.4.0 (methodological amendments following external review and adjudication): named the three smoking states and transition definitions (initiation at first whole cigarette; cessation as stopping completely); identified APC parameterization stated explicitly; uncertainty via CCHS bootstrap replicate weights in the Master-file analysis; validation language corrected from cross-survey calibration to within-CCHS validation with held-out cycles.
 
 Version 0.2.0. Date: 2026-06-15. Refreshed to correspond to full protocol v0.3.2: corrected the harmonization appendix reference (Appendix A) and aligned terminology (CSHM, OncoSim). No change to study scope or methods.
 
