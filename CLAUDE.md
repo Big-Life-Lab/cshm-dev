@@ -66,8 +66,8 @@ The pipeline follows the DemPoRT-V2-dev pattern (`~/github/DemPoRT-V2-dev`); its
 | [R/smoking-histories.R](R/smoking-histories.R) | Rate table generation (Stage 9, stub) |
 | [R/validation.R](R/validation.R) | Prevalence validation |
 | [docs/results/table-1.qmd](docs/results/table-1.qmd) | Table 1a, 1b, and cycle appendix |
-| [R/legacy/smoking.R](R/legacy/smoking.R) | Interim smoking variables (pre-cchsflow v3) |
-| [R/legacy/process_smoking_initiation.R](R/legacy/process_smoking_initiation.R) | APC data prep (pre-pipeline; superseded by R/apc-model.R) |
+| [resources/legacy-code/R/smoking.R](resources/legacy-code/R/smoking.R) | Interim smoking variables (pre-cchsflow v3; moved out of `R/` so `tar_source()` no longer shadows cchsflow exports) |
+| [resources/legacy-code/R/process_smoking_initiation.R](resources/legacy-code/R/process_smoking_initiation.R) | APC data prep (pre-pipeline; superseded by R/apc-model.R) |
 | [resources/legacy-code/Modeling2013.sas](resources/legacy-code/Modeling2013.sas) | Original SAS implementation (Manuel et al. 2020) |
 | docs/references/Manuel_HR_2020.pdf | Key reference paper (local only; PDFs are gitignored) |
 | [config/statscan.yml.example](config/statscan.yml.example) | RDC config template (copy to `config/statscan.yml`, gitignored) |
