@@ -1,7 +1,7 @@
 # Smoking states and transitions: analysis specification
 
 **Task 1.0 of the remediation plan.** Implements protocol v0.4.0, section 3.4.1, and adjudication item A1 (2026-08-07).
-**Status:** ratified 2026-08-27 (PI), revised the same day after external review. One item marked **[confirm]** restates a rule inherited from Manuel et al. (2020) and needs the PI's explicit confirmation. **Depends on** private PR #4 (task 1.7a), which introduces the `"none"` mortality-correction value used in section 6; merge #4 first.
+**Status:** ratified 2026-08-27 (PI), revised the same day after external review. One item marked **[PI to ratify]** restates a rule inherited from Manuel et al. (2020) and needs the PI's explicit decision. **Depends on** private PR #4 (task 1.7a), which introduces the `"none"` mortality-correction value used in section 6; merge #4 first.
 
 ## 1. Why this document exists
 
@@ -11,7 +11,7 @@ The pipeline built its initiation model on one definition of a smoker (anyone wh
 
 Each person is in exactly one state at each age.
 
-**The established-smoker gate [confirm].** A person enters the model's smoking states only if they have smoked at least 100 cigarettes in their lifetime. This is the Manuel et al. (2020) rule, and it follows the CCHS convention: respondents who have smoked a whole cigarette but fewer than 100 in total (experimental smokers) are treated as non-smokers. The gate is observed with the unified variable `smoked_100_lifetime` (cchsflow; PUMF 2001 to 2019--20) and its source question `SMK_01A` (all cycles, including 2022). Age at first whole cigarette supplies the timing of entry only for people who pass the gate; it does not by itself make anyone a smoker.
+**The established-smoker gate [PI to ratify].** A person enters the model's smoking states only if they have smoked at least 100 cigarettes in their lifetime. This is the Manuel et al. (2020) rule, and it follows the CCHS convention: respondents who have smoked a whole cigarette but fewer than 100 in total (experimental smokers) are treated as non-smokers. The gate is observed with the unified variable `smoked_100_lifetime` (cchsflow; PUMF 2001 to 2019--20) and its source question `SMK_01A` (all cycles, including 2022). Age at first whole cigarette supplies the timing of entry only for people who pass the gate; it does not by itself make anyone a smoker.
 
 | State | Definition | How it is observed at survey |
 |---|---|---|
@@ -19,7 +19,7 @@ Each person is in exactly one state at each age.
 | Current | Passed the gate and has not stopped smoking completely (daily or occasional) | `smoked_100_lifetime` = yes and `SMKDSTY_original` = daily, occasional (formerly daily), or occasional (never daily) |
 | Former | Passed the gate and has stopped smoking completely | `smoked_100_lifetime` = yes and `SMKDSTY_original` = former daily or former occasional |
 
-The observed status at survey is the starting point, not the modelled state: the durability rule in section 4 moves people who quit less than two years before the survey from observed Former to modelled Current.
+The table gives the observed status at survey. The modelled state can differ from it: the durability rule in section 4 moves people who quit less than two years before the survey from observed Former to modelled Current.
 
 Two points follow from the definitions. Stopping daily smoking while still smoking occasionally is not a transition; the person stays current. How much a current smoker smokes, and whether they smoke daily, are characteristics of the current state (protocol section 3.4.4), not states of their own.
 
@@ -72,7 +72,7 @@ The generator (shg-rcpp) consumes the rate tables and produces, for each simulat
 | Item | Decision | Source |
 |---|---|---|
 | State model | Established-smoking model: Never, Current, Former | Adjudication A1, 2026-08-07 |
-| Established-smoker gate | At least 100 cigarettes in lifetime; experimental smokers are Never | Manuel et al. 2020, per A1 -- **[confirm]** |
+| Established-smoker gate | At least 100 cigarettes in lifetime; experimental smokers are Never | Manuel et al. 2020, per A1 -- **[PI to ratify]** |
 | 2001 cycle | Complete-cessation timing is NA(c); imputed | PI decision, 2026-08-27 |
 | Interval convention | Age row = year from the *a*-th birthday; event row in risk set; initiation before cessation within a year; survey year included as a full year | Specified here, 2026-08-27 |
 | Entry event | First whole cigarette (`age_first_cigarette`) | A1; Manuel et al. 2020 |
