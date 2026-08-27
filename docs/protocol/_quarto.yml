@@ -42,17 +42,14 @@ docstyle:
     title: "Table of contents"
     levels: "1-3"
   author-plate:
-    enabled: true
-    show-orcid: true
-    show-email: true
-    affiliation-style: numbered
+    enabled: false
   version-history:
     enabled: true
     title: "Version history"
     style: "table-formal"
 
 # Author list and order are TBA: more authors will be added before submission.
-# Rendered by the ::: author-plate ::: placeholder in full-protocol.qmd.
+# Not rendered while docstyle.author-plate.enabled is false.
 authors:
   - name:
       given: "Douglas"
