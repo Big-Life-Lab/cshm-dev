@@ -89,101 +89,139 @@ derive_survey_year <- function(data, cfg) {
 }
 
 
-#' Build combined initiation numerator + denominator dataset
+#' Build the initiation numerator and denominator dataset
 #'
-#' @param data Data frame for one sex, with survey_year and cohort columns
+#' Implements the estimand specification. Never smokers (status = never code) and
+#' experimental smokers (smoked a whole cigarette but fewer than 100) are at risk
+#' from the study floor age to the survey year, with no event. Established
+#' smokers (100 or more cigarettes) have one event at their age at first whole
+#' cigarette and are at risk from the floor age to the year before it. An
+#' established smoker whose entry age is below the floor was already smoking
+#' when observation begins and contributes nothing to this model (they remain in
+#' the cessation model). Records with a missing status, a missing 100-cigarette
+#' answer among ever-smokers, a missing entry age, or an entry age after the
+#' survey age or outside the configured bounds are excluded and counted; task
+#' 1.8c routes them through imputation. Nobody is reclassified as Never because
+#' their information is missing.
+#'
+#' @param data Analysis data (one row per respondent) with a `cohort` column
 #' @param cfg Config object
-#' @return Long-format data frame: age, cohort, period, event, weight
+#' @return Data frame with age, cohort, period, event, weight, plus the attribute
+#'   `initiation_diagnostics` (per-cycle counts, unweighted and weighted)
 build_initiation_data <- function(data, cfg) {
   status_col <- survey_var(cfg, "smoking_status")
-  age_col <- survey_var(cfg, "age_first_cigarette")
+  init_col <- survey_var(cfg, "age_first_cigarette")
+  age_col <- survey_var(cfg, "age")
   weight_col <- survey_var(cfg, "weight")
-  min_age <- survey_bound(cfg, "age_first_cigarette", "min")
+  cycle_col <- survey_var(cfg, "cycle")
+  smoked_100_col <- survey_var(cfg, "established_smoker")
+  smoked_100_yes <- survey_code(cfg, "established_smoker", "yes_code")
+  ever_codes <- survey_code(cfg, "smoking_status", "ever_codes")
+  never_code <- survey_code(cfg, "smoking_status", "never_code")
+  floor_age <- survey_bound(cfg, "age_first_cigarette", "min")
+  init_max <- survey_bound(cfg, "age_first_cigarette", "max")
   cohort_min <- cfg$apc$cohort_min
   period_min <- cfg$apc$period_min
   period_max <- cfg$apc$period_max
 
-  # Restrict to valid cohorts
-  data <- data[data$cohort >= cohort_min, ]
+  data <- data[!is.na(data$cohort) & data$cohort >= cohort_min, ]
 
-  # Identify ever-smokers (status codes from config), age_first_cigarette >= min_age
-  # Never-smokers (SMKDSTY_original = 6) carry NA(a) for age_first_cigarette;
-  # 55 is the legitimate midpoint of the "50+ years" category among ever-smokers.
-  # SMKDSTY_original categories: 1=daily, 2=occ(fmr daily), 3=always occ, 4=fmr daily, 5=fmr occ, 6=never
-  smkdsty <- data[[status_col]]
-  # Established-smoker criterion (estimand specification, section 2): only people who
-  # have smoked 100 or more cigarettes enter the smoking states. Experimental
-  # smokers (a whole cigarette, fewer than 100) are Never: at risk, no event.
-  smoked_100 <- data[[survey_var(cfg, "established_smoker")]]
-  smoked_100_yes <- survey_code(cfg, "established_smoker", "yes_code")
-  ever_codes <- survey_code(cfg, "smoking_status", "ever_codes")
-  ever_smoker <- !is.na(smkdsty) & smkdsty %in% ever_codes & !is.na(smoked_100) & smoked_100 == smoked_100_yes
+  smk <- data[[status_col]]
+  smoked_100 <- data[[smoked_100_col]]
+  age_init <- as.integer(round(data[[init_col]]))
+  age_survey <- as.integer(round(data[[age_col]]))
+  weight <- data[[weight_col]]
+  cycle <- as.character(data[[cycle_col]])
 
-  age_init_raw <- data[[age_col]]
+  status_missing <- is.na(smk)
+  never <- !status_missing & smk == never_code
+  ever_status <- !status_missing & smk %in% ever_codes
+  criterion_missing <- ever_status & is.na(smoked_100)
+  experimental <- ever_status & !is.na(smoked_100) & smoked_100 != smoked_100_yes
+  established <- ever_status & !is.na(smoked_100) & smoked_100 == smoked_100_yes
+  missing_entry <- established & is.na(age_init)
+  entry_invalid <- established & !is.na(age_init) &
+    (age_init > age_survey | age_init > init_max | age_init < 0)
+  entry_before_floor <- established & !is.na(age_init) & !entry_invalid & age_init < floor_age
+  initiator <- established & !is.na(age_init) & !entry_invalid & age_init >= floor_age
+  at_risk_to_survey <- never | experimental
+  excluded <- status_missing | criterion_missing | missing_entry | entry_invalid
 
-  # The analytic floor is survey_bound(cfg, "age_first_cigarette", "min"):
-  # 13 for PUMF, 8 for Master per config.yml. Note SMKG01C_cont has a 5-11
-  # category (midpoint 8) in all PUMF cycles, so a floor of 13 excludes that
-  # group — whether to lower the PUMF floor to 8 is an open study decision.
-  # Source of truth for category midpoints: cchsflow variable_details.csv (recEnd).
-  ages_among_smokers <- age_init_raw[ever_smoker & !is.na(age_init_raw)]
-  if (length(ages_among_smokers) > 0 && min(ages_among_smokers) > 10) {
-    warning(
-      "min(age_first_cigarette) = ", min(ages_among_smokers),
-      " among ever-smokers — early-initiation categories appear absent or ",
-      "excluded by the configured floor (", min_age, "). RDC Master run will ",
-      "use exact ages."
-    )
-  }
+  groups <- list(
+    respondents = rep(TRUE, nrow(data)),
+    never_smokers = never,
+    experimental_smokers = experimental,
+    initiators = initiator,
+    entered_before_floor = entry_before_floor,
+    excluded_status_missing = status_missing,
+    excluded_criterion_missing = criterion_missing,
+    excluded_missing_entry = missing_entry,
+    excluded_entry_invalid = entry_invalid
+  )
+  diag <- summarise_groups(groups, cycle, weight)
+  totals <- vapply(groups, sum, numeric(1))
+  message(
+    "Initiation risk set: ", totals[["respondents"]], " respondents; ",
+    totals[["initiators"]], " initiators (events); ", totals[["never_smokers"]],
+    " never and ", totals[["experimental_smokers"]], " experimental smokers at risk; ",
+    totals[["entered_before_floor"]], " entered before the floor age (no rows). ",
+    "Excluded pending imputation: ", totals[["excluded_status_missing"]], " status missing, ",
+    totals[["excluded_criterion_missing"]], " 100-cigarette answer missing, ",
+    totals[["excluded_missing_entry"]], " entry age missing, ",
+    totals[["excluded_entry_invalid"]], " entry age invalid."
+  )
 
-  # Issue 2: flag implausible initiation ages (age_first > current age)
-  age_survey <- data[[survey_var(cfg, "age")]]
-  implausible <- ever_smoker & !is.na(age_init_raw) & age_init_raw > age_survey
-  n_implausible <- sum(implausible, na.rm = TRUE)
-  if (n_implausible > 0) {
-    message("Excluding ", n_implausible, " rows with age_first_cigarette > current age.")
-  }
-
-  # Valid initiators: ever-smoker, plausible age, age >= min_age
-  valid_init <- ever_smoker &
-    !is.na(age_init_raw) &
-    age_init_raw >= min_age &
-    !implausible
-
-  # Numerator: one row per initiator
-  num <- data[valid_init, ]
-  age_num <- as.integer(round(num[[age_col]]))
   numerator <- data.frame(
-    age    = age_num,
-    cohort = num$cohort,
-    period = num$cohort + age_num,
-    event  = rep(1L, nrow(num)),
-    weight = num[[weight_col]]
+    age = age_init[initiator],
+    cohort = data$cohort[initiator],
+    period = data$cohort[initiator] + age_init[initiator],
+    event = rep(1L, sum(initiator)),
+    weight = weight[initiator]
   )
 
-  # Denominator: person-years at risk before initiation
-  # Person attributes needed for expand
+  in_denom <- at_risk_to_survey | initiator
+  age_denom_max <- ifelse(initiator[in_denom], age_init[in_denom] - 1L, age_survey[in_denom])
   denom_source <- data.frame(
-    person_id = seq_len(nrow(data)),
-    cohort = data$cohort,
-    age_init = ifelse(valid_init, as.integer(round(age_init_raw)), NA_integer_),
-    # Never-smokers and invalid: treat as still at risk through end of period range
-    age_survey = as.integer(round(data[[survey_var(cfg, "age")]])),
-    weight = data[[weight_col]]
+    person_id = seq_len(sum(in_denom)),
+    cohort = data$cohort[in_denom],
+    age_denom_min = rep(floor_age, sum(in_denom)),
+    age_denom_max = age_denom_max,
+    weight = weight[in_denom]
   )
-  # For never-smokers (no initiation), denominator runs to survey age (proxy for period_max)
-  # For initiators, denominator runs up to (but not including) age_init
-  denom_source$age_denom_max <- ifelse(
-    is.na(denom_source$age_init),
-    denom_source$age_survey, # never initiated — at risk through observed age
-    denom_source$age_init - 1L # initiated — at risk until year before initiation
-  )
-
   period_range <- seq(period_min, period_max)
+  denominator <- expand_denominator(denom_source, period_range, floor_age)
 
-  denominator <- expand_denominator(denom_source, period_range, min_age)
+  out <- rbind(numerator, denominator)
+  attr(out, "initiation_diagnostics") <- diag
+  out
+}
 
-  rbind(numerator, denominator)
+
+#' Per-cycle counts (unweighted and weighted) for a list of logical groups
+#'
+#' @param groups Named list of logical vectors of equal length
+#' @param cycle Character vector of cycle codes, same length
+#' @param weight Numeric weights, same length
+#' @return Data frame: group, cycle, n, weighted
+summarise_groups <- function(groups, cycle, weight) {
+  empty <- data.frame(
+    group = character(0), cycle = character(0),
+    n = integer(0), weighted = numeric(0), stringsAsFactors = FALSE
+  )
+  if (length(cycle) == 0) {
+    return(empty)
+  }
+  do.call(rbind, lapply(names(groups), function(g) {
+    sel <- groups[[g]]
+    agg_n <- tapply(as.integer(sel), cycle, sum)
+    agg_w <- tapply(weight * sel, cycle, sum)
+    agg_n[is.na(agg_n)] <- 0L
+    agg_w[is.na(agg_w)] <- 0
+    data.frame(
+      group = g, cycle = names(agg_n), n = as.integer(agg_n),
+      weighted = as.numeric(agg_w), stringsAsFactors = FALSE
+    )
+  }))
 }
 
 
@@ -214,9 +252,10 @@ expand_denominator <- function(denom_source, period_range, min_age) {
     rep(min_age, n)
   }
   rows <- vector("list", n)
+  age_min <- as.integer(round(age_min))
   for (i in seq_len(n)) {
-    co <- denom_source$cohort[i]
-    am <- denom_source$age_denom_max[i]
+    co <- as.integer(round(denom_source$cohort[i]))
+    am <- as.integer(round(denom_source$age_denom_max[i]))
     w <- denom_source$weight[i]
     if (is.na(am) || is.na(co)) next
     # At risk from their own start age to age_denom_max, within the calendar window
@@ -265,8 +304,11 @@ build_cessation_data <- function(data, cfg) {
   age_col <- survey_var(cfg, "age")
   weight_col <- survey_var(cfg, "weight")
   cycle_col <- survey_var(cfg, "cycle")
-  floor_age <- survey_bound(cfg, "age_first_cigarette", "min")
-  durability <- cfg$apc$cessation_durability_years %||% 2
+  floor_age <- survey_bound(cfg, "age_first_cigarette", "min") # default for expand_denominator only
+  durability <- cfg$apc$cessation_durability_years
+  if (is.null(durability)) stop("cfg$apc$cessation_durability_years is not set.")
+  quit_min <- survey_bound(cfg, "years_since_quit_complete", "min")
+  quit_max <- survey_bound(cfg, "years_since_quit_complete", "max")
   cohort_min <- cfg$apc$cohort_min
   period_min <- cfg$apc$period_min
   period_max <- cfg$apc$period_max
@@ -298,8 +340,13 @@ build_cessation_data <- function(data, cfg) {
   missing_entry <- is.na(age_init)
   entry_after_survey <- !missing_entry & age_init > age_survey
   timing_missing <- former & is.na(yrs_quit)
-  quit_before_entry <- former & !is.na(age_quit) & !missing_entry & age_quit < age_init
-  excluded <- missing_entry | entry_after_survey | timing_missing | quit_before_entry
+  # Quit timing must be finite, within the configured bounds for the source
+  # (PUMF top-code, Master ceiling), and place the quit no later than the survey.
+  timing_invalid <- former & !is.na(yrs_quit) &
+    (!is.finite(yrs_quit) | yrs_quit < quit_min | yrs_quit > quit_max |
+      is.na(age_quit) | age_quit > age_survey | age_quit < 0)
+  quit_before_entry <- former & !is.na(age_quit) & !timing_invalid & !missing_entry & age_quit < age_init
+  excluded <- missing_entry | entry_after_survey | timing_missing | timing_invalid | quit_before_entry
   recent <- !excluded & former & yrs_quit < durability
   durable <- !excluded & former & yrs_quit >= durability
   same_age <- durable & age_quit == age_init
@@ -313,26 +360,10 @@ build_cessation_data <- function(data, cfg) {
     excluded_missing_entry = missing_entry,
     excluded_entry_after_survey = entry_after_survey,
     excluded_timing_missing = timing_missing,
+    excluded_quit_timing_invalid = timing_invalid,
     excluded_quit_before_entry = quit_before_entry
   )
-  diag <- do.call(rbind, lapply(names(groups), function(g) {
-    sel <- groups[[g]]
-    if (length(sel) == 0) {
-      return(data.frame(
-        group = character(0), cycle = character(0),
-        n = integer(0), weighted = numeric(0), stringsAsFactors = FALSE
-      ))
-    }
-    agg_n <- tapply(as.integer(sel), cycle, sum)
-    agg_w <- tapply(weight * sel, cycle, sum)
-    agg_n[is.na(agg_n)] <- 0L
-    agg_w[is.na(agg_w)] <- 0
-    data.frame(
-      group = g, cycle = names(agg_n),
-      n = as.integer(agg_n), weighted = as.numeric(agg_w),
-      stringsAsFactors = FALSE
-    )
-  }))
+  diag <- summarise_groups(groups, cycle, weight)
   totals <- vapply(groups, sum, numeric(1))
   message(
     "Cessation risk set: ", totals[["established"]], " established smokers; ",
@@ -342,6 +373,7 @@ build_cessation_data <- function(data, cfg) {
     totals[["excluded_missing_entry"]], " missing entry age, ",
     totals[["excluded_entry_after_survey"]], " entry after survey, ",
     totals[["excluded_timing_missing"]], " missing quit timing, ",
+    totals[["excluded_quit_timing_invalid"]], " quit timing out of bounds, ",
     totals[["excluded_quit_before_entry"]], " quit before entry."
   )
 
@@ -365,7 +397,7 @@ build_cessation_data <- function(data, cfg) {
   denom_source <- data.frame(
     person_id = seq_len(sum(in_denom)),
     cohort = d$cohort[in_denom],
-    age_denom_min = pmax(age_init[in_denom], floor_age),
+    age_denom_min = age_init[in_denom], # each person's own entry age; the floor is reporting-only
     age_denom_max = age_denom_max,
     weight = weight[in_denom]
   )

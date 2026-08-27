@@ -60,8 +60,8 @@ nrow(apc_data$cessation_men)
 nrow(apc_data$cessation_women)
 
 # Event rates
-mean(apc_data$initiation_men$init)
-mean(apc_data$cessation_men$init)
+mean(apc_data$initiation_men$event)
+mean(apc_data$cessation_men$event)
 ```
 
 ## Outputs
@@ -88,9 +88,9 @@ The spline basis columns are built in Stage 8 (`build_spline_basis()`), not stor
 
 **Retrospective history construction.** A current smoker at age 45 in survey year 2014 is recorded as a person-year at risk of cessation at every age from their initiation age to 45. This reconstruction assumes respondents accurately recall their age of initiation and cessation (supported by CCHS validation studies).
 
-**Mortality adjustment.** Ever-smokers are less likely to survive to survey date than never-smokers, creating survival bias. No correction is applied yet: `cfg$apc$mortality_method` is `"none"`, the `weighting` column holds the survey weight alone, and the datasets carry an `estimand_note` attribute stating that results describe respondents who survived to be surveyed. MPoRT (primary) and Peto (sensitivity) are not yet implemented (protocol section 3.4.5).
+**Mortality adjustment.** Ever-smokers are less likely to survive to survey date than never-smokers, creating survival bias. No correction is applied yet: `cfg$apc$mortality_method` is `"none"`, the `weight` column holds the survey weight alone, and the datasets carry an `estimand_note` attribute stating that results describe respondents who survived to be surveyed. MPoRT (primary) and Peto (sensitivity) are not yet implemented (protocol section 3.4.5).
 
-**Cessation model: who is included and when time at risk begins.** The cessation model includes established smokers: people who have smoked 100 or more cigarettes in their lifetime (`smoked_100_lifetime`), whatever their current smoking pattern. The event is stopping smoking completely, dated by `time_quit_smoking_complete`. Each person's time at risk begins at their own age at first whole cigarette; the study floor age (`survey_bound(cfg, "age_first_cigarette", "min")`) is a reporting boundary only. A quit that has lasted fewer than `cfg$apc$cessation_durability_years` (2) years at the survey does not count as cessation: the person is a current smoker at the survey and their time at risk ends at the quit age without an event. A person who started and stopped at the same age contributes one year at risk with the event in it. People with a missing entry age or missing quit timing (including the whole 2001 cycle, where the stopped-completely questions were not asked) are excluded here and counted in the `cessation_diagnostics` attribute; imputation (task 1.8c) will supply their values. See `docs/development/estimand-specification.md`.
+**Cessation model: who is included and when time at risk begins.** The cessation model includes established smokers: people who have smoked 100 or more cigarettes in their lifetime (`smoked_100_lifetime`), whatever their current smoking pattern. The event is stopping smoking completely, dated by `time_quit_smoking_complete`. Each person's time at risk begins at their own age at first whole cigarette; the study floor age (`survey_bound(cfg, "age_first_cigarette", "min")`) is a reporting boundary only. A quit that has lasted fewer than `cfg$apc$cessation_durability_years` (2) years at the survey does not count as cessation: the person is a current smoker at the survey and their time at risk ends at the quit age without an event. A person who started and stopped at the same age contributes one year at risk with the event in it. People with a missing entry age or missing quit timing (including the whole 2001 cycle and the 2022 PUMF cycle, where the stopped-completely timing is not available) are excluded here and counted in the `cessation_diagnostics` attribute; imputation (task 1.8c) will supply their values. See `docs/development/estimand-specification.md`.
 
 **Four separate data frames, not one.** Men and women are modelled separately (consistent with Manuel et al. 2020). Initiation and cessation are separate models. Keeping four data frames lets Stage 8 fit all four models in parallel using `{targets}` branching.
 

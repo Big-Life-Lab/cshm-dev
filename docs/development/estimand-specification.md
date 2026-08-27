@@ -36,7 +36,7 @@ The CCHS does not ask the age at which the 100th cigarette was smoked, so the ag
 
 **Consequence for the code.** The cessation model currently includes only ever-daily smokers and uses `time_quit_smoking_daily` (config key `years_since_quit`). Under this specification the model includes all established smokers and the exit variable is `time_quit_smoking_complete`. Task 1.3 makes this change; the config key and the worksheet roles change with it.
 
-**The 2001 cycle (decided 2026-08-27).** `time_quit_smoking_complete` is derived from questions first asked in 2003. For 2001 the timing of complete cessation is treated as not asked in that cycle (NA(c)) and handled by the imputation procedure for cycle-level absence (Appendix D); the 2001 `time_quit_smoking` variable, which lacks the "stopped completely" question, is not used as a substitute.
+**Cycles without complete-cessation timing (decided 2026-08-27).** `time_quit_smoking_complete` is derived from questions first asked in 2003, and cchsflow does not derive it for the 2022 PUMF (the 2023 Master file has it). For 2001, and for the 2022 PUMF, the timing of complete cessation is treated as not asked in that cycle (NA(c)) and handled by the imputation procedure for cycle-level absence (Appendix D); the 2001 `time_quit_smoking` variable, which lacks the "stopped completely" question, is not used as a substitute.
 
 ## 4. Event-time conventions
 

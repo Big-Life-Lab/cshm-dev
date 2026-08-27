@@ -201,8 +201,8 @@ default:
         var: smoked_100_lifetime
         yes_code: 1
     # Cessation exit: years since stopped smoking COMPLETELY (estimand specification,
-    # section 3). Derived from questions first asked in 2003; in 2001 it is not asked
-    # (NA(c)) and is handled by the imputation path for cycle-level absence.
+    # section 3). Derived from questions first asked in 2003; not available in 2001 or
+    # the 2022 PUMF (NA(c)); handled by the imputation path for cycle-level absence.
     years_since_quit_complete:
       pumf:
         var: time_quit_smoking_complete  # midpoint-estimated; top-coded at 15
