@@ -176,7 +176,7 @@ test_that("fit_apc_model carries the mortality-correction label and estimand not
   apc_data <- prepare_apc_data(make_apc_test_data(cfg), cfg)
   ds <- apc_data$initiation_men
   expect_identical(attr(ds, "mortality_correction"), "none")
-  fit <- fit_apc_model(ds, "initiation", "men", cfg)
+  fit <- fit_apc_model(ds, "initiation", 1, cfg) # sex is coded 1 = men
   expect_identical(attr(fit, "mortality_correction"), "none")
   expect_match(attr(fit, "estimand_note"), "survived to be surveyed")
 })
