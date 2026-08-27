@@ -25,6 +25,7 @@ docstyle:
   css:
     - ../../popcorn-base.css
     - ../../pop-draft-manuscript.css
+    - protocol.css
   sidecar-dir: _docstyle
   header:
     enabled: true
