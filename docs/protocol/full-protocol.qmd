@@ -63,7 +63,7 @@ Smoking behaviour varies across birth cohorts in ways that affect projections of
 
 The Smoking History Generator (SHG) framework, developed by the National Cancer Institute (NCI) CISNET Smoking Working Group, characterizes these patterns in the United States using Age-Period-Cohort (APC) models [@Holford_AJPM_2014]. This approach was adapted for Ontario [@Manuel_HR_2020], demonstrating that Canadian Community Health Survey (CCHS) data can be used to reconstruct birth-cohort-specific smoking histories from 1965 to 2013. A pan-Canadian equivalent covering all provinces and territories has not yet been developed.
 
-Three gaps motivate the CSHM. First, Canada’s tobacco control landscape occurs at both the national and regional levels, with provincial variation in taxation, smoke-free legislation, and cessation support. Second, Canadian smoking initiation and cessation patterns differ from those in other countries, particularly in the timing of peak prevalence and the rate of decline among younger cohorts. Third, Canadian health policy models (e.g., OncoSim, POHEM, SimSmoke) rely on behaviour transition parameters from the 1994--2004 National Population Health Survey (NPHS), now over 20 years old, with no planned replacement [@hennessy2015; @gauvreau2017; @chaiton2021]; these parameters no longer reflect contemporary patterns, particularly among younger cohorts, immigrant populations, and lower-income groups. The CCHS [@beland2002], with over 1.4 million respondents and annual data collection since 2001, provides an unparalleled opportunity to address this gap. The methods and infrastructure developed here build on those of other similar studies [@kopasker2023; @vasquezlavin2022]. This study addresses these gaps by introducing an open-source framework for generating smoking histories across all Canadian jurisdictions.
+Three gaps motivate the CSHM. First, Canada’s tobacco control landscape occurs at both the national and regional levels, with provincial variation in taxation, smoke-free legislation, and cessation support. Second, Canadian smoking initiation and cessation patterns differ from those in other countries, particularly in the timing of peak prevalence and the rate of decline among younger cohorts. Third, Canadian health policy models (e.g., OncoSim, POHEM, SimSmoke) rely on behaviour transition parameters from the 1994--2004 National Population Health Survey (NPHS), now over 20 years old, with no planned replacement [@hennessy2015; @gauvreau2017; @chaiton2021]. These parameters no longer reflect contemporary patterns, particularly among younger cohorts, immigrant populations, and lower-income groups. The CCHS [@beland2002], with over 1.4 million respondents and annual data collection since 2001, provides an unparalleled opportunity to address this gap. The methods and infrastructure developed here build on those of other similar studies [@kopasker2023; @vasquezlavin2022]. This study addresses these gaps by introducing an open-source framework for generating smoking histories across all Canadian jurisdictions.
 
 # 2. Objectives
 
@@ -76,7 +76,7 @@ This study will develop a Canadian Smoking Histories Model (CSHM) that describes
 3.  **Project future smoking prevalence:** Model future trends in smoking prevalence and related parameters through 2050 under status quo policy conditions.
 4.  **Develop an open-access model:** Create a publicly-accessible, reproducible R-based model that can be used and updated by researchers, policy analysts, and health system planners.
 
-The model will provide demographic and geographic estimates (by single year of age and birth cohort) to interface with existing population health models. Historical reconstruction will cover the period 1965--2023, with projections extending from 2024 to 2050. Analysis will be conducted at the provincial level, with national estimates derived from aggregated provincial data.
+The model will provide demographic and geographic estimates (by single year of age and birth cohort) to interface with existing population health models and support smoking projections and the evaluation of smoking preventive interventions, amongst other uses Historical reconstruction will cover the period 1965--2023, with projections extending from 2024 to 2050. Analysis will be conducted at the provincial level, with national estimates derived from aggregated provincial data.
 
 # 3. Methods
 
@@ -96,11 +96,11 @@ Individuals transition between these states according to annual probabilities of
 
 > ISPOR-SMDM: Model structure; STRESS: Conceptualization
 
-The APC framework separates temporal trends into three distinct components: age effects (biological and developmental influences), period effects (e.g., policy shifts or social norms), and cohort effects (generational differences). This framework is used for three reasons:
+The APC framework separates temporal trends into three distinct components: age effects (developmental influences), period effects (e.g., policy shifts or social norms), and cohort effects (generational differences). This framework is used for three reasons:
 
-1.  **Identifiability:** It addresses the fundamental APC identity ($cohort = period - age$) through constrained natural cubic splines, enabling the estimation of unique generational trends.
-2.  **Historical Reconstruction:** It enables the back-calculation of smoking rates for birth cohorts, using current survivors to understand historical patterns.
-3.  **Survival Bias Mitigation:** It provides a method to correct for differential mortality (the "healthy survivor" effect), ensuring that estimated historical initiation and cessation rates reflect the original population rather than only those who survived to be surveyed.
+1.  **Identifiability:** It addresses the fundamental APC identity ($cohort = period - age$) through cubic splines, enabling the estimation of unique generational trends.
+2.  **Historical reconstruction:** It enables the back-calculation of smoking rates for birth cohorts, using current survivors to understand historical patterns.
+3.  **Survival bias mitigation:** It provides a method to correct for differential mortality (the "healthy survivor" effect), ensuring that estimated historical initiation and cessation rates reflect the original population rather than only those who survived to be surveyed.
 
 > ISPOR-SMDM: Analytical approach; GATHER: Methods overview
 
