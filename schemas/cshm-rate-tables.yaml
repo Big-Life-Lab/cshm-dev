@@ -162,10 +162,13 @@ slots:
 
   mortality_correction:
     description: >-
-      Mortality correction method applied before model fitting.
-      "peto" — Peto method (survival weight proportional to 1/survival).
-      "mport" — MPoRT weights adjusted for age, smoking status, years since
-      quitting, immigration, and sex (not yet implemented).
+      Mortality correction method applied.
+      "none" -- no correction; the rates are estimates among respondents who
+      survived to be surveyed (current default).
+      "mport" -- MPoRT survival-bias adjustment by age, sex, smoking status,
+      years since quitting, and immigration (primary; not yet implemented).
+      "peto" -- constant mortality risk ratio by smoking status (sensitivity
+      analysis; not yet implemented).
     range: string
 
 # ---------------------------------------------------------------------------

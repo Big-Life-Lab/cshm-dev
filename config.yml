@@ -242,11 +242,13 @@ default:
     # Sensitivity: "rcs" (restricted cubic splines via rms::rcs())
     spline_library: "splines2"
     spline_type: "nsp"
-    # Mortality adjustment method
-    # Primary: "mport" (MPoRT algorithm — see protocol §3.4.4)
-    # Sensitivity: "peto" (Peto constant risk ratio, consistent with Holford et al. 2014)
-    # NOTE: mport not yet implemented; peto used during development.
-    mortality_method: "peto"
+    # Mortality adjustment method (protocol section 3.4.5)
+    #   "none"  -- no correction; outputs are estimates among respondents who
+    #              survived to be surveyed, and are labelled as such
+    #   "mport" -- MPoRT survival-bias adjustment (primary; not yet implemented)
+    #   "peto"  -- constant risk ratio by smoking status (sensitivity; not yet implemented)
+    # A method other than "none" must change the weights or the pipeline stops.
+    mortality_method: "none"
     # Subgroup structure for model stratification
     # Subgroup stratification uses config keys (resolved via survey_var() at runtime)
     subgroups:
@@ -268,11 +270,14 @@ default:
       alternative: "rcs"
     mortality_method:
       description: >
-        Test Peto constant mortality risk ratio versus the primary MPoRT adjustment.
-        Peto is consistent with the original Holford et al. (2014) US implementation.
-        Override: cfg$apc$mortality_method <- "peto"
+        Test the Peto constant mortality risk ratio versus the primary MPoRT
+        adjustment. Peto is consistent with the original Holford et al. (2014) US
+        implementation. Neither is implemented yet (remediation task 1.7b); the
+        pipeline currently runs with "none" and labels outputs as estimates among
+        survivors. Override once implemented: cfg$apc$mortality_method <- "peto"
       primary: "mport"
       alternative: "peto"
+      current: "none"
     period_constraints:
       description: >
         Test alternative period constraint years (e.g. extending to 2003/2007 for

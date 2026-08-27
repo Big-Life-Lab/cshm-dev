@@ -56,7 +56,7 @@ create a double-adjustment. The Peto method (weight × 1.0) avoids this issue.
 **Fix required:** Clarify MPoRT weight adjustment mechanism before enabling `mortality_method: "mport"`.
 Document the interaction in the protocol (§3.4.3).
 
-**Status:** MPoRT stub raises `stop()`. Peto is the default. Revisit when MPoRT is implemented.
+**Status (2026-08-27):** `mortality_method` defaults to `"none"`; `mport` and `peto` both stop as not implemented; a correction that changes no weights stops (task 1.7a). Estimator derivation is task 1.7b.
 
 ---
 
