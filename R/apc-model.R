@@ -111,7 +111,7 @@ build_initiation_data <- function(data, cfg) {
   # 55 is the legitimate midpoint of the "50+ years" category among ever-smokers.
   # SMKDSTY_original categories: 1=daily, 2=occ(fmr daily), 3=always occ, 4=fmr daily, 5=fmr occ, 6=never
   smkdsty <- data[[status_col]]
-  # Established-smoker gate (estimand specification, section 2): only people who
+  # Established-smoker criterion (estimand specification, section 2): only people who
   # have smoked 100 or more cigarettes enter the smoking states. Experimental
   # smokers (a whole cigarette, fewer than 100) are Never: at risk, no event.
   gate <- data[[survey_var(cfg, "established_smoker")]]
@@ -193,8 +193,8 @@ build_initiation_data <- function(data, cfg) {
 #' `age_denom_max`, restricted to the calendar window `period_range`.
 #'
 #' @param denom_source Data frame with: person_id, cohort, age_denom_max, weight,
-#'   and optionally `age_denom_min` (per-person start age; the cessation clock
-#'   starts at each person's own entry age). Rows without it use `min_age`.
+#'   and optionally `age_denom_min` (per-person start age; time at risk of
+#'   cessation begins at each person's own entry age). Rows without it use `min_age`.
 #' @param period_range Integer vector of calendar years
 #' @param min_age Default minimum age for being at risk (used when
 #'   `age_denom_min` is absent or NA)
@@ -239,12 +239,12 @@ expand_denominator <- function(denom_source, period_range, min_age) {
 #' Build the cessation numerator and denominator dataset
 #'
 #' Implements the estimand specification (docs/development/estimand-specification.md).
-#' The universe is established smokers (100 or more cigarettes; SMKDSTY 1 to 5).
+#' The model includes established smokers (100 or more cigarettes; SMKDSTY 1 to 5).
 #' The event is stopping smoking completely, dated by `years_since_quit_complete`.
-#' Each person's risk clock starts at their own age at first whole cigarette.
+#' Each person's time at risk begins at their own age at first whole cigarette.
 #' A quit counts only if it has lasted `cfg$apc$cessation_durability_years` at the
 #' survey; otherwise the person is current at survey and censored at the quit age.
-#' A quit at the entry age is a one-year spell: one trial, with the event.
+#' A person who started and stopped at the same age contributes one trial, with the event.
 #'
 #' People whose entry age is missing or later than the survey age, whose quit
 #' precedes their entry, or whose quit timing is missing (including the 2001
@@ -273,7 +273,7 @@ build_cessation_data <- function(data, cfg) {
 
   data <- data[!is.na(data$cohort) & data$cohort >= cohort_min, ]
 
-  # Universe: established smokers. Status codes and their state groupings come
+  # Included population: established smokers. Status codes and their state groupings come
   # from config (survey.smoking_status.*_codes), not from literals here.
   ever_codes <- survey_code(cfg, "smoking_status", "ever_codes")
   current_codes <- survey_code(cfg, "smoking_status", "current_codes")
@@ -309,7 +309,7 @@ build_cessation_data <- function(data, cfg) {
     current_at_survey = !excluded & current,
     durable_quitters = durable,
     recent_quitters_censored = recent,
-    same_age_spells = same_age,
+    same_age_quits = same_age,
     excluded_missing_entry = missing_entry,
     excluded_entry_after_survey = entry_after_survey,
     excluded_timing_missing = timing_missing,
@@ -338,7 +338,7 @@ build_cessation_data <- function(data, cfg) {
     "Cessation risk set: ", totals[["established"]], " established smokers; ",
     totals[["durable_quitters"]], " durable quitters (events); ",
     totals[["recent_quitters_censored"]], " recent quitters censored; ",
-    totals[["same_age_spells"]], " same-age spells. Excluded pending imputation: ",
+    totals[["same_age_quits"]], " started and stopped at the same age. Excluded pending imputation: ",
     totals[["excluded_missing_entry"]], " missing entry age, ",
     totals[["excluded_entry_after_survey"]], " entry after survey, ",
     totals[["excluded_timing_missing"]], " missing quit timing, ",
@@ -358,7 +358,8 @@ build_cessation_data <- function(data, cfg) {
   # risk from entry to the survey year (included as a full year). Durable and
   # recent quitters are at risk from entry to the year before the quit year: the
   # quit year is the event row for durable quitters and unobservable for recent
-  # quitters. A same-age spell has no denominator row; its one trial is the event.
+  # quitters. Someone who started and stopped at the same age has no denominator row;
+  # their one trial is the event.
   in_denom <- !excluded & (current | durable | recent)
   age_denom_max <- ifelse(current[in_denom], age_survey[in_denom], age_quit[in_denom] - 1L)
   denom_source <- data.frame(
@@ -665,12 +666,12 @@ fit_binomial_apc <- function(basis_matrix, event, weight) {
   cell_df$.pop <- pop
 
   # Guards (public issue #3, items 4 and 7): a model fitted to no events, or that
-  # did not converge, must fail loudly rather than return a plausible-looking fit.
+  # did not converge, stops with an error rather than returning a fit that looks valid.
   if (sum(event == 1) == 0 || sum(d) <= 0) {
     stop(
       "fit_binomial_apc: the numerator is empty (", sum(event == 1), " event rows, ",
-      "weighted events = ", sum(d), "). A model with no events would encode ",
-      "'nobody ever made this transition'."
+      "weighted events = ", sum(d), "). A model with no events would estimate ",
+      "that this transition never happens."
     )
   }
   if (any(pop <= 0) || any(d > pop)) {

@@ -190,7 +190,7 @@ default:
         var: age_start_smoking    # Exact age from SMK_040
         min: 8
         max: 100
-    # Established-smoker gate (estimand specification, section 2): at least 100
+    # Established-smoker criterion (estimand specification, section 2): at least 100
     # cigarettes in lifetime. Experimental smokers (fewer than 100) are Never.
     # `yes_code` is the value meaning "smoked 100 or more" (CCHS SMK_01A: 1 = yes, 2 = no).
     established_smoker:

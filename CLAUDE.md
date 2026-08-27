@@ -110,7 +110,7 @@ python3 ~/github/cchsflow-docs/mcp-server/cli.py compare cchs2013_2014_p cchs201
 
 The `variableStart` worksheet column uses cchsflow notation: `cchs2001_p::SMKA_01A, cchs2007_2008_p::SMK_01A, [SMK_01A]` — `_p` = PUMF, `_m` = Master, `[VAR]` = fallback name.
 
-**Unified variables (preferred):** `age_first_cigarette` (entry), `smoked_100_lifetime` (established-smoker gate), `time_quit_smoking_complete` (cessation exit, 2003+), `age_start_smoking` and `time_quit_smoking_daily` (daily-smoking attributes)
+**Unified variables (preferred):** `age_first_cigarette` (entry), `smoked_100_lifetime` (established-smoker criterion), `time_quit_smoking_complete` (cessation exit, 2003+), `age_start_smoking` and `time_quit_smoking_daily` (daily-smoking attributes)
 
 **Master-only continuous:** `SMK_01C`, `SMK_040`, `SMK_09C` / `SMK_06C` / `SMK_10C`
 
@@ -120,7 +120,7 @@ The `variableStart` worksheet column uses cchsflow notation: `cchs2001_p::SMKA_0
 
 **APC model variables (internal):** `age`, `cohort`, `period`, `event`, `weight`
 
-**Value codes are configuration, not code.** Status groupings (`survey.smoking_status.<src>.ever_codes/current_codes/former_codes/never_code`), sex codes (`survey.sex.<src>.men_code/women_code`), the established-smoker gate (`survey.established_smoker.<src>.yes_code`), and analytic thresholds (`apc.cessation_durability_years`, bounds via `survey_bound()`) live in `config.yml` and are read with `survey_code()` / `survey_bound()`. Do not write literal codes or thresholds into R. Remaining exception, scheduled as plan task 2.6: literal variable names in `R/imputation.R`.
+**Value codes are configuration, not code.** Status groupings (`survey.smoking_status.<src>.ever_codes/current_codes/former_codes/never_code`), sex codes (`survey.sex.<src>.men_code/women_code`), the established-smoker criterion (`survey.established_smoker.<src>.yes_code`), and analytic thresholds (`apc.cessation_durability_years`, bounds via `survey_bound()`) live in `config.yml` and are read with `survey_code()` / `survey_bound()`. Do not write literal codes or thresholds into R. Remaining exception, scheduled as plan task 2.6: literal variable names in `R/imputation.R`.
 
 ### cchsflow dependency
 

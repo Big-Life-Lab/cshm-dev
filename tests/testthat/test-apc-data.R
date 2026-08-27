@@ -157,7 +157,7 @@ test_that("build_cessation_data: recent quitter is censored at the quit age with
   expect_equal(sum(diag$n[diag$group == "recent_quitters_censored"]), 1L)
 })
 
-test_that("build_cessation_data: same-age initiation and cessation is one trial with the event", {
+test_that("build_cessation_data: starting and stopping at the same age is one trial with the event", {
   cfg <- cess_cfg()
   s <- one_person(cfg, status = 5, age_first = 30, yrs_quit_complete = 20, age = 50, survey_year = 2010)
   result <- suppressMessages(build_cessation_data(s, cfg))
@@ -165,7 +165,7 @@ test_that("build_cessation_data: same-age initiation and cessation is one trial 
   expect_equal(result$event, 1L)
   expect_equal(result$age, 30L)
   diag <- attr(result, "cessation_diagnostics")
-  expect_equal(sum(diag$n[diag$group == "same_age_spells"]), 1L)
+  expect_equal(sum(diag$n[diag$group == "same_age_quits"]), 1L)
 })
 
 test_that("build_cessation_data: missing quit timing (e.g. 2001, NA(c)) is excluded and counted, not reclassified", {
