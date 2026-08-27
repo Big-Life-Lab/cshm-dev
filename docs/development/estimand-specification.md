@@ -1,7 +1,7 @@
 # Smoking states and transitions: analysis specification
 
 **Task 1.0 of the remediation plan.** Implements protocol v0.4.0, section 3.4.1, and adjudication item A1 (2026-08-07).
-**Status:** draft, 2026-08-27. Items marked **[decision]** need the PI's ratification before model fitting; everything else restates the protocol in operational terms.
+**Status:** ratified 2026-08-27 (PI). The same-age rule, the one item that was open, is decided below; everything else restates the protocol in operational terms.
 
 ## 1. Why this document exists
 
@@ -37,7 +37,7 @@ Not modelled as transitions: relapse (Former back to Current) and daily onset (C
 - **Initiation risk.** From the study floor age (`survey_bound(cfg, "age_first_cigarette", "min")`) to the age at first cigarette (event) or the survey age (censored), whichever comes first. Never smokers are at risk at every age up to the survey.
 - **Cessation risk.** From the person's own age at first cigarette to the age they stopped completely (event) or the survey age (censored). No person-year before entry. A fixed minimum age, if used, is a reporting boundary only.
 - **Durable cessation.** The primary definition of cessation is a quit that has lasted at least two years at the survey. A person who quit less than two years before the survey is a current smoker at the survey; in the cessation model they contribute person-years up to the reported quit age and are then censored, with no event.
-- **Same-age initiation and cessation [decision].** When the age at first cigarette equals the age at stopping, the data cannot show which came first within the year. *Proposed primary rule:* treat it as a one-year spell. The person enters Current at that age, contributes one person-year at risk of cessation at that age, and has the cessation event in it. *Prespecified sensitivity:* exclude same-age spells from the cessation model (treat the person as never having established smoking). The choice matters little for the rate tables but must be fixed before fitting.
+- **Same-age initiation and cessation (ratified 2026-08-27).** When the age at first cigarette equals the age at stopping, the data cannot show which came first within the year. *Primary rule:* treat it as a one-year spell. The person enters Current at that age, contributes one person-year at risk of cessation at that age, and has the cessation event in it. *Prespecified sensitivity:* exclude same-age spells from the cessation model (treat the person as never having established smoking). Few respondents, possibly none, are expected to meet this condition; the pipeline reports the unweighted and weighted count per cycle so the expectation is checked rather than assumed.
 - **Reported ages that cannot be right** (initiation after survey age, cessation before initiation) are treated as missing and enter the imputation procedure (task 1.8c). No person is silently reclassified.
 
 ## 5. Target population and risk-set entry
@@ -63,7 +63,7 @@ The generator (shg-rcpp) consumes the rate tables and produces, for each simulat
 | Entry event | First whole cigarette (`age_first_cigarette`) | A1; Manuel et al. 2020 |
 | Exit event | Stopped smoking completely (`time_quit_smoking_complete`) | A1; protocol 3.4.1 |
 | Durability | Two years; more recent quitters are current at survey | Protocol 3.4.1 |
-| Same-age rule | One-year spell (primary); exclusion (sensitivity) | **[decision]** proposed here |
+| Same-age rule | One-year spell (primary); exclusion (sensitivity) | PI decision, 2026-08-27 |
 | Relapse | Not modelled; sensitivity analysis | Protocol 3.4.1 |
 | Immigration entry | Excluded before immigration; PUMF approximation in task 1.9 | Protocol 3.3; adjudication B1 |
 
@@ -72,6 +72,7 @@ The generator (shg-rcpp) consumes the rate tables and produces, for each simulat
 - [ ] 1.3: cessation universe = ever-smokers; exit variable = `time_quit_smoking_complete`; clock from `age_first_cigarette`; recent-quitter censoring; same-age rule.
 - [ ] Config: replace the `years_since_quit` mapping (`time_quit_smoking_daily`) with the complete-cessation variable; keep `age_start_daily` for the intensity model only.
 - [ ] Worksheets: roles for `time_quit_smoking_complete` (apc-numerator, apc-denominator); `age_start_smoking` loses its cessation role.
+- [ ] 1.3 diagnostic: report the unweighted and weighted number of same-age spells per cycle.
 - [ ] 1.2: initiation window aligned to the entry event above.
 - [ ] 1.9: immigration entry floor.
 - [ ] 1.8c: imputation universes follow section 2 (state gates first).
