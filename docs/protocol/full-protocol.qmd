@@ -2,12 +2,15 @@
 title: "A Canadian Smoking Histories Model: a study protocol to generate smoking cohorts from 1940 and project to 2050"
 status: "Draft"
 version-summary:
-  date: "2026-06-10"
-  version: "0.3.2"
+  date: "2026-08-07"
+  version: "0.4.0"
 version-history:
+  - version: "0.4.0"
+    date: "2026-08-07"
+    description: "Methodological amendments following the review (2026-08-07). New section 3.4.1 defines the smoking states and transitions: never, current, and former, following Holford et al. (2014) and Manuel et al. (2020); initiation is the first whole cigarette; cessation is stopping smoking completely; daily smoking and intensity are characteristics of current smokers; one smoking spell per person, with cessation risk starting at the age of entry; a two-year definition of cessation; the rule for same-age initiation and cessation to be set before fitting, with a sensitivity analysis. Section 3.4.3: the split of the linear trend between age, period, and cohort is stated as an explicit assumption (cohort linear trend set to zero, following Manuel et al. 2020; the alternative allocation is a sensitivity analysis); the rules that extend the model for projection are distinguished from the rule that fixes it; the spline basis is saved at fitting and reused; each fitted model is checked before use (Holford 2006). Section 3.5: uncertainty from CCHS bootstrap replicate weights in the Master-file analysis, combined across imputations and carried through to the rate tables; an approximate bootstrap for public-use analyses; simulated weights (MockData) test code only. Section 3.4.5: MPoRT remains the primary mortality adjustment if it passes life-table and simulation checks; where the adjustment enters the calculation to be settled before implementation; unadjusted results labelled as estimates among survivors. Section 3.4.2 and Appendix D: imputation follows the structure of the smoking questions, with ordering rules applied within the procedure, every imputed dataset analysed, and the number of imputations set by stability (at least five). Validation: within the CCHS, using held-out cycles and recall-consistency checks; no comparison with other surveys in this version, with reasons given. Subsections of 3.4 renumbered."
   - version: "0.3.2"
     date: "2026-06-10"
-    description: "Imputation specification refined after implementation review (Appendix D): NA(c) cycle-level absence is not imputed in the base pipeline (the taxonomy previously implied it was) — extending the where matrix to NA(c) is the documented mechanism, gated on the Phase 4 delta-adjustment evaluation with the RDC Master files as the external check. Added the predictor-matrix specification: variables with structural missingness may be imputed but do not serve as predictors (mice excludes rows with missing predictors, so structural-NA predictors made item non-response in other variables unpredictable). Derived-variable recomputation (pack-years) implemented as specified."
+    description: "Imputation specification refined after implementation review (Appendix D): NA(c) cycle-level absence is not imputed in the base pipeline (the taxonomy previously implied it was) -- extending the where matrix to NA(c) is the documented mechanism, gated on the Phase 4 sensitivity analysis (imputed values shifted by set amounts) with the RDC Master files as the external check. Added the predictor-matrix specification: variables with structural missingness may be imputed but are not used as predictors (mice excludes rows with missing predictors, so structural-NA predictors made item non-response in other variables unpredictable). Derived-variable recomputation (pack-years) implemented as specified."
   - version: "0.3.1"
     date: "2026-06-10"
     description: "Expanded the imputation-predictor and Table 1 variable set with auxiliary covariates already harmonized to 2019-20 (marital status, alcohol, BMI, self-rated general and mental health, life stress, community belonging, chronic conditions, energy expenditure), supporting both imputation quality and the study-base description for planned related studies. Income to 2019-20 noted as a pending cchsflow extension."
@@ -143,19 +146,33 @@ Inconsistent or biologically implausible responses (e.g., age at initiation grea
 
 The CSHM uses a two-stage analytical framework. In the first stage, we estimate population-level smoking initiation and cessation rates from harmonized CCHS data using Age-Period-Cohort (APC) models. In the second stage, these estimated rates are used to simulate individual-level smoking histories for synthetic Canadian populations.
 
-### 3.4.1 Data preparation and imputation
+### 3.4.1 Smoking states and transition estimands
 
-Analysis-ready datasets will be produced through a standardized pipeline.
+The model estimates transitions between three smoking states: **never**, **current**, and **former**. Each person is in exactly one state at each age. This is the framework of Holford et al. (2014) [@Holford_AJPM_2014], which has been applied in several jurisdictions, and of Manuel et al. (2020) [@Manuel_HR_2020] for Ontario using the CCHS. This study follows the Manuel et al. implementation because it uses the same survey. A person enters the current state (initiation) at the age they smoked their first whole cigarette, provided they meet the study definition of an ever-smoker. A person leaves the current state (cessation) when they stop smoking completely; stopping daily smoking while continuing to smoke occasionally is not cessation. Starting to smoke daily, and the number of cigarettes smoked per day, are treated as characteristics of current smokers (section 3.4.4), not as separate transitions.
+
+The model works in one-year steps and gives each person at most one period of smoking, from initiation to cessation. A person's cessation risk begins at the age they entered the current state. The primary definition of cessation is the most recent quit that lasted at least two years. People who quit less than two years before the survey have not yet met this definition: they are classified as current smokers at the survey, and in the cessation model they contribute time at risk up to their reported quit age and are then censored, with no cessation event recorded. This follows the Holford and Manuel implementations. When initiation and cessation are reported at the same whole-year age, the data cannot show which came first within the year. We will state the rule for these cases in the analysis specification before fitting the models, and we will run a prespecified sensitivity analysis that excludes or interval-censors them. The CCHS records one quit per person, so relapse cannot be modelled directly; its influence is examined in sensitivity analyses (section 3.5).
+
+The target population is the Canadian household population covered by the CCHS. For immigrants, the years before immigration are excluded from the reconstructed history (section 3.3), so no one contributes time before entering the Canadian population. Respondents whose age at initiation is missing or implausible are handled by multiple imputation (section 3.4.2 and Appendix D); they are not excluded, and they are not reclassified as never-smokers.
+
+> ISPOR-SMDM: Model structure; STROBE: Variables
+
+### 3.4.2 Data preparation and imputation
+
+Analysis datasets will be produced through a standardized pipeline.
 
 1.  **Cleaning:** Distribution checks and truncation of extreme values for continuous variables (e.g., smoking intensity).
-2.  **Imputation:** Item non-response (don't know/refused; tagged NA(b)) on smoking status, initiation age, and cessation timing will be addressed using Multiple Imputation by Chained Equations (MICE) with *m* = 5 imputations. Imputation is restricted to item non-response through an explicit `where` matrix; structural missingness — not-applicable (NA(a), e.g., initiation age for never-smokers) and not-asked-this-cycle (NA(c)) — is preserved and never imputed directly. The imputation model includes the survey design variables (cycle, sampling weight) and sociodemographic predictors (age, sex, province, education) alongside the smoking history variables, preserving congeniality with the APC analysis models, plus auxiliary covariates (marital status, alcohol use, body mass index, self-rated general and mental health, life stress, community belonging, chronic conditions, and physical activity) that improve imputation quality and describe the study base for planned related studies. Derived variables (e.g., pack-years) are recomputed from their imputed feeder variables rather than imputed directly. The full specification, including the diagnostic and sensitivity-analysis plan, is given in [Appendix D: Missing data and imputation plan](appendix-imputation.qmd).
-3.  **Descriptive statistics:** Baseline characteristics will be reported pre-imputation (Table 1a), which discloses the amount and type of missing data, and post-imputation (Table 1b), averaged across the *m* completed datasets. Both tables present unweighted n with survey-weighted percentages (and weighted median/IQR for continuous variables) — the unweighted n discloses the information content of each cell while the weighted statistics describe the population; a fully unweighted variant is provided as an appendix table. Tables 1 will include stratification for sex and survey year. Descriptive statistics will be examined for potential discontinuities across CCHS design eras (2001–2005, 2007–2014, 2015–2021, 2022+), which reflect major changes to the survey frame, recruitment, and collection mode [@gagne2017; @backinger2008]. Although smoking variables can be harmonized across cycles, changes to the sampling frame and mode may introduce measurement differences that are not fully correctable through harmonization alone [@chen2020joinpoint].
+2.  **Imputation:** Item non-response (don't know or refused; tagged NA(b)) on smoking status, initiation age, and cessation timing will be handled with multiple imputation by chained equations (MICE), with at least *m* = 5 imputations. The final number of imputations will be chosen so that the rate-table estimates are stable across repeated runs. Only item non-response is imputed. Values that are missing by design are kept as missing: not applicable (NA(a), for example initiation age for never-smokers) and not asked in that cycle (NA(c)). Imputation follows the structure of the smoking questions. Where a person's smoking status is itself missing, status is imputed first; initiation age and quit timing are then imputed only if the imputed status makes those questions applicable, using the other smoking-history variables as predictors. Ordering rules (first cigarette no later than cessation; cessation no later than survey age) are applied within the imputation procedure, not corrected afterward. The imputation model includes the survey design variables (cycle, sampling weight), the sociodemographic variables (age, sex, province, education), and the smoking-history variables, so that it is at least as detailed as the analysis models. It also includes auxiliary variables (marital status, alcohol use, body mass index, self-rated general and mental health, life stress, community belonging, chronic conditions, and physical activity), which improve imputation and describe the study base for planned related studies. Derived variables such as pack-years are recalculated from the imputed variables rather than imputed directly. Every completed dataset is carried through person-year expansion and model fitting, and estimates are pooled across imputations (section 3.5). The full specification, including the diagnostic and sensitivity plan, is in [Appendix D: Missing data and imputation plan](appendix-imputation.qmd).
+3.  **Descriptive statistics:** Baseline characteristics will be reported pre-imputation (Table 1a), which discloses the amount and type of missing data, and post-imputation (Table 1b), averaged across the *m* completed datasets. Both tables present unweighted n with survey-weighted percentages (and weighted median/IQR for continuous variables) -- the unweighted n discloses the information content of each cell while the weighted statistics describe the population; a fully unweighted variant is provided as an appendix table. Tables 1 will include stratification for sex and survey year. Descriptive statistics will be examined for potential discontinuities across CCHS design eras (2001--2005, 2007--2014, 2015--2021, 2022+), which reflect major changes to the survey frame, recruitment, and collection mode [@gagne2017; @backinger2008]. Although smoking variables can be harmonized across cycles, changes to the sampling frame and mode may introduce measurement differences that are not fully correctable through harmonization alone [@chen2020joinpoint].
 
-### 3.4.2 Age-period-cohort modelling
+### 3.4.3 Age-period-cohort modelling
 
 Three separate APC models will be fitted by sex (men and women) to characterize smoking life-course trajectories: one for initiation, one for cessation, and one for smoking intensity (cigarettes per day). The primary analysis produces national estimates stratified by sex, as well as separate estimates for each province and territory.
 
-All models use constrained natural cubic splines to decompose temporal trends. Following the methodology of Holford et al. (2014), the fundamental APC identity is `cohort = period − age`. To address the identifiability problem, we apply constraints to the period effects, holding them constant beyond the observed data range. Period effects for initiation are held constant at the most recent observed values; period effects for cessation are similarly constrained. Cohort effects are assumed constant prior to 1920 and constant from 1985 forward, consistent with Manuel et al. (2020).
+All models use natural cubic splines to describe how rates change with age, calendar period, and birth cohort. Because period equals age plus cohort, the data cannot tell apart the straight-line (linear) trends in age, period, and cohort: any amount of linear trend can be moved from one to another without changing the fitted rates [@Holford_SM_2006]. We therefore fix this split as an explicit modelling assumption: the linear trend in birth cohort is set to zero, so any straight-line change over time is attributed to calendar period, and age keeps its own linear term. This matches the Manuel et al. (2020) implementation [@Manuel_HR_2020]. We fit the model in terms of quantities the data can estimate: the shape of the age curve, the curvature (departure from a straight line) in period and in cohort, and the net drift. As a sensitivity analysis we attribute the linear trend to cohort instead, with the period linear trend set to zero, and report how much the published rate tables change.
+
+The model uses two kinds of rule, and they do different jobs. The first kind fixes the model, by stating how the linear trend is split between age, period, and cohort, as described above. The second kind extends the model beyond the years we observe: for projection, period effects are held at their most recent observed values (for initiation and cessation alike), and cohort effects are held constant before 1920 and after 1985, following Manuel et al. (2020). These extension rules cannot fix the model on their own, because whether they happen to do so depends on which respondents fall at the edges of the observed data.
+
+The spline basis (the knots, boundary knots, and centring values) is part of the model definition. The basis built when the model is fitted is saved and reused for every prediction and projection; it is never rebuilt from the prediction grid. Before any fitted model is used, we check that it has the expected rank and that the quantities we report can be estimated from it. Predictions for age, period, and cohort combinations outside the observed data are reported separately from those the data support.
 
 Knot placement for the splines follows established standards:
 
@@ -163,31 +180,33 @@ Knot placement for the splines follows established standards:
 -   **Period knots:** [1940, 1950, 1960, 1970, 1980]
 -   **Cohort knots:** [1930, 1940, 1945, 1950, 1955, 1960, 1965, 1970, 1975, 1980]
 
-### 3.4.3 Smoking intensity analysis
+### 3.4.4 Smoking intensity analysis
 
 We will use a dual approach to characterize smoking intensity (cigarettes per day; CPD):
 
 1.  **Simple descriptives:** We will first calculate mean CPD and intensity distributions by age, sex, and survey year. This descriptive analysis will identify broad temporal shifts and assess whether intensity has remained stagnant across cohorts, as observed in other jurisdictions such as Brazil [@Tam_AJPM_2023].
-2.  **APC intensity model:** We will fit an APC model to estimate the expected CPD by birth cohort. These parameters will serve as the "tobacco dose" input for the simulation stage, allowing for the reconstruction of pack-year histories. For occasional smokers, we will apply a standardized CPD adjustment based on their reported frequency of use.
+2.  **APC intensity model:** We will fit an APC model to estimate the expected CPD by birth cohort. These parameters are the "tobacco dose" input for the simulation stage, allowing for the reconstruction of pack-year histories. For occasional smokers, we will apply a standardized CPD adjustment based on their reported frequency of use.
 
-### 3.4.4 Mortality adjustment
+### 3.4.5 Mortality adjustment
 
 To address survival bias (ever-smokers having lower survival to survey date than never-smokers), we will apply mortality adjustments using the Mortality Population Risk Tool (MPoRT) [@Manuel_HR_2020]. MPoRT weights are adjusted for age, sex, smoking status, years since quitting, and immigration status. For each respondent, the one-year probability of death for each historical year up to the survey date is calculated; the survival bias weight is the proportion of ever-smokers who would have died prior to the survey date. This adjustment ensures that the reconstructed historical prevalence reflects the original population rather than only the survivors, following the approach of Manuel et al. (2020) [@Manuel_HR_2020].
 
-A sensitivity analysis will be conducted using the Peto approach — a constant mortality risk ratio by smoking status — consistent with the original Holford et al. (2014) US implementation [@Holford_AJPM_2014]. This quantifies the influence of the mortality adjustment method on historical prevalence estimates.
+The exact form of the adjustment will be written down and checked before it is implemented. The main open question is where the adjustment enters the calculation: as an adjustment to each respondent's weight before the APC models are fitted (as described above), or as a correction to the fitted transition probabilities afterward (as in the original Ontario code). The two approaches do not necessarily give the same answer, and whichever is chosen must apply the correction once only. Before use, the adjustment will be checked in three ways: predicted deaths by age, sex, and calendar year compared with Canadian life tables; the size and stability of the adjustment factors, with limits set in advance; and recovery of known rates from simulated cohorts in which smokers die at higher rates (section 3.5). MPoRT remains the primary method if it passes these checks [@Manuel_HR_2020]. Until an adjustment is in place, unadjusted results are labelled as estimates among survivors and are not presented as birth-cohort smoking histories.
+
+A sensitivity analysis will be conducted using the Peto approach -- a constant mortality risk ratio by smoking status -- consistent with the original Holford et al. (2014) US implementation [@Holford_AJPM_2014]. This quantifies the influence of the mortality adjustment method on historical prevalence estimates.
 
 > ISPOR-SMDM: Model structure; GATHER: Statistical methods
 
-CCHS sampling weights (`WTS_M` in Master files; equivalent PUMF weights) are applied throughout the analysis. In descriptive analyses, weights are used with the `{survey}` package to produce design-based estimates with bootstrap variance estimation. In the APC models, sampling weights serve as regression weights in the binomial logistic regression, following the pseudo-likelihood approach of Manuel et al. (2020) [@Manuel_HR_2020]: weighted events (numerator) and weighted person-years (denominator) are aggregated within each age-period-cohort cell before model fitting. The MPoRT survival correction adjusts respondent weights to account for differential mortality; these adjusted weights are then used as the APC regression weights, so the two reweighting steps are applied sequentially rather than independently.
+CCHS sampling weights (`WTS_M` in Master files; equivalent PUMF weights) are applied throughout the analysis. In descriptive analyses, weights are used with the `{survey}` package to produce design-based estimates with bootstrap variance estimation. In the APC models, sampling weights are used as regression weights in the binomial logistic regression, following the pseudo-likelihood approach of Manuel et al. (2020) [@Manuel_HR_2020]: weighted events and weighted person-years are summed within each age-period-cohort cell before model fitting. How the mortality adjustment combines with these weights depends on the derivation described above. If the adjustment is applied to respondent weights before fitting, the survey weight and the mortality adjustment are combined into a single weight, so that each is applied once. If the adjustment is applied to the fitted probabilities afterward, the regression uses the survey weights alone.
 
-### 3.4.5 Projections to 2050
+### 3.4.6 Projections to 2050
 
 Estimated initiation, cessation, and intensity rates will be extrapolated to 2050. The projection engine will support the following scenarios:
 
 -  **Status quo scenarios:** Period effects are held constant at the most recent observed values. This scenario can be interpreted as... with the assumptions...
 -  **Period effect trend continue:** Period effects are extrapolated based on the historic trend. This scenario can be interpreted as... with the assumptions...
 
-### 3.4.6 Provincial and territorial estimates
+### 3.4.7 Provincial and territorial estimates
 
 Separate APC models will be estimated for each province and territory, stratified by sex. Provinces and territories with limited sample sizes may require pooled CCHS cycles or adjusted model constraints to ensure stable estimates. The simulation engine runs on individual CCHS respondents, enabling regional projections that are consistent with national aggregates.
 
@@ -197,15 +216,15 @@ Separate APC models will be estimated for each province and territory, stratifie
 
 The model will be validated through:
 
-1.  **Internal validation:** Comparing model-estimated prevalence against the input CCHS data. 
+1.  **Internal validation:** Comparing smoking prevalence reconstructed by the model with prevalence observed in the CCHS. Some survey cycles or subsamples will be held out of model fitting, so that this comparison is not made against the data the model was fitted to. We will also check recall consistency: whether the same birth cohort reports a consistent smoking history when asked in different survey cycles.
 
 > ISPOR-SMDM: Internal validation; STRESS: Validation - internal
 
-2.  **External validation:** No external validation will be performed.
+2.  **External validation:** None in this version. Other surveys have their own measurement and response errors. For example, smoking prevalence in the CCHS is typically higher than in tobacco-specific surveys, which most likely reflects the CCHS's broader sampling frame and higher response rate rather than error in the CCHS. Comparing sources without a model of the errors in each would mislead more than it would validate, and these errors are often overlooked. We therefore defer the comparison. A future version may use the measurement error estimated from Canadian Health Measures Survey biomarkers (item 4) to adjust the estimates rather than only compare them. Validating within the CCHS cannot detect a bias that affects the whole survey; we accept and state this limitation.
 
 > ISPOR-SMDM: External validation; STRESS: Validation - external
 
-3.  **Uncertainty analysis:** Quantifying parameter uncertainty through bootstrapping and probabilistic sensitivity analysis (PSA) to propagate APC model error through to the final population-level projections.
+3.  **Uncertainty analysis:** In the Master-file analysis, uncertainty is estimated with the CCHS bootstrap replicate weights [@StatCan_CCHS_UserGuide_2022; @Rao_SM_1992]. Each replicate reweights whole respondents, so a respondent's full reconstructed history is kept together. The replicate estimates are repeated within each completed imputation dataset, and the variance from the survey design is combined with the variance between imputations using a rule set in advance and checked by simulation. Uncertainty is carried through to the published rate tables and projections, not reported only for model coefficients. The public-use files do not include replicate weights or design variables. For analyses of those files we use a bootstrap that resamples respondents, which approximates the survey design as far as the file allows, and we check the results against Statistics Canada's published approximate coefficients of variation for descriptive estimates. All intervals from public-use analyses are labelled approximate; the definitive intervals come from the Master-file analysis. Simulated replicate weights, generated with the public MockData package, are used to test the replicate-weight code in the public repository. They test the code only; results based on them are never reported.
 
 > ISPOR-SMDM: Uncertainty analysis; STRESS: Sensitivity analysis
 
@@ -215,10 +234,10 @@ The model will be validated through:
 > STROBE: Potential bias
 
     -   **Recall bias and relapse:** Quantifying the impact of CCHS’s single-event history capture (missing relapse cycles) by comparing net transition rates against observed longitudinal dynamics in the National Population Health Survey (NPHS) panel.
-    -   **Back-casting validation:** Validating the APC model by reconstructing smoking prevalence for the 1994--2000 period and benchmarking against observed NPHS data.
+    -   **Back-casting comparison:** Reconstructing smoking prevalence for the 1994--2000 period and comparing against observed NPHS data -- interpreted as a consistency check rather than validation, since NPHS carries its own frame and measurement error structure (see §3.5 item 2).
     -   **Model specification:** Testing the sensitivity of results to spline knot placement and alternative constraints for the period effects in the APC models. We will also compare two spline implementations: natural splines (`splines2::nsp()`, primary analysis) versus restricted cubic splines (`splines2::rcs()`), which may better characterize the boundary behaviour of period and cohort effects.
     -   **Mortality adjustment method:** The primary analysis uses the MPoRT algorithm for mortality adjustment. We will conduct a sensitivity analysis using the Peto approach (a constant mortality risk ratio by smoking status), consistent with the original Holford et al. (2014) US implementation, to quantify the influence of the mortality adjustment method on historical prevalence estimates.
-    -   **Vaping transitions:** Exploring alternative assumptions for younger cohorts regarding the relationship between vaping initiation and subsequent smoking (gateway, displacement, or common liability scenarios).
+    -   **Vaping transitions:** Testing alternative assumptions for younger cohorts regarding the relationship between vaping initiation and subsequent smoking (gateway, displacement, or common liability scenarios).
 
 > STRESS: Sensitivity analysis
 
@@ -242,7 +261,7 @@ Specific outputs include:
 
 > GATHER: Access to data and analytics; STRESS: Implementation details
 
-5.  **Interactive online platform:** A web-based dashboard (built using R Shiny) will allow users to visualize smoking trends by province and cohort, download rate tables, and explore different projection scenarios.
+5.  **Interactive online platform:** A web-based dashboard (built using R Shiny) will allow users to visualize smoking trends by province and cohort, download rate tables, and compare projection scenarios.
 
 > GATHER: Results publication; ISPOR-SMDM: Reporting
 
@@ -269,7 +288,7 @@ All analyses described in this protocol are prespecified. Any deviations from th
 | Data preparation | CCHS harmonization, variable QC, descriptive tables | PUMF |
 | Model development | APC model fitting, spline tuning, sensitivity analyses | PUMF |
 | RDC analysis | Master File replication; exact continuous-variable estimates | RDC (Statistics Canada) |
-| Validation | Internal validation; back-casting against NPHS; SIMEX | PUMF + RDC |
+| Validation | Internal validation (held-out cycles, recall consistency); NPHS back-casting comparison; SIMEX | PUMF + RDC |
 | Dissemination | Open-source release; manuscript submission; Shiny dashboard | Public |
 
 ## Resource and access considerations
@@ -316,19 +335,19 @@ A full mathematical description of the APC models, spline basis functions, and m
 
 Three data sources are used in this study, each with different access procedures.
 
-## Canadian Community Health Survey — Public Use Microdata Files (PUMF)
+## Canadian Community Health Survey -- Public Use Microdata Files (PUMF)
 
 The CCHS PUMF files are publicly accessible and available without special permissions or restricted access. PUMF files can be downloaded from the [Ontario Data Documentation, Extraction Service and Infrastructure (ODESI)](https://odesi.ca) and directly from [Statistics Canada](https://www150.statcan.gc.ca/n1/en/catalogue/82M0013X). The PUMF files contain de-identified data and are released under the Statistics Canada Open Licence. These files are used for model development and the open-source implementation of the CSHM.
 
-## Canadian Community Health Survey — Master Files
+## Canadian Community Health Survey -- Master Files
 
 The CCHS Master Files, used for the production model estimates, are available at Statistics Canada's Research Data Centres (RDCs). Access is restricted to researchers affiliated with academic, government, or other recognized institutions. Researchers must apply for access through one of the RDCs across Canada; these secure facilities provide access to confidential microdata under the confidentiality provisions of the *Statistics Act*. Master files provide exact continuous values for key variables not available in the PUMF. Further information about access procedures, eligibility, and application requirements is available on the [Statistics Canada website](https://www.statcan.gc.ca/en/microdata/data-centres).
 
 ## US National Health Interview Survey (NHIS)
 
-The NHIS is used for international validation of the CSHM and is conducted by the National Center for Health Statistics (NCHS). Public-use NHIS data files are freely available without special permissions and can be downloaded directly from the [NCHS website](https://www.cdc.gov/nchs/nhis/data-questionnaires-documentation.htm). The public-use files contain de-identified data. For researchers requiring access to more detailed data not available in the public-use files, the NCHS Research Data Center offers access to restricted-use files subject to an application process and strict confidentiality protocols. Further information is available at <https://www.cdc.gov/nchs/nhis/index.htm>.
+The NHIS is the data source for the US Smoking History Generator. It is not used to validate the CSHM in this version (section 3.5); descriptive comparisons of Canadian and US cohort patterns may be reported. The NHIS and is conducted by the National Center for Health Statistics (NCHS). Public-use NHIS data files are freely available without special permissions and can be downloaded directly from the [NCHS website](https://www.cdc.gov/nchs/nhis/data-questionnaires-documentation.htm). The public-use files contain de-identified data. For researchers requiring access to more detailed data not available in the public-use files, the NCHS Research Data Center offers access to restricted-use files subject to an application process and strict confidentiality protocols. Further information is available at <https://www.cdc.gov/nchs/nhis/index.htm>.
 
-> *Note: The NHIS validation analyses described above are planned. The text below is retained as a placeholder pending integration of NHIS data into the study.*
+> *Note: Any NHIS comparison analyses are planned and not yet implemented. The text below is retained as a placeholder pending integration of NHIS data into the study.*
 
 > GATHER: Data access; STROBE: Ethics
 
@@ -346,7 +365,7 @@ All code will be hosted on GitHub under the MIT licence. The repository will inc
 
 ## Appendix D: Missing data and imputation plan
 
-The detailed missing-data specification — the tagged-NA taxonomy, the `where`-matrix MICE design, cycle-level absence handling, the Table 1a/1b weighting presentation, and the four-phase diagnostic and sensitivity-analysis plan — is maintained as a standalone document: [Appendix D: Missing data and imputation plan](appendix-imputation.qmd). It adapts the DemPoRTv2 imputation assessment framework with improvements developed for this study.
+The detailed missing-data specification -- the tagged-NA taxonomy, the `where`-matrix MICE design, cycle-level absence handling, the Table 1a/1b weighting presentation, and the four-phase diagnostic and sensitivity-analysis plan -- is maintained as a standalone document: [Appendix D: Missing data and imputation plan](appendix-imputation.qmd). It adapts the DemPoRTv2 imputation assessment framework with improvements developed for this study.
 
 > STROBE: Statistical methods (missing data); GATHER: Data processing
 
