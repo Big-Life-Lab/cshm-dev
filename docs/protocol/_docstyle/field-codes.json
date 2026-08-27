@@ -1,0 +1,496 @@
+{
+  "documentProperties": {
+    "custom": []
+  },
+  "citations": {
+    "HealthCanada_SmokingMortality_2024": {
+      "itemData": {
+        "id": 80521,
+        "type": "document",
+        "citation-key": "HealthCanada_SmokingMortality_2024",
+        "language": "en",
+        "title": "Smoking and mortality",
+        "URL": "https://www.canada.ca/en/health-canada/services/health-concerns/tobacco/legislation/tobacco-product-labelling/smoking-mortality.html",
+        "author": [
+          {
+            "literal": "Health Canada"
+          }
+        ],
+        "issued": {
+          "date-parts": [["2024"]]
+        }
+      },
+      "uris": [
+        "http://zotero.org/users/6858935/items/BIVEE78X"
+      ]
+    },
+    "CSUCH_2023": {
+      "itemData": {
+        "id": 80520,
+        "type": "report",
+        "citation-key": "CanadianSubstanceUseCostsandHarmsScientificWorkingGroup_CanadianSubstanceUse_2023",
+        "language": "en",
+        "publisher": "Canadian Institute for Substance Use Research and Canadian Centre on Substance Use and Addiction",
+        "publisher-place": "Victoria, BC",
+        "title": "Canadian substance use costs and harms 2007-2020",
+        "URL": "https://csuch.ca/publications/csuch-report/",
+        "author": [
+          {
+            "literal": "Canadian Substance Use Costs and Harms Scientific Working Group"
+          }
+        ],
+        "issued": {
+          "date-parts": [["2023"]]
+        }
+      },
+      "uris": [
+        "http://zotero.org/users/6858935/items/JERACS4C"
+      ]
+    },
+    "mitra2015": {
+      "itemData": {
+        "id": 99901,
+        "type": "article-journal",
+        "citation-key": "mitra2015",
+        "container-title": "Health Reports",
+        "DOI": "10.25318/82-003-x201500614195-eng",
+        "ISSN": "0840-6529",
+        "issue": "6",
+        "page": "12-20",
+        "title": "Social determinants of lung cancer incidence in Canada: A 13-year prospective study",
+        "volume": "26",
+        "author": [
+          {"family": "Mitra", "given": "Dipjyoti"},
+          {"family": "Shaw", "given": "Amanda"},
+          {"family": "Tjepkema", "given": "Michael"},
+          {"family": "Peters", "given": "Paul"}
+        ],
+        "issued": {
+          "date-parts": [["2015", "6"]]
+        }
+      }
+    },
+    "hennessy2015": {
+      "itemData": {
+        "id": 4042,
+        "type": "article-journal",
+        "citation-key": "hennessy2015",
+        "container-title": "Population Health Metrics",
+        "DOI": "10.1186/s12963-015-0057-x",
+        "ISSN": "1478-7954",
+        "issue": "1",
+        "page": "24",
+        "title": "The Population Health Model (POHEM): an overview of rationale, methods and applications",
+        "volume": "13",
+        "author": [
+          {"family": "Hennessy", "given": "Deirdre A."},
+          {"family": "Flanagan", "given": "William M."},
+          {"family": "Tanuseputro", "given": "Peter"},
+          {"family": "Bennett", "given": "Carol"},
+          {"family": "Tuna", "given": "Meltem"},
+          {"family": "Kopec", "given": "Jacek"},
+          {"family": "Wolfson", "given": "Michael C."},
+          {"family": "Manuel", "given": "Douglas G."}
+        ],
+        "issued": {
+          "date-parts": [["2015"]]
+        }
+      },
+      "uris": [
+        "http://zotero.org/users/6858935/items/PVTTRS4W"
+      ]
+    },
+    "gauvreau2017": {
+      "itemData": {
+        "id": 3626,
+        "type": "article-journal",
+        "citation-key": "gauvreauOncoSimModelDevelopment2017",
+        "container-title": "Current Oncology",
+        "issue": "6",
+        "page": "401",
+        "title": "The OncoSim model: development and use for better decision-making in Canadian cancer control",
+        "volume": "24",
+        "author": [
+          {"family": "Gauvreau", "given": "C. L."},
+          {"family": "Fitzgerald", "given": "N. R."},
+          {"family": "Memon", "given": "S."},
+          {"family": "Flanagan", "given": "W. M."},
+          {"family": "Nadeau", "given": "C."},
+          {"family": "Asakawa", "given": "K."},
+          {"family": "Garner", "given": "R."},
+          {"family": "Miller", "given": "A. B."},
+          {"family": "Evans", "given": "W. K."},
+          {"family": "Popadiuk", "given": "C. M."}
+        ],
+        "issued": {
+          "date-parts": [["2017"]]
+        }
+      },
+      "uris": [
+        "http://zotero.org/users/6858935/items/RHRBI9I6"
+      ]
+    },
+    "chaiton2021": {
+      "itemData": {
+        "id": 80251,
+        "type": "article-journal",
+        "citation-key": "Chaiton_F_2021",
+        "container-title": "Forecasting",
+        "DOI": "10.3390/forecast3020017",
+        "ISSN": "2571-9394",
+        "issue": "2",
+        "page": "267-275",
+        "title": "Tobacco endgame simulation modelling: assessing the impact of policy changes on smoking prevalence in 2035",
+        "volume": "3",
+        "author": [
+          {"family": "Chaiton", "given": "Michael"},
+          {"family": "Dubray", "given": "Jolene"},
+          {"family": "Guindon", "given": "G. Emmanuel"},
+          {"family": "Schwartz", "given": "Robert"}
+        ],
+        "issued": {
+          "date-parts": [["2021", 4, 13]]
+        }
+      },
+      "uris": [
+        "http://zotero.org/groups/5363837/items/7HY84EER"
+      ]
+    },
+    "beland2002": {
+      "itemData": {
+        "id": 7459,
+        "type": "article-journal",
+        "citation-key": "belandCanadianCommunityHealth2002",
+        "container-title": "Health Reports",
+        "issue": "2",
+        "page": "9-14",
+        "title": "Canadian Community Health Survey - Methodological overview",
+        "volume": "13",
+        "author": [
+          {"family": "Beland", "given": "Y."}
+        ],
+        "issued": {
+          "date-parts": [["2002"]]
+        }
+      },
+      "uris": [
+        "http://zotero.org/users/6858935/items/AJA8XSK2"
+      ]
+    },
+    "kopasker2023": {
+      "itemData": {
+        "id": 47313,
+        "type": "article-journal",
+        "citation-key": "Kopasker_TLRH-E_2023",
+        "container-title": "The Lancet Regional Health - Europe",
+        "DOI": "10.1016/j.lanepe.2023.100758",
+        "ISSN": "2666-7762",
+        "PMID": "37876527",
+        "PMCID": "PMC10590730",
+        "title": "Microsimulation as a flexible tool to evaluate policies and their impact on socioeconomic inequalities in health",
+        "volume": "34",
+        "author": [
+          {"family": "Kopasker", "given": "Daniel"},
+          {"family": "Katikireddi", "given": "Srinivasa Vittal"},
+          {"family": "Santos", "given": "João Vasco"},
+          {"family": "Richiardi", "given": "Matteo"},
+          {"family": "Bronka", "given": "Patryk"},
+          {"family": "Rostila", "given": "Mikael"},
+          {"family": "Cecchini", "given": "Michele"},
+          {"family": "Ali", "given": "Shehzad"},
+          {"family": "Emmert-Fees", "given": "Karl"},
+          {"family": "Bambra", "given": "Clare"},
+          {"family": "Hoven", "given": "Hanno"},
+          {"family": "Backhaus", "given": "Insa"},
+          {"family": "Balaj", "given": "Mirza"},
+          {"family": "Eikemo", "given": "Terje Andreas"}
+        ],
+        "issued": {
+          "date-parts": [["2023"]]
+        }
+      },
+      "uris": [
+        "http://zotero.org/users/6858935/items/UV6ASDG2"
+      ]
+    },
+    "vasquezlavin2022": {
+      "itemData": {
+        "id": 80230,
+        "type": "article-journal",
+        "citation-key": "[@Vasquez-Lavin_AE_2022]",
+        "container-title": "Applied Economics",
+        "DOI": "10.1080/00036846.2021.2019186",
+        "issue": "34",
+        "page": "3972-3988",
+        "title": "Assessing the use of pseudo-panels to estimate the value of statistical life",
+        "volume": "54",
+        "author": [
+          {"family": "Vasquez-Lavin", "given": "Felipe"},
+          {"family": "Bratti", "given": "Luna"},
+          {"family": "Orrego", "given": "Sergio"},
+          {"family": "Barrientos", "given": "Manuel"}
+        ],
+        "issued": {
+          "date-parts": [["2022"]]
+        }
+      },
+      "uris": [
+        "http://zotero.org/users/6858935/items/IZGGUTPK"
+      ]
+    },
+    "Holford_AJPM_2014": {
+      "itemData": {
+        "id": 2357,
+        "type": "article-journal",
+        "citation-key": "Holford_AJPM_2014",
+        "container-title": "American Journal of Preventive Medicine",
+        "DOI": "10.1016/j.amepre.2013.10.022",
+        "issue": "2",
+        "page": "e31-7",
+        "title": "Patterns of birth cohort-specific smoking histories, 1965-2009",
+        "volume": "46",
+        "author": [
+          {"family": "Holford", "given": "T. R."},
+          {"family": "Levy", "given": "D. T."},
+          {"family": "McKay", "given": "L. A."},
+          {"family": "Clarke", "given": "L."},
+          {"family": "Racine", "given": "B."},
+          {"family": "Meza", "given": "R."},
+          {"family": "Land", "given": "S."},
+          {"family": "Jeon", "given": "J."},
+          {"family": "Feuer", "given": "E. J."}
+        ],
+        "issued": {
+          "date-parts": [["2014"]]
+        }
+      }
+    },
+    "Manuel_HR_2020": {
+      "itemData": {
+        "id": 2358,
+        "type": "article-journal",
+        "citation-key": "Manuel_HR_2020",
+        "container-title": "Health Reports",
+        "DOI": "10.25318/82-003-x202001100002-eng",
+        "ISSN": "0840-6529",
+        "issue": "11",
+        "page": "16-31",
+        "title": "Smoking patterns based on birth-cohort-specific histories from 1965 to 2013, with projections to 2041",
+        "URL": "https://www150.statcan.gc.ca/n1/pub/82-003-x/2020011/article/00002-eng.htm",
+        "volume": "31",
+        "author": [
+          {"family": "Manuel", "given": "Douglas G."},
+          {"family": "Wilton", "given": "Andrew S."},
+          {"family": "Bennett", "given": "Carol"},
+          {"family": "Dass", "given": "Rohit"},
+          {"family": "Laporte", "given": "Audrey"},
+          {"family": "Holford", "given": "Theodore R."}
+        ],
+        "issued": {
+          "date-parts": [["2020"]]
+        }
+      },
+      "uris": [
+        "http://zotero.org/users/6858935/items/BIVEE78X"
+      ]
+    },
+    "Tam_AJPM_2023": {
+      "itemData": {
+        "id": 80522,
+        "type": "article-journal",
+        "citation-key": "Tam_AJPM_2023",
+        "container-title": "American Journal of Preventive Medicine",
+        "DOI": "10.1016/j.amepre.2022.12.002",
+        "issue": "4",
+        "page": "S63-S71",
+        "title": "Patterns of birth cohort-specific smoking histories in Brazil",
+        "volume": "64",
+        "author": [
+          {"family": "Tam", "given": "Jamie"},
+          {"family": "Jaffri", "given": "Mohammed A."},
+          {"family": "Mok", "given": "Yoonseo"},
+          {"family": "Jeon", "given": "Jihyoun"},
+          {"family": "Szklo", "given": "André S."},
+          {"family": "Souza", "given": "Mirian C."},
+          {"family": "Holford", "given": "Theodore R."},
+          {"family": "Levy", "given": "David T."},
+          {"family": "Cao", "given": "Pianpian"},
+          {"family": "Sánchez-Romero", "given": "Luz M."},
+          {"family": "Meza", "given": "Rafael"}
+        ],
+        "issued": {
+          "date-parts": [["2023"]]
+        }
+      }
+    },
+    "gagne2017": {
+      "itemData": {
+        "id": 99903,
+        "type": "article-journal",
+        "citation-key": "gagne2017",
+        "container-title": "Canadian Journal of Public Health",
+        "DOI": "10.17269/CJPH.108.5895",
+        "ISSN": "0008-4263",
+        "PMID": "28910259",
+        "PMCID": "PMC6972049",
+        "issue": "3",
+        "page": "e331-e334",
+        "title": "Estimation of smoking prevalence in Canada: Implications of survey characteristics in the CCHS and CTUMS/CTADS",
+        "volume": "108",
+        "author": [
+          {"family": "Gagné", "given": "Tara"}
+        ],
+        "issued": {
+          "date-parts": [["2017"]]
+        }
+      },
+      "uris": [
+        "http://zotero.org/users/6858935/items/FZNFHVCK"
+      ]
+    },
+    "chen2020joinpoint": {
+      "itemData": {
+        "id": 99904,
+        "type": "article-journal",
+        "citation-key": "chen2020joinpoint",
+        "container-title": "Journal of Official Statistics",
+        "DOI": "10.2478/jos-2020-0003",
+        "PMCID": "PMC7380682",
+        "issue": "1",
+        "page": "49-62",
+        "title": "The Joinpoint-Jump and Joinpoint-Comparability Ratio Model for Trend Analysis with Applications to Coding Changes in Health Statistics",
+        "volume": "36",
+        "author": [
+          {"family": "Chen", "given": "Huann-Sheng"},
+          {"family": "Zeichner", "given": "Samantha"},
+          {"family": "Anderson", "given": "Robert N."},
+          {"family": "Espey", "given": "Donald K."},
+          {"family": "Kim", "given": "Hyune-Ju"},
+          {"family": "Feuer", "given": "Eric J."}
+        ],
+        "issued": {
+          "date-parts": [["2020"]]
+        }
+      },
+      "uris": [
+        "http://zotero.org/users/6858935/items/9QEJUJRX"
+      ]
+    },
+    "opazobretton2022": {
+      "itemData": {
+        "id": 99905,
+        "type": "article-journal",
+        "citation-key": "opazobretton2022",
+        "container-title": "Addiction",
+        "DOI": "10.1111/add.15696",
+        "ISSN": "0965-2140",
+        "PMID": "34590368",
+        "issue": "5",
+        "page": "1392-1403",
+        "title": "Understanding long-term trends in smoking in England, 1972–2019: an age-period-cohort approach",
+        "volume": "117",
+        "author": [
+          {"family": "Opazo Breton", "given": "Magdalena"},
+          {"family": "Gillespie", "given": "Duncan"},
+          {"family": "Pryce", "given": "Robert"},
+          {"family": "Bogdanovica", "given": "Ilze"},
+          {"family": "Angus", "given": "Colin"},
+          {"family": "Brennan", "given": "Alan"},
+          {"family": "Britton", "given": "John"}
+        ],
+        "issued": {
+          "date-parts": [["2022"]]
+        }
+      },
+      "uris": [
+        "http://zotero.org/users/6858935/items/TZ6UPAGW"
+      ]
+    },
+    "wade2025": {
+      "itemData": {
+        "id": 99906,
+        "type": "article-journal",
+        "citation-key": "wade2025",
+        "container-title": "Statistical Methods in Medical Research",
+        "DOI": "10.1177/09622802241310326",
+        "ISSN": "0962-2802",
+        "PMCID": "PMC11951451",
+        "title": "Using Bayesian evidence synthesis to quantify uncertainty in population trends in smoking behaviour",
+        "author": [
+          {"family": "Wade", "given": "Stephanie"},
+          {"family": "Sarich", "given": "Patricia"},
+          {"family": "Vaneckova", "given": "Petra"}
+        ],
+        "issued": {
+          "date-parts": [["2025"]]
+        }
+      },
+      "uris": [
+        "http://zotero.org/users/6858935/items/X73KCFT7"
+      ]
+    },
+    "backinger2008": {
+      "itemData": {
+        "id": 99902,
+        "type": "article-journal",
+        "citation-key": "backinger2008",
+        "container-title": "Epidemiologic Perspectives & Innovations",
+        "DOI": "10.1186/1742-5573-5-8",
+        "ISSN": "1742-5573",
+        "PMID": "19055824",
+        "PMCID": "PMC2627846",
+        "page": "8",
+        "title": "Using the National Health Interview Survey to understand and address the impact of tobacco in the United States: past perspectives and future considerations",
+        "volume": "5",
+        "author": [
+          {"family": "Backinger", "given": "Cathy L."},
+          {"family": "Lawrence", "given": "Deirdre"},
+          {"family": "Swan", "given": "Judith"},
+          {"family": "Winn", "given": "Deborah M."},
+          {"family": "Breen", "given": "Nancy"},
+          {"family": "Hartman", "given": "Anne"},
+          {"family": "Grana", "given": "Rachel"},
+          {"family": "Tran", "given": "David"},
+          {"family": "Farrell", "given": "Samantha"}
+        ],
+        "issued": {
+          "date-parts": [["2008"]]
+        }
+      },
+      "uris": [
+        "http://zotero.org/users/6858935/items/SKNEJQ5C"
+      ]
+    },
+    "Meza_J_2021": {
+      "itemData": {
+        "id": 80523,
+        "type": "article-journal",
+        "citation-key": "Meza_J_2021",
+        "container-title": "JAMA",
+        "DOI": "10.1001/jama.2021.1077",
+        "issue": "10",
+        "page": "988",
+        "title": "Evaluation of the benefits and harms of lung cancer screening with low-dose computed tomography: modeling study for the US preventive services task force",
+        "volume": "325",
+        "author": [
+          {"family": "Meza", "given": "Rafael"},
+          {"family": "Jeon", "given": "Jihyoun"},
+          {"family": "Toumazis", "given": "Iakovos"},
+          {"family": "Ten Haaf", "given": "Kevin"},
+          {"family": "Cao", "given": "Pianpian"},
+          {"family": "Bastani", "given": "Mehrad"},
+          {"family": "Han", "given": "Summer S."},
+          {"family": "Blom", "given": "Erik F."},
+          {"family": "Jonas", "given": "Daniel E."},
+          {"family": "Feuer", "given": "Eric J."},
+          {"family": "Plevritis", "given": "Sylvia K."},
+          {"family": "De Koning", "given": "Harry J."},
+          {"family": "Kong", "given": "Chung Yin"}
+        ],
+        "issued": {
+          "date-parts": [["2021"]]
+        }
+      }
+    }
+  }
+}

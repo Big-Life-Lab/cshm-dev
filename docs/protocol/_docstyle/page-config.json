@@ -1,0 +1,75 @@
+{
+  "footer": {
+    "enabled": true,
+    "first_page": false,
+    "style": "footer",
+    "rPr_xml": "<w:rPr><w:rFonts w:ascii=\"Hanken Grotesk\" w:hAnsi=\"Hanken Grotesk\" w:cs=\"Hanken Grotesk\"/><w:sz w:val=\"20\"/><w:szCs w:val=\"20\"/><w:color w:val=\"000000\"/><\/w:rPr>",
+    "left": "DRAFT",
+    "center": "",
+    "right": "Page {page} of {pages}"
+  },
+  "header": {
+    "enabled": true,
+    "first_page": false,
+    "style": "header",
+    "rPr_xml": "<w:rPr><w:rFonts w:ascii=\"Hanken Grotesk\" w:hAnsi=\"Hanken Grotesk\" w:cs=\"Hanken Grotesk\"/><w:sz w:val=\"20\"/><w:szCs w:val=\"20\"/><w:color w:val=\"262C3A\"/><\/w:rPr>",
+    "left": "CSHM Study Protocol",
+    "center": "",
+    "right": ""
+  },
+  "table_styles": {
+    "table-formal": {
+      "borders": {
+        "top": {
+          "val": "single",
+          "sz": "8",
+          "color": "7F7F7F"
+        },
+        "bottom": {
+          "val": "single",
+          "sz": "8",
+          "color": "7F7F7F"
+        }
+      },
+      "header_shading": "D9D9D9",
+      "header_bold": false,
+      "font_size_half_pts": 22
+    },
+    "table-grid": {
+      "borders": {
+        "top": {
+          "val": "single",
+          "sz": "8",
+          "color": "000000"
+        },
+        "bottom": {
+          "val": "single",
+          "sz": "8",
+          "color": "000000"
+        },
+        "left": {
+          "val": "single",
+          "sz": "8",
+          "color": "000000"
+        },
+        "right": {
+          "val": "single",
+          "sz": "8",
+          "color": "000000"
+        },
+        "insideH": {
+          "val": "single",
+          "sz": "8",
+          "color": "000000"
+        },
+        "insideV": {
+          "val": "single",
+          "sz": "8",
+          "color": "000000"
+        }
+      },
+      "header_bold": true,
+      "font_size_half_pts": 22
+    }
+  }
+}

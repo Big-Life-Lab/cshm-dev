@@ -60,3 +60,6 @@ resources/
 manuscript/.quarto/
 
 **/*.quarto_ipynb
+
+# Protocol rendered Word output (docstyle)
+docs/protocol/output/

@@ -40,6 +40,19 @@ quarto render
 
 # Render manuscript to Word (docstyle)
 quarto render manuscript/manuscript.qmd
+
+# Render protocol documents to Word (docstyle subproject docs/protocol/_quarto.yml;
+# output in docs/protocol/output/, gitignored)
+quarto render docs/protocol/full-protocol.qmd
+quarto render docs/protocol/study-summary.qmd
+```
+
+```r
+# Round-trip PI edits from Word back into the protocol QMD (save the edited
+# .docx under docs/protocol/source/ first). Check the citekeys in the diff:
+# harvest re-derives keys from Zotero URIs, and items with missing/duplicate
+# URIs in field-codes.json come back with wrong keys.
+docstyle::docx_to_qmd("docs/protocol/source/<edited>.docx", "docs/protocol/full-protocol.qmd")
 ```
 
 ## Developer context
@@ -78,6 +91,7 @@ The pipeline follows the DemPoRT-V2-dev pattern (`~/github/DemPoRT-V2-dev`); its
 |----------|---------|
 | [docs/protocol/full-protocol.qmd](docs/protocol/full-protocol.qmd) | Prespecified study protocol |
 | [docs/protocol/study-summary.qmd](docs/protocol/study-summary.qmd) | One-page protocol summary |
+| [docs/protocol/_quarto.yml](docs/protocol/_quarto.yml) | Docstyle (Word) config for the protocol documents; `_extensions` symlink and local `_docstyle/` sidecar because the docstyle tooling resolves both relative to the project directory. Uses `popcorn-base.css` + `pop-draft-manuscript.css` at the repo root |
 | [docs/workflow/](docs/workflow/) | Step QMDs — one per pipeline stage (Stages 1–8) |
 | [manuscript/manuscript.qmd](manuscript/manuscript.qmd) | Study manuscript (all numbers inline R from pipeline) |
 | [docs/how-to/](docs/how-to/) | Task-oriented guides |
