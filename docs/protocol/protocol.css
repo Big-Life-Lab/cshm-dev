@@ -1,0 +1,27 @@
+/* Protocol-specific Word styling. Layered after popcorn-base.css and
+   pop-draft-manuscript.css (later files win). Spacing only: fonts and
+   colours come from the base theme. */
+
+/* More air above section headings */
+h1 {
+  margin-top: 24pt;
+  margin-bottom: 6pt;
+}
+
+h2 {
+  margin-top: 16pt;
+  margin-bottom: 4pt;
+}
+
+/* Reporting-guideline placeholders (blockquotes): separate from body text */
+blockquote {
+  margin-top: 8pt;
+  margin-bottom: 8pt;
+}
+
+/* Date | Version line under the title (::: {custom-style="Dateline"}) */
+.dateline {
+  text-align: center;
+  margin-top: 12pt;
+  margin-bottom: 12pt;
+}

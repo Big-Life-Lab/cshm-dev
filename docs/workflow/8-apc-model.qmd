@@ -32,7 +32,7 @@ Configuration used:
 | `apc$cohort_constraints$cessation_from` | `1985` | Cohort effect constant from this year |
 | `apc$spline_library` | `"splines2"` | Primary: `splines2::nsp()` |
 | `apc$spline_type` | `"nsp"` | Natural spline type |
-| `apc$mortality_method` | `"peto"` | Current: Peto (development); primary: MPoRT |
+| `apc$mortality_method` | `"none"` | Current: none (outputs labelled as estimates among survivors); primary: MPoRT, not yet implemented |
 
 ## Code
 
@@ -84,7 +84,7 @@ cat("Cessation women AIC:  ", AIC(model_cess_women), "\n")
 
 **Cohort constraint.** The initiation cohort effect is held constant prior to 1920 (small sample, sparse data). The cessation cohort effect is held constant from 1985 forward (insufficient follow-up time for younger cohorts to accumulate cessation history).
 
-**Mortality method: Peto (current).** The primary analysis specifies MPoRT mortality correction. MPoRT is not yet implemented; the Peto constant risk ratio is used during development. A sensitivity analysis compares Peto and MPoRT results (`cfg$apc$mortality_method`).
+**Mortality method: none (current).** The protocol specifies MPoRT as the primary correction and the Peto constant risk ratio as a sensitivity analysis. Neither is implemented yet, so the pipeline runs with `mortality_method: "none"` and labels its outputs as estimates among respondents who survived to be surveyed. Selecting `"mport"` or `"peto"` stops with a not-implemented error, and a correction that leaves every weight unchanged also stops -- a no-op can no longer pass as a correction.
 
 ## Sensitivity analyses
 

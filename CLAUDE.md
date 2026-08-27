@@ -40,6 +40,19 @@ quarto render
 
 # Render manuscript to Word (docstyle)
 quarto render manuscript/manuscript.qmd
+
+# Render protocol documents to Word (docstyle subproject docs/protocol/_quarto.yml;
+# output in docs/protocol/output/, gitignored)
+quarto render docs/protocol/full-protocol.qmd
+quarto render docs/protocol/study-summary.qmd
+```
+
+```r
+# Round-trip PI edits from Word back into the protocol QMD (save the edited
+# .docx under docs/protocol/source/ first). Check the citekeys in the diff:
+# harvest re-derives keys from Zotero URIs, and items with missing/duplicate
+# URIs in field-codes.json come back with wrong keys.
+docstyle::docx_to_qmd("docs/protocol/source/<edited>.docx", "docs/protocol/full-protocol.qmd")
 ```
 
 ## Developer context
@@ -78,6 +91,7 @@ The pipeline follows the DemPoRT-V2-dev pattern (`~/github/DemPoRT-V2-dev`); its
 |----------|---------|
 | [docs/protocol/full-protocol.qmd](docs/protocol/full-protocol.qmd) | Prespecified study protocol |
 | [docs/protocol/study-summary.qmd](docs/protocol/study-summary.qmd) | One-page protocol summary |
+| [docs/protocol/_quarto.yml](docs/protocol/_quarto.yml) | Docstyle (Word) config for the protocol documents; `_extensions` symlink and local `_docstyle/` sidecar because the docstyle tooling resolves both relative to the project directory. Uses `popcorn-base.css` + `pop-draft-manuscript.css` at the repo root |
 | [docs/workflow/](docs/workflow/) | Step QMDs — one per pipeline stage (Stages 1–8) |
 | [manuscript/manuscript.qmd](manuscript/manuscript.qmd) | Study manuscript (all numbers inline R from pipeline) |
 | [docs/how-to/](docs/how-to/) | Task-oriented guides |
@@ -110,7 +124,7 @@ python3 ~/github/cchsflow-docs/mcp-server/cli.py compare cchs2013_2014_p cchs201
 
 The `variableStart` worksheet column uses cchsflow notation: `cchs2001_p::SMKA_01A, cchs2007_2008_p::SMK_01A, [SMK_01A]` — `_p` = PUMF, `_m` = Master, `[VAR]` = fallback name.
 
-**Unified variables (preferred):** `age_first_cigarette`, `age_start_smoking`, `time_quit_smoking`
+**Unified variables (preferred):** `age_first_cigarette` (entry), `smoked_100_lifetime` (established-smoker criterion), `time_quit_smoking_complete` (cessation exit, 2003+), `age_start_smoking` and `time_quit_smoking_daily` (daily-smoking attributes)
 
 **Master-only continuous:** `SMK_01C`, `SMK_040`, `SMK_09C` / `SMK_06C` / `SMK_10C`
 
@@ -118,7 +132,9 @@ The `variableStart` worksheet column uses cchsflow notation: `cchs2001_p::SMKA_0
 
 **Deprecated aliases:** `SMK_005` → `SMK_202`; `SMK_030` → `SMK_05D`
 
-**APC model variables (internal):** `age`, `cohort`, `period`, `init`, `weighting`, `ont_id`
+**APC model variables (internal):** `age`, `cohort`, `period`, `event`, `weight`
+
+**Value codes are configuration, not code.** Status groupings (`survey.smoking_status.<src>.ever_codes/current_codes/former_codes/never_code`), sex codes (`survey.sex.<src>.men_code/women_code`), the established-smoker criterion (`survey.established_smoker.<src>.yes_code`), and analytic thresholds (`apc.cessation_durability_years`, `apc.initiation_floor_age`) live in `config.yml` and are read with `survey_code()` / `initiation_floor()`. **Variable ranges (min/max) are not in config at all:** `survey.<key>.<src>.range: variable_details` points at the variable-details worksheet, and `details_range()` / `survey_range()` derive the range from the recoding rules for each cycle. Example of why: the PUMF groups quit duration to "3 or more years" from 2003 (largest midpoint 5), where the old config comments claimed a top-code of 15. Do not write literal codes or thresholds into R. Remaining exception, scheduled as plan task 2.6: literal variable names in `R/imputation.R`.
 
 ### cchsflow dependency
 

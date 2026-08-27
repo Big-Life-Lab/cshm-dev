@@ -36,7 +36,7 @@ Period effects are held constant beyond the observed data range:
 
 ### Mortality adjustment
 
-Ever-smokers have lower survival to survey date than never-smokers. Survival bias is corrected using MPoRT weights adjusted for age, smoking status, years since quitting, immigration, and sex. A sensitivity analysis uses the Peto constant mortality risk ratio, consistent with the original Holford et al. (2014) US implementation.
+Ever-smokers have lower survival to survey date than never-smokers, so smoking histories reconstructed from survivors under-represent smokers who died. The protocol specifies an MPoRT-based correction as the primary method and a Peto constant risk ratio as a sensitivity analysis (protocol section 3.4.5). **Neither is implemented yet.** The pipeline runs with `mortality_method: "none"`, and every current output is an estimate among respondents who survived to be surveyed, not a birth-cohort smoking history. A configured correction that leaves the weights unchanged stops the pipeline.
 
 ### Smoking status definitions
 
@@ -65,7 +65,8 @@ Variables are harmonized across CCHS cycles using the [cchsflow](https://github.
 
 - `age_first_cigarette` — age first smoked whole cigarette (Master: exact; PUMF: midpoint estimate)
 - `age_start_smoking` — age started smoking daily (Master: exact; PUMF: midpoint ±3 years)
-- `time_quit_smoking` — years since quit smoking
+- `time_quit_smoking_complete` — years since stopped smoking completely (the cessation event; 2003 onward)
+- `smoked_100_lifetime` — smoked 100 or more cigarettes (defines who is a smoker in the model)
 
 ## Pipeline
 

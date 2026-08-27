@@ -300,8 +300,8 @@ for province code definitions.
 **Cycles:** 2001–2022
 
 CCHS sampling and post-stratification weight. Applied during APC model fitting.
-See protocol §3.4.4 for the weighting method used (Peto / case weight in logistic
-regression vs. `svyglm()`).
+See protocol section 3.4.5 for how the survey weight combines with the mortality
+adjustment, and section 3.5 for variance estimation.
 
 ---
 
@@ -475,15 +475,15 @@ initiation × {male, female} and cessation × {male, female}.
 | `rate` | Float (0–1) | Conditional probability of the smoking transition |
 | `rate_lower` | Float (0–1) | Lower bound of 95% confidence interval |
 | `rate_upper` | Float (0–1) | Upper bound of 95% confidence interval |
-| `mortality_correction` | String | Method applied: `peto` (default) or `mport` (not yet implemented) |
+| `mortality_correction` | String | Method applied: `none` (current default; rates are estimates among survivors), `mport` or `peto` (not yet implemented) |
 
 ### Rate definitions
 
 **Initiation rate:** P(initiate at age *a* | never smoker at age *a*−1).
-Zero for ages below `survey_bound(cfg, "age_first_cigarette", "min")` (PUMF: 13, Master: 8).
+Modelled from the initiation floor, `initiation_floor(cfg)` (`apc.initiation_floor_age` in `config.yml`: PUMF 13, Master 8). Reported ages at first cigarette are checked against the range in the variable-details worksheet (`survey_range()` / `details_range()`), not against a value in `config.yml`.
 
 **Cessation rate:** P(quit at age *a* | current smoker at age *a*−1).
-Zero for ages below `survey_bound(cfg, "age_first_cigarette", "min")` for cessation as well.
+Risk starts at each person's own age at first whole cigarette and ends at the age they stopped completely (event) or the survey age (censored). No fixed minimum age applies; a reported entry age outside the worksheet range for `age_first_cigarette` excludes the respondent from the cessation model (`excluded_entry_invalid`).
 
 ### Period constraint years
 

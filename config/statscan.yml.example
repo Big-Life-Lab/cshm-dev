@@ -15,18 +15,18 @@ statscan:
 
   # Master cycles available at RDC (2001–2023)
   cchs_cycles:
-    - cchs2001_master
-    - cchs2003_master
-    - cchs2005_master
-    - cchs2007_2008_master
-    - cchs2009_2010_master
-    - cchs2011_2012_master
-    - cchs2013_2014_master
-    - cchs2015_2016_master
-    - cchs2017_2018_master
-    - cchs2019_2020_master
-    - cchs2022_master
-    - cchs2023_master
+    - cchs2001_m
+    - cchs2003_m
+    - cchs2005_m
+    - cchs2007_2008_m
+    - cchs2009_2010_m
+    - cchs2011_2012_m
+    - cchs2013_2014_m
+    - cchs2015_2016_m
+    - cchs2017_2018_m
+    - cchs2019_2020_m
+    - cchs2022_m
+    - cchs2023_m
 
   # Output paths within RDC vetting folder
   derived_data:
