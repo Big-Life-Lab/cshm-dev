@@ -25,7 +25,12 @@ make_apc_test_data <- function(cfg, n = 100, seed = 42) {
   # PUMF 2003+ groups quit duration to a largest midpoint of 5 (worksheet rules)
   yrs_quit_complete <- ifelse(smkdsty %in% c(4, 5), sample(c(0.5, 1.5, 2.5, 5), n, replace = TRUE), NA_real_)
   # keep quit age at or after the entry age so the base data are internally consistent
+  # 2022 PUMF (cycle 11): age_first_cigarette has no variable-details rule, so the real data
+  # carry NA there; a non-missing value with no worksheet range is an error by design.
+  age_first[cycles == "11"] <- NA_real_
   yrs_quit_complete <- pmin(yrs_quit_complete, ages - age_first)
+  # 2001 and 2022 PUMF (cycles 1 and 11): time_quit_smoking_complete is not available, NA(c).
+  yrs_quit_complete[cycles %in% c("1", "11")] <- NA_real_
 
   # Simulate survey years (2002–2022 range) and cohorts
   survey_years <- sample(2002:2022, n, replace = TRUE)

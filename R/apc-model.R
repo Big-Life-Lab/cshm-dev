@@ -208,18 +208,39 @@ build_initiation_data <- function(data, cfg, variable_details_sheet) {
 #' @return List with numeric vectors `min` and `max` (NA where unbounded)
 per_respondent_range <- function(cfg, key, cycle, variable_details_sheet) {
   dbs <- cycle_database(cfg, cycle)
-  known <- unique(dbs[!is.na(dbs)])
+  if (anyNA(dbs)) {
+    stop(
+      "Cycle codes not listed in cfg$cchs_cycles: ",
+      paste(unique(cycle[is.na(dbs)]), collapse = ", "),
+      ". Every cycle in the data must map to a database name (e.g. cchs2001_p, cchs2001_m)."
+    )
+  }
+  known <- unique(dbs)
   ranges <- lapply(known, function(db) survey_range(cfg, key, db, variable_details_sheet))
   names(ranges) <- known
+  # A database with no worksheet rows for the variable gets an NA range. That is fine while
+  # every value from that database is missing (e.g. the variable is not asked in the cycle);
+  # outside_range() stops if a non-missing value meets an NA range, so nothing is guessed.
   idx <- match(dbs, known)
   list(
-    min = vapply(idx, function(i) if (is.na(i)) NA_real_ else ranges[[i]][["min"]], numeric(1)),
-    max = vapply(idx, function(i) if (is.na(i)) NA_real_ else ranges[[i]][["max"]], numeric(1))
+    key = key,
+    database = dbs,
+    min = vapply(idx, function(i) ranges[[i]][["min"]], numeric(1)),
+    max = vapply(idx, function(i) ranges[[i]][["max"]], numeric(1))
   )
 }
 
 #' TRUE where a value lies outside its per-respondent range (NA bounds ignored)
 outside_range <- function(x, range) {
+  unresolved <- !is.na(x) & (is.na(range$min) | is.na(range$max))
+  if (any(unresolved)) {
+    stop(
+      sum(unresolved), " non-missing value(s) of '", range$key %||% "variable",
+      "' come from database(s) with no range in the variable-details worksheet: ",
+      paste(unique(range$database[unresolved]), collapse = ", "),
+      ". Add worksheet rows for those databases; the range is not guessed."
+    )
+  }
   below <- !is.na(range$min) & x < range$min
   above <- !is.na(range$max) & x > range$max
   !is.na(x) & (below | above)
@@ -349,7 +370,22 @@ build_cessation_data <- function(data, cfg, variable_details_sheet) {
   former_codes <- survey_code(cfg, "smoking_status", "former_codes")
   smk <- data[[status_col]]
   smoked_100 <- data[[smoked_100_col]]
-  established <- !is.na(smk) & smk %in% ever_codes & !is.na(smoked_100) & smoked_100 == smoked_100_yes
+  all_cycle <- as.character(data[[cycle_col]])
+  all_weight <- data[[weight_col]]
+  # Who is missing before the established filter is applied. These respondents never reach
+  # the risk set, so they are counted here or not at all.
+  status_missing <- is.na(smk)
+  ever <- !status_missing & smk %in% ever_codes
+  criterion_missing <- ever & is.na(smoked_100)
+  not_established <- ever & !is.na(smoked_100) & smoked_100 != smoked_100_yes
+  established <- ever & !is.na(smoked_100) & smoked_100 == smoked_100_yes
+  pre_groups <- list(
+    respondents = rep(TRUE, nrow(data)),
+    excluded_status_missing = status_missing,
+    excluded_criterion_missing = criterion_missing,
+    not_established_ever_smokers = not_established
+  )
+  pre_diag <- summarise_groups(pre_groups, all_cycle, all_weight)
   d <- data[established, ]
   smk <- d[[status_col]]
 
@@ -360,13 +396,17 @@ build_cessation_data <- function(data, cfg, variable_details_sheet) {
   weight <- d[[weight_col]]
   cycle <- as.character(d[[cycle_col]]) # observed cycles only; avoids NA sums for empty levels
   quit_range <- per_respondent_range(cfg, "years_since_quit_complete", cycle, variable_details_sheet)
+  init_range <- per_respondent_range(cfg, "age_first_cigarette", cycle, variable_details_sheet)
 
   current <- smk %in% current_codes
   former <- smk %in% former_codes
 
   # Classification: each established smoker falls in exactly one group
   missing_entry <- is.na(age_init)
-  entry_after_survey <- !missing_entry & age_init > age_survey
+  # The entry age must lie within the worksheet range for age_first_cigarette in the
+  # respondent's database (the same check the initiation model applies).
+  entry_invalid <- !missing_entry & outside_range(age_init, init_range)
+  entry_after_survey <- !missing_entry & !entry_invalid & age_init > age_survey
   timing_missing <- former & is.na(yrs_quit)
   # Quit timing must be finite, within the configured bounds for the source
   # (PUMF top-code, Master ceiling), and place the quit no later than the survey.
@@ -374,7 +414,7 @@ build_cessation_data <- function(data, cfg, variable_details_sheet) {
     (!is.finite(yrs_quit) | outside_range(yrs_quit, quit_range) |
       is.na(age_quit) | age_quit > age_survey | age_quit < 0)
   quit_before_entry <- former & !is.na(age_quit) & !timing_invalid & !missing_entry & age_quit < age_init
-  excluded <- missing_entry | entry_after_survey | timing_missing | timing_invalid | quit_before_entry
+  excluded <- missing_entry | entry_invalid | entry_after_survey | timing_missing | timing_invalid | quit_before_entry
   recent <- !excluded & former & yrs_quit < durability
   durable <- !excluded & former & yrs_quit >= durability
   same_age <- durable & age_quit == age_init
@@ -386,19 +426,24 @@ build_cessation_data <- function(data, cfg, variable_details_sheet) {
     recent_quitters_censored = recent,
     same_age_quits = same_age,
     excluded_missing_entry = missing_entry,
+    excluded_entry_invalid = entry_invalid,
     excluded_entry_after_survey = entry_after_survey,
     excluded_timing_missing = timing_missing,
     excluded_quit_timing_invalid = timing_invalid,
     excluded_quit_before_entry = quit_before_entry
   )
-  diag <- summarise_groups(groups, cycle, weight)
-  totals <- vapply(groups, sum, numeric(1))
+  diag <- rbind(pre_diag, summarise_groups(groups, cycle, weight))
+  totals <- vapply(c(pre_groups, groups), sum, numeric(1))
   message(
-    "Cessation risk set: ", totals[["established"]], " established smokers; ",
+    "Cessation risk set: ", totals[["respondents"]], " respondents; ",
+    totals[["excluded_status_missing"]], " missing smoking status; ",
+    totals[["excluded_criterion_missing"]], " ever smokers missing the 100-cigarette criterion; ",
+    totals[["established"]], " established smokers; ",
     totals[["durable_quitters"]], " durable quitters (events); ",
     totals[["recent_quitters_censored"]], " recent quitters censored; ",
     totals[["same_age_quits"]], " started and stopped at the same age. Excluded pending imputation: ",
     totals[["excluded_missing_entry"]], " missing entry age, ",
+    totals[["excluded_entry_invalid"]], " entry age outside the worksheet range, ",
     totals[["excluded_entry_after_survey"]], " entry after survey, ",
     totals[["excluded_timing_missing"]], " missing quit timing, ",
     totals[["excluded_quit_timing_invalid"]], " quit timing out of bounds, ",

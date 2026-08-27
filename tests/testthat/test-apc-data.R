@@ -439,3 +439,50 @@ test_that("cessation: a quit duration above the worksheet top-code for the cycle
   diag <- attr(result, "cessation_diagnostics")
   expect_equal(sum(diag$n[diag$group == "excluded_quit_timing_invalid"]), 1L)
 })
+
+
+test_that("cessation: an entry age outside the worksheet range is excluded and counted (finding 1)", {
+  cfg <- cess_cfg()
+  df <- rbind(
+    one_person(cfg, status = 1, age_first = 1, age = 40), # below the worksheet minimum for age_first_cigarette
+    one_person(cfg, status = 1, age_first = 16, age = 40)
+  )
+  out <- build_cessation_data(df, cfg, TEST_DETAILS)
+  diag <- attr(out, "cessation_diagnostics")
+  expect_equal(sum(diag$n[diag$group == "excluded_entry_invalid"]), 1)
+  expect_equal(sum(diag$n[diag$group == "current_at_survey"]), 1)
+  expect_equal(min(out$age), 16) # no person-year from the invalid entry
+  expect_equal(nrow(out), 40 - 16 + 1)
+})
+
+test_that("cessation: missing status and missing 100-cigarette criterion are counted before the established filter (finding 4)", {
+  cfg <- cess_cfg()
+  df <- rbind(
+    one_person(cfg, status = NA, age_first = 16),
+    one_person(cfg, status = 1, smoked_100 = NA, age_first = 16),
+    one_person(cfg, status = 1, smoked_100 = 2, age_first = 16), # experimental: not established
+    one_person(cfg, status = 1, age_first = 16)
+  )
+  out <- build_cessation_data(df, cfg, TEST_DETAILS)
+  diag <- attr(out, "cessation_diagnostics")
+  n_of <- function(g) sum(diag$n[diag$group == g])
+  expect_equal(n_of("respondents"), 4)
+  expect_equal(n_of("excluded_status_missing"), 1)
+  expect_equal(n_of("excluded_criterion_missing"), 1)
+  expect_equal(n_of("not_established_ever_smokers"), 1)
+  expect_equal(n_of("established"), 1)
+})
+
+test_that("per_respondent_range fails closed on unknown cycle codes and unresolved worksheet ranges (finding 2)", {
+  cfg <- cess_cfg()
+  expect_error(
+    per_respondent_range(cfg, "age_first_cigarette", c("5", "99"), TEST_DETAILS),
+    "Cycle codes not listed in cfg\\$cchs_cycles: 99"
+  )
+  no_rows <- TEST_DETAILS[TEST_DETAILS$variable != survey_var(cfg, "age_first_cigarette"), ]
+  rng <- per_respondent_range(cfg, "age_first_cigarette", c("5", "5"), no_rows)
+  # A missing value never needs a range (the variable may not be asked in that cycle) ...
+  expect_false(outside_range(NA_real_, per_respondent_range(cfg, "age_first_cigarette", "5", no_rows)))
+  # ... but a non-missing value with no worksheet range is an error, not a pass.
+  expect_error(outside_range(c(16, NA), rng), "no range in the variable-details worksheet")
+})

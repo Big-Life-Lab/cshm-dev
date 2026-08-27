@@ -480,10 +480,10 @@ initiation × {male, female} and cessation × {male, female}.
 ### Rate definitions
 
 **Initiation rate:** P(initiate at age *a* | never smoker at age *a*−1).
-Zero for ages below `survey_bound(cfg, "age_first_cigarette", "min")` (PUMF: 13, Master: 8).
+Modelled from the initiation floor, `initiation_floor(cfg)` (`apc.initiation_floor_age` in `config.yml`: PUMF 13, Master 8). Reported ages at first cigarette are checked against the range in the variable-details worksheet (`survey_range()` / `details_range()`), not against a value in `config.yml`.
 
 **Cessation rate:** P(quit at age *a* | current smoker at age *a*−1).
-Zero for ages below `survey_bound(cfg, "age_first_cigarette", "min")` for cessation as well.
+Risk starts at each person's own age at first whole cigarette and ends at the age they stopped completely (event) or the survey age (censored). No fixed minimum age applies; a reported entry age outside the worksheet range for `age_first_cigarette` excludes the respondent from the cessation model (`excluded_entry_invalid`).
 
 ### Period constraint years
 

@@ -31,7 +31,7 @@ list(
   # Stage 0: Pre-flight validation — verify variable coverage before loading data
   # Returns gap report (declared + critical); warns or errors per cfg$strict_validation
   tar_target(coverage_check, {
-    check_feeder_closure(variables_sheet, variable_details_sheet)
+    check_feeder_closure(variables_sheet, variable_details_sheet, databases = unlist(cfg$cchs_cycles))
     validate_cycle_coverage(variables_sheet, variable_details_sheet, cfg,
                             strict = cfg$strict_validation %||% FALSE)
   }),

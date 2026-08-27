@@ -169,31 +169,63 @@ validate_cycle_coverage <- function(variables_sheet,
 #' @param variable_details_sheet Combined variable-details worksheet (data frame)
 #' @return Invisibly, a data frame of (variable, missing_feeder) pairs; stops if
 #'   any row exists
-check_feeder_closure <- function(variables_sheet, variable_details_sheet) {
+check_feeder_closure <- function(variables_sheet, variable_details_sheet, databases = NULL) {
+  # `databases`: restrict the check to these database names (normally the study cycles,
+  # unlist(cfg$cchs_cycles)); NULL checks every database a derived rule names.
   study <- unique(variables_sheet$variable)
-  det <- variable_details_sheet[variable_details_sheet$variable %in% study, c("variable", "variableStart")]
-  rules <- det[grepl("DerivedVar::\\[", det$variableStart), ]
+  det <- variable_details_sheet[, c("variable", "variableStart", "databaseStart")]
+  split_dbs <- function(x) trimws(strsplit(as.character(x), ",")[[1]])
+  det_dbs <- lapply(det$databaseStart, split_dbs)
+  rules <- which(det$variable %in% study & grepl("DerivedVar::\\[", det$variableStart))
   gaps <- list()
-  for (i in seq_len(nrow(rules))) {
-    inner <- sub(".*DerivedVar::\\[([^]]*)\\].*", "\\1", rules$variableStart[i])
+  for (i in rules) {
+    inner <- sub(".*DerivedVar::\\[([^]]*)\\].*", "\\1", det$variableStart[i])
     feeders <- trimws(strsplit(inner, ",")[[1]])
-    missing <- setdiff(feeders, study)
-    if (length(missing)) {
-      gaps[[length(gaps) + 1]] <- data.frame(
-        variable = rules$variable[i], missing_feeder = missing, stringsAsFactors = FALSE
-      )
+    dbs_i <- det_dbs[[i]]
+    if (!is.null(databases)) dbs_i <- intersect(dbs_i, databases)
+    for (db in dbs_i) {
+      for (f in feeders) {
+        in_study <- f %in% study
+        # A feeder only closes the chain for this database if the details sheet has a rule
+        # for it in the same database; a rule in another cycle does not count.
+        has_rule <- any(det$variable == f & vapply(det_dbs, function(x) db %in% x, logical(1)))
+        if (!in_study || !has_rule) {
+          gaps[[length(gaps) + 1]] <- data.frame(
+            variable = det$variable[i], missing_feeder = f, database = db,
+            reason = if (!in_study) "not in cshm-variables.csv" else "no variable-details rule for this database",
+            stringsAsFactors = FALSE
+          )
+        }
+      }
     }
   }
   gaps <- if (length(gaps)) {
     unique(do.call(rbind, gaps))
   } else {
-    data.frame(variable = character(0), missing_feeder = character(0))
+    data.frame(
+      variable = character(0), missing_feeder = character(0),
+      database = character(0), reason = character(0)
+    )
   }
-  if (nrow(gaps) > 0) {
+  not_in_study <- gaps[gaps$reason == "not in cshm-variables.csv", , drop = FALSE]
+  no_rule <- gaps[gaps$reason != "not in cshm-variables.csv", , drop = FALSE]
+  if (nrow(not_in_study) > 0) {
+    # Fixable in this repo: add the feeder as an intermediate row.
     stop(
       "Derived study variables with feeders missing from worksheets/cshm-variables.csv: ",
-      paste(unique(paste0(gaps$variable, " needs ", gaps$missing_feeder)), collapse = "; "),
+      paste(unique(paste0(not_in_study$variable, " needs ", not_in_study$missing_feeder)), collapse = "; "),
       ". Add the feeders as intermediate rows; cchsflow skips the derivation silently otherwise."
+    )
+  }
+  if (nrow(no_rule) > 0) {
+    # The derived rule names a database in which its feeder has no rule (the feeder is not in
+    # that cycle's file). cchsflow returns NA for the derived variable there. This is recorded
+    # as a warning so the gap is visible in the pipeline log and in the coverage_check target.
+    warning(
+      "Derived study variables whose feeders have no variable-details rule in a database they are derived for ",
+      "(the derived variable will be missing for that cycle): ",
+      paste(unique(paste0(no_rule$variable, " needs ", no_rule$missing_feeder, " in ", no_rule$database)), collapse = "; "),
+      call. = FALSE
     )
   }
   invisible(gaps)
