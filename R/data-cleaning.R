@@ -21,7 +21,7 @@ clean_study_data <- function(study_data, variables_sheet, cfg) {
     n_before <- nrow(study_data)
     study_data <- study_data[
       is.na(study_data[[age_col]]) |
-      study_data[[age_col]] >= cfg$age_exclusion_min,
+        study_data[[age_col]] >= cfg$age_exclusion_min,
     ]
     message(
       "Age restriction: excluded ", n_before - nrow(study_data),
@@ -75,21 +75,25 @@ check_skewness <- function(data, vars, threshold) {
     x <- data[[var]]
     # Exclude tagged NAs — use only non-NA values for skewness calculation
     x_valid <- x[!is.na(x)]
-    if (length(x_valid) < 3) return(NULL)
+    if (length(x_valid) < 3) {
+      return(NULL)
+    }
 
     # Pearson's moment coefficient of skewness (type 2 = unbiased, matches SAS)
     n <- length(x_valid)
     m <- mean(x_valid)
     s <- sd(x_valid)
-    if (s == 0) return(NULL)
+    if (s == 0) {
+      return(NULL)
+    }
     skew <- (sum((x_valid - m)^3) / n) / (s^3) * sqrt(n * (n - 1)) / (n - 2)
 
     data.frame(
-      variable    = var,
-      n_valid     = n,
-      skewness    = round(skew, 3),
+      variable = var,
+      n_valid = n,
+      skewness = round(skew, 3),
       abs_skewness = round(abs(skew), 3),
-      action      = if (abs(skew) >= threshold) "truncate" else "keep",
+      action = if (abs(skew) >= threshold) "truncate" else "keep",
       stringsAsFactors = FALSE
     )
   })
@@ -124,7 +128,7 @@ truncate_continuous <- function(data, vars, percentile) {
       !is.na(x) & x > cap,
       cap,
       x,
-      missing = x  # tagged NAs pass through unchanged
+      missing = x # tagged NAs pass through unchanged
     )
   }
   data

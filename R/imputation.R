@@ -49,7 +49,7 @@ impute_data <- function(cleaned_data, variables_sheet, cfg) {
 
   n_imputable <- colSums(prep$where)
   imputed_cells <- data.frame(
-    variable  = names(n_imputable),
+    variable = names(n_imputable),
     n_imputed = unname(n_imputable),
     stringsAsFactors = FALSE
   )
@@ -119,7 +119,8 @@ impute_data <- function(cleaned_data, variables_sheet, cfg) {
         "MICE dropped prespecified design predictor(s) from the imputation ",
         "model: ", paste(design_dropped, collapse = ", "),
         " — the design-consistency property of the protocol no longer holds. ",
-        "Inspect loggedEvents and the predictor matrix.", call. = FALSE
+        "Inspect loggedEvents and the predictor matrix.",
+        call. = FALSE
       )
     }
     warning(
@@ -166,7 +167,8 @@ impute_data <- function(cleaned_data, variables_sheet, cfg) {
           "MICE left ", sum(is.na(imputed_vals)), " where-TRUE cell(s) of '",
           var, "' unimputed (see logged events above: likely constant or ",
           "collinear). These NA(b) cells would lose their tag — adjust the ",
-          "imputation model before proceeding.", call. = FALSE
+          "imputation model before proceeding.",
+          call. = FALSE
         )
       }
       if (is.factor(out[[var]])) {
@@ -201,18 +203,23 @@ impute_data <- function(cleaned_data, variables_sheet, cfg) {
 #' @param data A completed (imputed) data frame
 #' @return Data frame with derived variables recomputed
 recompute_derived <- function(data) {
-  if (!"pack_years_der" %in% colnames(data)) return(data)
+  if (!"pack_years_der" %in% colnames(data)) {
+    return(data)
+  }
 
   as_num <- function(x) {
     if (is.factor(x)) suppressWarnings(as.numeric(as.character(x))) else x
   }
-  feeders <- c("SMKDSTY_original", "DHHGAGE_cont", "age_start_smoking",
-               "cigs_per_day", "time_quit_smoking", "SMK_05B", "SMK_05C",
-               "age_first_cigarette", "smoked_100_lifetime")
+  feeders <- c(
+    "SMKDSTY_original", "DHHGAGE_cont", "age_start_smoking",
+    "cigs_per_day", "time_quit_smoking", "SMK_05B", "SMK_05C",
+    "age_first_cigarette", "smoked_100_lifetime"
+  )
   if (!all(feeders %in% colnames(data))) {
     warning("pack_years_der not recomputed — missing feeders: ",
-            paste(setdiff(feeders, colnames(data)), collapse = ", "),
-            call. = FALSE)
+      paste(setdiff(feeders, colnames(data)), collapse = ", "),
+      call. = FALSE
+    )
     return(data)
   }
   data$pack_years_der <- cchsflow::calculate_pack_years(
@@ -249,7 +256,8 @@ recompute_derived <- function(data) {
 prepare_for_mice <- function(data, vars) {
   out <- data[, vars, drop = FALSE]
   where <- matrix(
-    FALSE, nrow = nrow(out), ncol = length(vars),
+    FALSE,
+    nrow = nrow(out), ncol = length(vars),
     dimnames = list(NULL, vars)
   )
 
@@ -263,7 +271,6 @@ prepare_for_mice <- function(data, vars) {
       where[, var] <- !is.na(char_x) & char_x == "NA(b)"
       char_x[char_x %in% na_levels] <- NA_character_
       out[[var]] <- factor(char_x, levels = setdiff(levels(x), na_levels))
-
     } else if (is.numeric(x)) {
       where[, var] <- haven::is_tagged_na(x, "b")
       # strip tags: all tagged NAs become plain NA in the modelling frame;

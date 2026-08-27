@@ -16,8 +16,6 @@ renv/library/
 .DS_Store
 
 # Data (raw source files — never commit; pipeline outputs kept locally only)
-data/dev/*.RData
-data/dev/*.rdata
 data/*.rds
 
 # Secure config (RDC paths — never commit)
@@ -44,9 +42,6 @@ manuscript/_docstyle/
 docs/.quarto/
 
 /.luarc.json
-
-# Internal development notes (working documents, not for collaborators)
-docs/development/
 
 # Working copies
 worksheets/cshm-variables-working-copy.csv
