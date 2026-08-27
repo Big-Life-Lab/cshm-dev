@@ -286,3 +286,18 @@ test_that("apply_survival_correction: mport raises not-implemented error", {
   df <- data.frame(age = 1, cohort = 1970, period = 1985, event = 0, weight = 100)
   expect_error(apply_survival_correction(df, cfg), "not yet implemented")
 })
+
+test_that("value codes are read from config, not hard-coded", {
+  cfg <- cess_cfg()
+  expect_equal(survey_code(cfg, "sex", "men_code"), 1)
+  expect_equal(survey_code(cfg, "smoking_status", "former_codes"), c(4, 5))
+  # Relabel the former-smoker codes in config and the universe classification follows
+  cfg2 <- cfg
+  cfg2$survey$smoking_status$pumf$former_codes <- c(4)
+  cfg2$survey$smoking_status$pumf$current_codes <- c(1, 2, 3, 5)
+  q <- one_person(cfg2, status = 5, age_first = 20, yrs_quit_complete = 10, age = 50, survey_year = 2010)
+  result <- suppressMessages(build_cessation_data(q, cfg2))
+  # status 5 is now "current": at risk to survey, no event
+  expect_equal(sum(result$event), 0L)
+  expect_equal(max(result$age), 50L)
+})

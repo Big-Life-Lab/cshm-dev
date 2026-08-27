@@ -34,10 +34,13 @@
 prepare_apc_data <- function(analysis_data, cfg) {
   data <- derive_survey_year(analysis_data, cfg)
 
-  init_men <- build_initiation_data(data[data[[survey_var(cfg, "sex")]] == 1, ], cfg)
-  init_women <- build_initiation_data(data[data[[survey_var(cfg, "sex")]] == 2, ], cfg)
-  cess_men <- build_cessation_data(data[data[[survey_var(cfg, "sex")]] == 1, ], cfg)
-  cess_women <- build_cessation_data(data[data[[survey_var(cfg, "sex")]] == 2, ], cfg)
+  sex <- data[[survey_var(cfg, "sex")]]
+  men <- !is.na(sex) & sex == survey_code(cfg, "sex", "men_code")
+  women <- !is.na(sex) & sex == survey_code(cfg, "sex", "women_code")
+  init_men <- build_initiation_data(data[men, ], cfg)
+  init_women <- build_initiation_data(data[women, ], cfg)
+  cess_men <- build_cessation_data(data[men, ], cfg)
+  cess_women <- build_cessation_data(data[women, ], cfg)
 
   list(
     initiation_men   = apply_survival_correction(init_men, cfg),
@@ -103,7 +106,7 @@ build_initiation_data <- function(data, cfg) {
   # Restrict to valid cohorts
   data <- data[data$cohort >= cohort_min, ]
 
-  # Identify ever-smokers: SMKDSTY_original %in% 1:5, age_first_cigarette >= min_age
+  # Identify ever-smokers (status codes from config), age_first_cigarette >= min_age
   # Never-smokers (SMKDSTY_original = 6) carry NA(a) for age_first_cigarette;
   # 55 is the legitimate midpoint of the "50+ years" category among ever-smokers.
   # SMKDSTY_original categories: 1=daily, 2=occ(fmr daily), 3=always occ, 4=fmr daily, 5=fmr occ, 6=never
@@ -113,7 +116,8 @@ build_initiation_data <- function(data, cfg) {
   # smokers (a whole cigarette, fewer than 100) are Never: at risk, no event.
   gate <- data[[survey_var(cfg, "established_smoker")]]
   gate_yes <- survey_code(cfg, "established_smoker", "yes_code")
-  ever_smoker <- !is.na(smkdsty) & smkdsty %in% 1:5 & !is.na(gate) & gate == gate_yes
+  ever_codes <- survey_code(cfg, "smoking_status", "ever_codes")
+  ever_smoker <- !is.na(smkdsty) & smkdsty %in% ever_codes & !is.na(gate) & gate == gate_yes
 
   age_init_raw <- data[[age_col]]
 
@@ -269,12 +273,14 @@ build_cessation_data <- function(data, cfg) {
 
   data <- data[!is.na(data$cohort) & data$cohort >= cohort_min, ]
 
-  # Universe: established smokers. SMKDSTY_original 1 = daily, 2 = occasional
-  # (formerly daily), 3 = occasional (never daily), 4 = former daily,
-  # 5 = former occasional, 6 = never smoked.
+  # Universe: established smokers. Status codes and their state groupings come
+  # from config (survey.smoking_status.*_codes), not from literals here.
+  ever_codes <- survey_code(cfg, "smoking_status", "ever_codes")
+  current_codes <- survey_code(cfg, "smoking_status", "current_codes")
+  former_codes <- survey_code(cfg, "smoking_status", "former_codes")
   smk <- data[[status_col]]
   gate <- data[[gate_col]]
-  established <- !is.na(smk) & smk %in% 1:5 & !is.na(gate) & gate == gate_yes
+  established <- !is.na(smk) & smk %in% ever_codes & !is.na(gate) & gate == gate_yes
   d <- data[established, ]
   smk <- d[[status_col]]
 
@@ -285,8 +291,8 @@ build_cessation_data <- function(data, cfg) {
   weight <- d[[weight_col]]
   cycle <- as.character(d[[cycle_col]]) # observed cycles only; avoids NA sums for empty levels
 
-  current <- smk %in% c(1, 2, 3)
-  former <- smk %in% c(4, 5)
+  current <- smk %in% current_codes
+  former <- smk %in% former_codes
 
   # Classification: each established smoker falls in exactly one group
   missing_entry <- is.na(age_init)
@@ -601,10 +607,10 @@ get_period_constraint <- function(model_type, sex, cfg) {
   pc <- cfg$apc$period_constraints
 
   if (model_type == "initiation") {
-    if (sex == 2) {
+    if (sex == survey_code(cfg, "sex", "women_code")) {
       return(pc$initiation_women_from)
     }
-    if (sex == 1) {
+    if (sex == survey_code(cfg, "sex", "men_code")) {
       return(pc$initiation_men_from)
     }
     stop("sex must be 1 or 2, got: ", sex)

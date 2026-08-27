@@ -104,11 +104,16 @@ default:
     cycle: SurveyCycle            # Survey cycle identifier (derived, not recoded by cchsflow)
 
     # Core demographics
+    # Value codes live here, not in R code: survey_code(cfg, "sex", "men_code") -> 1.
     sex:
       pumf:
         var: DHH_SEX              # Sex (1=male, 2=female)
+        men_code: 1
+        women_code: 2
       master:
         var: DHH_SEX
+        men_code: 1
+        women_code: 2
     age:
       pumf:
         var: DHHGAGE_cont         # Continuous age (years); midpoint-estimated from grouped categories
@@ -148,11 +153,23 @@ default:
         var: EDUDR04              # 4-category education
 
     # Smoking history (unified cchsflow v3 variables)
+    # SMKDSTY_original: 1 = daily, 2 = occasional (formerly daily), 3 = occasional
+    # (never daily), 4 = former daily, 5 = former occasional, 6 = never smoked.
+    # The state groupings below implement the estimand specification (section 2):
+    # current = still smoking (daily or occasional); former = stopped completely.
     smoking_status:
       pumf:
-        var: SMKDSTY_original     # 6-cat: daily, occ(fmr daily), always occ, fmr daily, fmr occ, never
+        var: SMKDSTY_original
+        ever_codes: [1, 2, 3, 4, 5]
+        current_codes: [1, 2, 3]
+        former_codes: [4, 5]
+        never_code: 6
       master:
         var: SMKDSTY_original
+        ever_codes: [1, 2, 3, 4, 5]
+        current_codes: [1, 2, 3]
+        former_codes: [4, 5]
+        never_code: 6
     age_first_cigarette:
       pumf:
         var: age_first_cigarette  # Age smoked first whole cigarette (midpoint-estimated)
