@@ -43,7 +43,7 @@ Three sources of missingness are specific to this study:
 
 ### Cells eligible for imputation: the `where` matrix
 
-MICE will be called with an explicit `where` matrix in which a cell is `TRUE` only if its value is tagged NA(b). (Extending the matrix to NA(c) cells for prespecified variables is the mechanism by which cycle-level imputation would be enabled, if the Phase 4 evaluation supports it.) This differs from the DemPoRTv2 implementation, which converts all tagged NAs to plain `NA` before imputation: because `haven::tagged_na()` values *are* `NA` to `mice()`, that approach silently imputes structural missingness -- for example, inventing quit times for never-smokers. The `where` matrix makes the universe logic automatic: a never-smoker's NA(a) on `age_first_cigarette` is never a candidate cell, while an ever-smoker's NA(b) on the same variable is.
+MICE will be called with an explicit `where` matrix in which a cell is `TRUE` only if its value is tagged NA(b). (Extending the matrix to NA(c) cells for prespecified variables is the mechanism by which cycle-level imputation would be enabled, if the Phase 4 evaluation supports it.) This differs from the DemPoRTv2 implementation, which converts all tagged NAs to plain `NA` before imputation: because `haven::tagged_na()` values *are* `NA` to `mice()`, that approach imputes structural missingness -- for example, inventing quit times for never-smokers. The `where` matrix makes the universe logic automatic: a never-smoker's NA(a) on `age_first_cigarette` is never a candidate cell, while an ever-smoker's NA(b) on the same variable is.
 
 For categorical variables, all `"NA(x)"` factor levels are removed from the modelling frame so that polytomous regression cannot assign a structural-missing label as an imputed value; the original levels are preserved in the output because only `where`-matrix cells are written back into the original data.
 
@@ -55,7 +55,7 @@ Predictors are selected by the `imputation-predictor` role in `worksheets/cshm-v
 -   **Smoking history:** smoking status (`SMKDSTY_original`), `age_first_cigarette`, `age_start_smoking`, `time_quit_smoking_daily`, `cigs_per_day`
 -   **Auxiliary covariates** (all harmonized in cchsflow v3 through the 2019--20 PUMF): marital status (`DHHGMS`), drinker type and drinks last week (`ALCDTTM`, `ALWDWKY`), body mass index (`HWTGBMI_der`), self-rated general and mental health (`GEN_01`, `GEN_02B`), life stress and community belonging (`GEN_07`, `GEN_10`), chronic conditions (hypertension, COPD/emphysema, diabetes, heart disease, stroke, mood disorder: `CCC_071`, `CCC_091`, `CCC_101`, `CCC_121`, `CCC_151`, `CCC_280`), and daily energy expenditure (`energy_exp`)
 
-The auxiliary covariates serve two purposes: they strengthen the MAR assumption for item non-response on the smoking variables, and they describe the study base in Tables 1a/1b -- groundwork for planned related studies (smoking initiation and cessation prediction models, pseudo-cohort analyses) that will draw on the same harmonized platform. Household income is the one classic non-response auxiliary not yet included: cchsflow harmonizes it only through 2017--18, and extending it to 2019--20 is a pending upstream task.
+The auxiliary covariates have two purposes: they strengthen the MAR assumption for item non-response on the smoking variables, and they describe the study base in Tables 1a/1b -- groundwork for planned related studies (smoking initiation and cessation prediction models, pseudo-cohort analyses) that will draw on the same harmonized platform. Household income is the one classic non-response auxiliary not yet included: cchsflow harmonizes it only through 2017--18, and extending it to 2019--20 is a pending upstream task.
 
 **Revised (protocol v0.4.0, following the external methodological review):** Predictor exclusion is updated to **universe-nested imputation**, following the team's previous PoRT algorithm development studies, such as MPoRT, which may be used in this study. The revised procedure: smoking-state variables are imputed first (jointly, where membership is itself missing); nested event times and durations are imputed conditionally within the currently imputed universe, using the other smoking-history variables as predictors inside that universe; and logical ordering (first cigarette no later than cessation, cessation no later than survey age, structural missingness outside each state's universe) are used during the chained-equations iterations, not repaired in completed data. A `where` matrix is not sufficient once imputed gate status changes eligibility between iterations; the implementation will use ordered blocks, a custom MICE method, or a joint model that updates membership and nested variables together, selected by the simulation programme below. Redundant history variables are derived deterministically from the minimal latent history (state membership, entry age, exit age or duration, intensity). Every completed dataset is expanded into person-years and fitted separately, with design-based within-imputation covariance combined with between-imputation covariance (protocol §3.5); the production number of imputations is selected from Monte Carlo stability of the final rate-table outputs, with *m* = 5 as the floor rather than an FMI threshold alone.
 
@@ -91,7 +91,7 @@ Largely delivered by Table 1a. A supplementary table summarizes missingness for 
 
 ### 1.2 Visualize patterns
 
-Co-occurrence of missing values via `naniar::gg_miss_upset()` or `VIM::aggr()`, with attention to the block structure driven by cycle-level absence (the 2019--20 and 2022 PUMF blocks identified above).
+Which variables are missing together, plotted with `naniar::gg_miss_upset()` or `VIM::aggr()`, with attention to the blocks of missing values that arise when a cycle did not ask a question (the 2019--20 and 2022 PUMF blocks identified above).
 
 ### 1.3 Mechanism assessment
 
@@ -105,7 +105,7 @@ Trace plots (`mice::plot()`) for the mean and SD of all imputed variables; chain
 
 ### 2.2 Imputation-model health
 
-Review `mice` logged events (`loggedEvents`) for dropped collinear or constant variables -- surfaced as an explicit pipeline check rather than silently suppressed (see cshm-dev issue #3).
+Review the `mice` log (`loggedEvents`) for variables it dropped as collinear or constant. The pipeline reports any such drop and stops; it does not continue without notice (see cshm-dev issue #3).
 
 ### 2.3 Between-imputation diagnostics
 
