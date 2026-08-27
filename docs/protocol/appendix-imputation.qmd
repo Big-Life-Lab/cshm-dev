@@ -9,7 +9,7 @@ This appendix specifies the missing-data strategy for the Canadian Smoking Histo
 
 **Method:** Multiple imputation by chained equations (MICE)
 
-**Number of imputations:** *m* = 5, with *maxit* = 5 iterations (production configuration; *m* = 1 and *maxit* = 1 in the `dev` and `draft` profiles for fast iteration). The adequacy of *m* will be assessed by examining the fraction of missing information (FMI) for key APC model coefficients; if FMI exceeds 0.5 for any coefficient, *m* will be increased.
+**Number of imputations:** at least *m* = 5, with *maxit* = 5 iterations (production configuration; *m* = 1 and *maxit* = 1 in the `dev`, `draft`, and `ci` profiles for fast iteration). The final *m* is chosen so that the rate-table estimates and their standard errors are stable across repeated imputation runs, with the Monte Carlo error below a prespecified fraction of the standard error. The fraction of missing information (FMI) is reported as a diagnostic; it does not by itself set *m*.
 
 **Key dependencies:** mice, haven, naniar, VIM
 
@@ -70,7 +70,7 @@ Derived smoking variables (`pack_years_der`, and any variable with a cchsflow de
 All *m* completed datasets are retained (a list of completed data frames).
 
 -   **Table 1b** statistics are computed within each completed dataset and averaged across imputations.
--   **APC models (Stage 8)** are initially fitted on the first completed dataset, with a documented upgrade path to fitting per imputation and pooling coefficients by Rubin's rules. FMI from the pooled fits (Phase 2.3) determines whether the pooled analysis is required for the primary results.
+-   **APC models (Stage 8)** are fitted in every completed dataset. Each completed dataset is expanded into person-years and modelled separately, and the estimates are pooled across imputations, combining the design-based variance within each dataset with the variance between datasets (protocol section 3.5). Fitting only the first completed dataset is not permitted for reported results; a test fails if only one dataset reaches the model stage.
 
 ## Descriptive tables 1a and 1b
 
@@ -109,7 +109,7 @@ Review `mice` logged events (`loggedEvents`) for dropped collinear or constant v
 
 ### 2.3 Between-imputation diagnostics
 
-FMI and relative increase in variance for key APC coefficients from `mice::pool()`. FMI > 0.5 triggers an increase in *m*.
+FMI and relative increase in variance for key APC coefficients and for selected rate-table cells, from the pooled fits. These are reported as diagnostics; *m* is set by the stability criterion in the Overview, not by an FMI threshold alone.
 
 ## Phase 3: Plausibility checks
 
