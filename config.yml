@@ -156,9 +156,9 @@ default:
     age_first_cigarette:
       pumf:
         var: age_first_cigarette  # Age smoked first whole cigarette (midpoint-estimated)
-        min: 13                   # Study floor (PI decision 2026-08-27, public issue #5): the PUMF
-                                  # 5-11 category (midpoint 8) is too coarse to date entry, so the
-                                  # PUMF floor stays at 13; Master uses exact ages with a floor of 8.
+        min: 13                   # Initiation floor (PI decision 2026-08-27, public issue #5): the PUMF
+                                  # 5-11 category (midpoint 8) is too coarse to date initiation events
+                                  # below 13; cessation follow-up still starts at the reported midpoint.
         max: 100
       master:
         var: age_first_cigarette  # Exact age from SMK_01C
