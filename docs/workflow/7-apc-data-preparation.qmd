@@ -75,7 +75,7 @@ Each data frame contains:
 | `period` | Calendar year |
 | `cohort` | Birth year (`period - age`) |
 | `init` | Event indicator (1 = initiated/quit, 0 = at risk but no event) |
-| `weighting` | Survey weight × mortality correction |
+| `weighting` | Survey weight; multiplied by the mortality correction once one is implemented (currently none) |
 | Natural spline columns | Spline basis for age, period, cohort effects |
 
 ## Key decisions
@@ -84,7 +84,7 @@ Each data frame contains:
 
 **Retrospective history construction.** A current smoker at age 45 in survey year 2014 is recorded as a person-year at risk of cessation at every age from their initiation age to 45. This reconstruction assumes respondents accurately recall their age of initiation and cessation (supported by CCHS validation studies).
 
-**Mortality adjustment.** Ever-smokers are less likely to survive to survey date than never-smokers, creating survival bias. The `weighting` column incorporates a mortality correction. The primary method is MPoRT (not yet implemented); during development, the Peto constant risk ratio is used as a fallback (see `cfg$apc$mortality_method`).
+**Mortality adjustment.** Ever-smokers are less likely to survive to survey date than never-smokers, creating survival bias. No correction is applied yet: `cfg$apc$mortality_method` is `"none"`, the `weighting` column holds the survey weight alone, and the datasets carry an `estimand_note` attribute stating that results describe respondents who survived to be surveyed. MPoRT (primary) and Peto (sensitivity) are not yet implemented (protocol section 3.4.5).
 
 **APC floor ages.** Initiation probability is assumed zero before `survey_bound(cfg, "age_first_cigarette", "min")` (PUMF: 13, Master: 8). Cessation probability is assumed zero before `survey_bound(cfg, "years_since_quit", "min")` (0). In PUMF data, the practical floor for observed initiation is ~13 due to midpoint imputation of grouped categories. The Master analytical floor of 8 captures genuine early initiations.
 

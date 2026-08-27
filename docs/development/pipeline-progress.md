@@ -102,7 +102,7 @@ Table 1b (post-imputation): from `analysis_data`.
 - **Ontario flag:** Dropped. National model; no `ont_id`.
 - **Cessation:** Former daily smokers only (SMKDSTY 3 and 4). Former occasional smokers
   excluded — see GH#1.
-- **Survival correction:** Peto stub (weight × 1.0). MPoRT stubbed with `stop()`.
+- **Survival correction:** none (labelled as estimates among survivors); MPoRT and Peto stop as not implemented; no-op guard (task 1.7a, 2026-08-27).
 - **Spline library:** `splines2::nsp()`. RCS as config-selectable sensitivity. Added to `config.yml`.
 - **Period/cohort constraints:** Applied as clamp before spline basis construction (data-side,
   not model-side). Constraint years are sex- and model-type-specific per `config.yml`.

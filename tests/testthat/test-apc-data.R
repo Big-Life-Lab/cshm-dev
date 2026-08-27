@@ -107,14 +107,44 @@ test_that("no missing weight in any output element", {
   expect_false(anyNA(result_cess$weight))
 })
 
-test_that("apply_survival_correction: peto returns data unchanged", {
+test_that("apply_survival_correction: none leaves weights unchanged and labels the data", {
   cfg <- config::get()
+  cfg$apc$mortality_method <- "none"
 
   df <- data.frame(age = 1:5, cohort = 1970:1974, period = 1985:1989,
-                   event = c(1,0,0,1,0), weight = c(100, 200, 150, 300, 250))
+                   event = c(1, 0, 0, 1, 0), weight = c(100, 200, 150, 300, 250))
 
   result <- apply_survival_correction(df, cfg)
   expect_equal(result$weight, df$weight)
+  expect_identical(attr(result, "mortality_correction"), "none")
+  expect_match(attr(result, "estimand_note"), "survived to be surveyed")
+})
+
+test_that("apply_survival_correction: peto raises not-implemented error", {
+  cfg <- config::get()
+  cfg$apc$mortality_method <- "peto"
+
+  df <- data.frame(age = 1, cohort = 1970, period = 1985, event = 0, weight = 100)
+  expect_error(apply_survival_correction(df, cfg), "not yet implemented")
+})
+
+test_that("apply_survival_correction: unknown method is an error", {
+  cfg <- config::get()
+  cfg$apc$mortality_method <- "no-such-method"
+
+  df <- data.frame(age = 1, cohort = 1970, period = 1985, event = 0, weight = 100)
+  expect_error(apply_survival_correction(df, cfg), "Unknown mortality_method")
+})
+
+test_that("assert_correction_applied: a correction that changes no weights fails", {
+  before <- data.frame(weight = c(100, 200, 150))
+  expect_error(
+    assert_correction_applied(before, before, "mport"),
+    "left every weight unchanged"
+  )
+  after <- before
+  after$weight <- after$weight * c(1.1, 1.3, 1.2)
+  expect_true(assert_correction_applied(before, after, "mport"))
 })
 
 test_that("apply_survival_correction: mport raises not-implemented error", {

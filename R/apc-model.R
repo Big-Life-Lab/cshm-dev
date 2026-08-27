@@ -22,8 +22,9 @@
 #'
 #' Builds long-format person-year data frames for smoking initiation (by sex)
 #' and cessation (by sex). Each row is either a transition event (event = 1)
-#' or an at-risk person-year (event = 0). Applies mortality survival correction
-#' via cfg$apc$mortality_method.
+#' or an at-risk person-year (event = 0). Applies the mortality survival
+#' correction selected by cfg$apc$mortality_method ("none" until MPoRT is
+#' implemented; see apply_survival_correction()).
 #'
 #' @param analysis_data Output of impute_data()
 #' @param cfg Config object from config::get()
@@ -309,32 +310,78 @@ build_cessation_data <- function(data, cfg) {
 }
 
 
-#' Apply mortality survival correction to APC dataset
+#' Apply the mortality survival correction to an APC dataset
 #'
-#' Dispatches on cfg$apc$mortality_method.
-#'   "peto" — weight unchanged (Peto approximation, weight × 1.0)
-#'   "mport" — not yet implemented
+#' Dispatches on `cfg$apc$mortality_method` (protocol section 3.4.5):
+#'   "none"  -- no correction. Weights stay as survey weights and the result is
+#'              labelled so downstream outputs are reported as estimates among
+#'              respondents who survived to be surveyed, not as birth-cohort
+#'              smoking histories.
+#'   "mport" -- MPoRT survival-bias adjustment (primary method; not yet
+#'              implemented, remediation task 1.7b).
+#'   "peto"  -- constant mortality risk ratio by smoking status (sensitivity
+#'              analysis; not yet implemented).
 #'
-#' @param apc_data Data frame with weight column
+#' A method other than "none" must change the weights. If it leaves every weight
+#' unchanged the function stops, so a no-op can never be mistaken for a
+#' correction (this is what happened when "peto" was a stub).
+#'
+#' @param apc_data Data frame with a `weight` column
 #' @param cfg Config object
-#' @return apc_data with weight column adjusted
+#' @return `apc_data` with the `weight` column adjusted and the attribute
+#'   `mortality_correction` set to the method applied
 apply_survival_correction <- function(apc_data, cfg) {
   method <- cfg$apc$mortality_method
-
-  if (method == "peto") {
-    # Peto stub: weights unchanged
-    return(apc_data)
-  }
-
-  if (method == "mport") {
+  valid <- c("none", "mport", "peto")
+  if (!is.character(method) || length(method) != 1 || !method %in% valid) {
     stop(
-      "MPoRT mortality correction not yet implemented. ",
-      "Set cfg$apc$mortality_method = 'peto' for current pipeline runs. ",
-      "See protocol-todo.md issue #4 for interaction with WTS_M."
+      "Unknown mortality_method: '", paste(method, collapse = ","),
+      "'. Expected one of: ", paste(valid, collapse = ", "), "."
     )
   }
 
-  stop("Unknown mortality_method: '", method, "'. Expected 'peto' or 'mport'.")
+  if (method == "none") {
+    attr(apc_data, "mortality_correction") <- "none"
+    attr(apc_data, "estimand_note") <- paste(
+      "No mortality correction applied: estimates describe respondents who",
+      "survived to be surveyed (protocol section 3.4.5)."
+    )
+    return(apc_data)
+  }
+
+  corrected <- switch(method,
+    mport = stop(
+      "MPoRT mortality correction is not yet implemented (remediation task 1.7b). ",
+      "Set cfg$apc$mortality_method = 'none' and report results as estimates ",
+      "among survivors."
+    ),
+    peto = stop(
+      "Peto constant-risk-ratio correction is not yet implemented (sensitivity ",
+      "analysis). Set cfg$apc$mortality_method = 'none' and report results as ",
+      "estimates among survivors."
+    )
+  )
+
+  assert_correction_applied(apc_data, corrected, method)
+  attr(corrected, "mortality_correction") <- method
+  corrected
+}
+
+
+#' Guard: a configured mortality correction must change the weights
+#'
+#' @param before,after Data frames with a `weight` column
+#' @param method The method name, for the error message
+#' @return `invisible(TRUE)`; stops if every weight is unchanged
+assert_correction_applied <- function(before, after, method) {
+  if (isTRUE(all.equal(before$weight, after$weight))) {
+    stop(
+      "mortality_method = '", method, "' left every weight unchanged. ",
+      "A configured correction must change the weights; use 'none' to run ",
+      "without a correction."
+    )
+  }
+  invisible(TRUE)
 }
 
 
