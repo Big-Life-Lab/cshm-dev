@@ -56,8 +56,6 @@ Using harmonized data from more than 1 million respondents in the Canadian Commu
 The model will be publicly accessible and used for policy evaluation and disease modelling in Canada, including projecting future smoking patterns and evaluating historic or proposed tobacco policy
 
 :::: {.section-body line-numbers="continuous"}
-::: page-break
-:::
 
 # 1. Background
 
