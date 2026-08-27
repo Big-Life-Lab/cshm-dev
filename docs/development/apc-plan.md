@@ -1,6 +1,6 @@
 # APC implementation plan: Stages 7 and 8
 
-**Status:** Ready for implementation (all design issues resolved)
+**Status:** Superseded in part (2026-08-27). This plan guided the first implementation; the remediation plan (revision 3) and the estimand specification (`estimand-specification.md`) now govern Phase 1 changes. Where this document and those disagree, they win. Known divergences: the mortality method defaults to `"none"` and a no-op correction is an error (task 1.7a); the cessation universe and exit variable change under task 1.3.
 **Covers:** Stage 7 (`apc_data`) and Stage 8 (`apc_models`)
 **Source references:**
 - `resources/legacy-code/Modeling2013.sas` (gitignored; SAS macros `%holford_init`, `%holford_cess`)
@@ -215,8 +215,8 @@ prepare_apc_data(analysis_data, cfg)
   │
   └── apply_survival_correction(data, cfg)
         # Dispatches on cfg$apc$mortality_method
-        # "peto": weight unchanged (multiply by 1.0)
-        # "mport": stop("MPoRT correction not yet implemented")
+        # "none": no correction; data labelled as estimates among survivors (current default)
+        # "mport", "peto": stop("not yet implemented"); a no-op correction is an error
 ```
 
 **Columns in each output data frame:**
@@ -370,7 +370,7 @@ Add to `config.yml` default profile (under `apc:` and at top level):
     spline_type: "nsp"        # sensitivity analysis: "rcs"
 
     # Mortality correction
-    mortality_method: "peto"  # primary; sensitivity: "mport"
+    mortality_method: "none"  # current default; primary "mport" and sensitivity "peto" not yet implemented
 
     # Subgroups
     subgroups:

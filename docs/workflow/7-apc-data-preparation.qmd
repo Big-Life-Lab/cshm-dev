@@ -74,9 +74,10 @@ Each data frame contains:
 | `age` | Age at risk (years) |
 | `period` | Calendar year |
 | `cohort` | Birth year (`period - age`) |
-| `init` | Event indicator (1 = initiated/quit, 0 = at risk but no event) |
-| `weighting` | Survey weight; multiplied by the mortality correction once one is implemented (currently none) |
-| Natural spline columns | Spline basis for age, period, cohort effects |
+| `event` | Event indicator (1 = initiated/quit, 0 = at risk but no event) |
+| `weight` | Survey weight; multiplied by the mortality correction once one is implemented (currently none) |
+
+The spline basis columns are built in Stage 8 (`build_spline_basis()`), not stored here. Each data frame carries two attributes set by `apply_survival_correction()`: `mortality_correction` (currently `"none"`) and `estimand_note`.
 
 ## Key decisions
 

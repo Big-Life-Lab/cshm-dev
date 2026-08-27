@@ -368,12 +368,37 @@ apply_survival_correction <- function(apc_data, cfg) {
 }
 
 
-#' Guard: a configured mortality correction must change the weights
+#' Guard: a configured mortality correction must change the weights and nothing else
+#'
+#' Checks that `after` is the same person-year table as `before` -- same rows, in
+#' the same order, with the same `age`, `period`, `cohort`, and `event` values --
+#' that every weight is finite and positive, and that at least one weight changed.
 #'
 #' @param before,after Data frames with a `weight` column
 #' @param method The method name, for the error message
-#' @return `invisible(TRUE)`; stops if every weight is unchanged
+#' @return `invisible(TRUE)`; stops on any violation
 assert_correction_applied <- function(before, after, method) {
+  if (!"weight" %in% names(before) || !"weight" %in% names(after)) {
+    stop("mortality_method = '", method, "': both datasets must have a weight column.")
+  }
+  if (nrow(before) != nrow(after)) {
+    stop(
+      "mortality_method = '", method, "' changed the number of rows (",
+      nrow(before), " -> ", nrow(after), "). A correction may only change weights."
+    )
+  }
+  keys <- intersect(c("age", "period", "cohort", "event"), names(before))
+  for (k in keys) {
+    if (!identical(before[[k]], after[[k]])) {
+      stop(
+        "mortality_method = '", method, "' changed or reordered column '", k,
+        "'. A correction may only change weights."
+      )
+    }
+  }
+  if (any(!is.finite(after$weight)) || any(after$weight <= 0)) {
+    stop("mortality_method = '", method, "' produced non-finite or non-positive weights.")
+  }
   if (isTRUE(all.equal(before$weight, after$weight))) {
     stop(
       "mortality_method = '", method, "' left every weight unchanged. ",
@@ -419,6 +444,10 @@ fit_apc_model <- function(apc_dataset, model_type, sex, cfg) {
   attr(fit, "model_type") <- model_type
   attr(fit, "spline_type") <- cfg$apc$spline_type
   attr(fit, "sex") <- sex
+  # Carry the mortality-correction label and estimand note from the APC dataset
+  # so Stage 8 outputs cannot be mistaken for corrected models.
+  attr(fit, "mortality_correction") <- attr(apc_dataset, "mortality_correction") %||% cfg$apc$mortality_method
+  attr(fit, "estimand_note") <- attr(apc_dataset, "estimand_note")
 
   fit
 }

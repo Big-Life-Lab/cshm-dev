@@ -1,7 +1,7 @@
 test_that("derive_survey_year returns correct integer year for all 11 cycles", {
   cfg <- config::get()
   cycle_col <- survey_var(cfg, "cycle")
-  age_col   <- survey_var(cfg, "age")
+  age_col <- survey_var(cfg, "age")
 
   data <- setNames(
     data.frame(
@@ -22,7 +22,7 @@ test_that("derive_survey_year returns correct integer year for all 11 cycles", {
 test_that("derive_survey_year computes cohort as survey_year - round(age)", {
   cfg <- config::get()
   cycle_col <- survey_var(cfg, "cycle")
-  age_col   <- survey_var(cfg, "age")
+  age_col <- survey_var(cfg, "age")
 
   data <- setNames(
     data.frame(
@@ -41,7 +41,7 @@ test_that("derive_survey_year computes cohort as survey_year - round(age)", {
 test_that("derive_survey_year stops on unknown cycle code", {
   cfg <- config::get()
   cycle_col <- survey_var(cfg, "cycle")
-  age_col   <- survey_var(cfg, "age")
+  age_col <- survey_var(cfg, "age")
 
   data <- setNames(
     data.frame(factor("99", levels = "99"), 40),
@@ -52,7 +52,7 @@ test_that("derive_survey_year stops on unknown cycle code", {
 })
 
 test_that("build_initiation_data: no numerator rows with age < initiation floor", {
-  cfg  <- config::get()
+  cfg <- config::get()
   data <- make_apc_test_data(cfg)
 
   sex_col <- survey_var(cfg, "sex")
@@ -63,7 +63,7 @@ test_that("build_initiation_data: no numerator rows with age < initiation floor"
 })
 
 test_that("build_initiation_data: no rows with cohort < cohort_min", {
-  cfg  <- config::get()
+  cfg <- config::get()
   data <- make_apc_test_data(cfg)
 
   result <- build_initiation_data(data, cfg)
@@ -71,19 +71,19 @@ test_that("build_initiation_data: no rows with cohort < cohort_min", {
 })
 
 test_that("build_initiation_data: denominator period within [period_min, period_max]", {
-  cfg  <- config::get()
+  cfg <- config::get()
   data <- make_apc_test_data(cfg)
 
   sex_col <- survey_var(cfg, "sex")
   result <- build_initiation_data(data[data[[sex_col]] == 1, ], cfg)
-  denom  <- result[result$event == 0, ]
+  denom <- result[result$event == 0, ]
 
   expect_true(all(denom$period >= cfg$apc$period_min))
   expect_true(all(denom$period <= cfg$apc$period_max))
 })
 
 test_that("build_cessation_data: only ever-daily smokers in cessation data", {
-  cfg  <- config::get()
+  cfg <- config::get()
   data <- make_apc_test_data(cfg)
 
   # build_cessation_data accepts current daily (1), occ former daily (2), and former daily (4)
@@ -97,7 +97,7 @@ test_that("build_cessation_data: only ever-daily smokers in cessation data", {
 })
 
 test_that("no missing weight in any output element", {
-  cfg  <- config::get()
+  cfg <- config::get()
   data <- make_apc_test_data(cfg)
 
   result_init <- build_initiation_data(data, cfg)
@@ -111,8 +111,10 @@ test_that("apply_survival_correction: none leaves weights unchanged and labels t
   cfg <- config::get()
   cfg$apc$mortality_method <- "none"
 
-  df <- data.frame(age = 1:5, cohort = 1970:1974, period = 1985:1989,
-                   event = c(1, 0, 0, 1, 0), weight = c(100, 200, 150, 300, 250))
+  df <- data.frame(
+    age = 1:5, cohort = 1970:1974, period = 1985:1989,
+    event = c(1, 0, 0, 1, 0), weight = c(100, 200, 150, 300, 250)
+  )
 
   result <- apply_survival_correction(df, cfg)
   expect_equal(result$weight, df$weight)
@@ -137,7 +139,10 @@ test_that("apply_survival_correction: unknown method is an error", {
 })
 
 test_that("assert_correction_applied: a correction that changes no weights fails", {
-  before <- data.frame(weight = c(100, 200, 150))
+  before <- data.frame(
+    age = 20:22, period = 2000:2002, cohort = 1980L, event = c(0L, 1L, 0L),
+    weight = c(100, 200, 150)
+  )
   expect_error(
     assert_correction_applied(before, before, "mport"),
     "left every weight unchanged"
@@ -147,6 +152,35 @@ test_that("assert_correction_applied: a correction that changes no weights fails
   expect_true(assert_correction_applied(before, after, "mport"))
 })
 
+test_that("assert_correction_applied: a correction may change only the weights", {
+  before <- data.frame(
+    age = 20:22, period = 2000:2002, cohort = 1980L, event = c(0L, 1L, 0L),
+    weight = c(100, 200, 150)
+  )
+  dropped <- before[-2, ]
+  dropped$weight <- dropped$weight * 1.2
+  expect_error(assert_correction_applied(before, dropped, "mport"), "number of rows")
+
+  reordered <- before[c(3, 1, 2), ]
+  reordered$weight <- reordered$weight * 1.2
+  expect_error(assert_correction_applied(before, reordered, "mport"), "reordered")
+
+  bad <- before
+  bad$weight <- c(110, NA, 160)
+  expect_error(assert_correction_applied(before, bad, "mport"), "non-finite")
+})
+
+test_that("fit_apc_model carries the mortality-correction label and estimand note", {
+  cfg <- config::get()
+  cfg$apc$mortality_method <- "none"
+  apc_data <- prepare_apc_data(make_apc_test_data(cfg), cfg)
+  ds <- apc_data$initiation_men
+  expect_identical(attr(ds, "mortality_correction"), "none")
+  fit <- fit_apc_model(ds, "initiation", "men", cfg)
+  expect_identical(attr(fit, "mortality_correction"), "none")
+  expect_match(attr(fit, "estimand_note"), "survived to be surveyed")
+})
+
 test_that("apply_survival_correction: mport raises not-implemented error", {
   cfg <- config::get()
   cfg$apc$mortality_method <- "mport"
@@ -154,4 +188,3 @@ test_that("apply_survival_correction: mport raises not-implemented error", {
   df <- data.frame(age = 1, cohort = 1970, period = 1985, event = 0, weight = 100)
   expect_error(apply_survival_correction(df, cfg), "not yet implemented")
 })
-
