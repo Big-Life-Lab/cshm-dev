@@ -56,17 +56,17 @@ test_that("build_initiation_data: no numerator rows with age < initiation floor"
   data <- make_apc_test_data(cfg)
 
   sex_col <- survey_var(cfg, "sex")
-  result <- build_initiation_data(data[data[[sex_col]] == 1, ], cfg)
+  result <- build_initiation_data(data[data[[sex_col]] == 1, ], cfg, TEST_DETAILS)
 
   init_rows <- result[result$event == 1, ]
-  expect_true(all(init_rows$age >= survey_bound(cfg, "age_first_cigarette", "min")))
+  expect_true(all(init_rows$age >= initiation_floor(cfg)))
 })
 
 test_that("build_initiation_data: no rows with cohort < cohort_min", {
   cfg <- config::get()
   data <- make_apc_test_data(cfg)
 
-  result <- build_initiation_data(data, cfg)
+  result <- build_initiation_data(data, cfg, TEST_DETAILS)
   expect_true(all(result$cohort >= cfg$apc$cohort_min))
 })
 
@@ -75,7 +75,7 @@ test_that("build_initiation_data: denominator period within [period_min, period_
   data <- make_apc_test_data(cfg)
 
   sex_col <- survey_var(cfg, "sex")
-  result <- build_initiation_data(data[data[[sex_col]] == 1, ], cfg)
+  result <- build_initiation_data(data[data[[sex_col]] == 1, ], cfg, TEST_DETAILS)
   denom <- result[result$event == 0, ]
 
   expect_true(all(denom$period >= cfg$apc$period_min))
@@ -111,7 +111,7 @@ one_person <- function(cfg, status, smoked_100 = 1, age_first = 16, yrs_quit_com
 test_that("build_cessation_data: includes established smokers of every ever-smoker status", {
   cfg <- cess_cfg()
   data <- make_apc_test_data(cfg)
-  result <- suppressMessages(build_cessation_data(data, cfg))
+  result <- suppressMessages(build_cessation_data(data, cfg, TEST_DETAILS))
   diag <- attr(result, "cessation_diagnostics")
   expect_true(is.data.frame(diag))
   established <- sum(diag$n[diag$group == "established"])
@@ -126,14 +126,14 @@ test_that("build_cessation_data: includes established smokers of every ever-smok
 test_that("build_cessation_data: experimental smokers (under 100 cigarettes) are not included", {
   cfg <- cess_cfg()
   exp_smoker <- one_person(cfg, status = 4, smoked_100 = 2, age_first = 15, yrs_quit_complete = 10)
-  result <- suppressMessages(build_cessation_data(exp_smoker, cfg))
+  result <- suppressMessages(build_cessation_data(exp_smoker, cfg, TEST_DETAILS))
   expect_equal(nrow(result), 0)
 })
 
 test_that("build_cessation_data: no person-year precedes the person's own entry age", {
   cfg <- cess_cfg()
   cur <- one_person(cfg, status = 1, age_first = 22, age = 40, survey_year = 2005)
-  result <- suppressMessages(build_cessation_data(cur, cfg))
+  result <- suppressMessages(build_cessation_data(cur, cfg, TEST_DETAILS))
   expect_true(all(result$age >= 22))
   # at risk from entry through the survey year, inclusive
   expect_equal(sort(result$age), 22:40)
@@ -142,17 +142,17 @@ test_that("build_cessation_data: no person-year precedes the person's own entry 
 
 test_that("build_cessation_data: durable quitter has one event at the quit age and risk rows before it", {
   cfg <- cess_cfg()
-  q <- one_person(cfg, status = 4, age_first = 18, yrs_quit_complete = 10, age = 50, survey_year = 2010)
-  result <- suppressMessages(build_cessation_data(q, cfg))
+  q <- one_person(cfg, status = 4, age_first = 18, yrs_quit_complete = 4, age = 50, survey_year = 2010)
+  result <- suppressMessages(build_cessation_data(q, cfg, TEST_DETAILS))
   expect_equal(sum(result$event), 1L)
-  expect_equal(result$age[result$event == 1L], 40L)
-  expect_equal(sort(result$age[result$event == 0L]), 18:39)
+  expect_equal(result$age[result$event == 1L], 46L)
+  expect_equal(sort(result$age[result$event == 0L]), 18:45)
 })
 
 test_that("build_cessation_data: recent quitter is censored at the quit age with no event", {
   cfg <- cess_cfg()
   r <- one_person(cfg, status = 4, age_first = 18, yrs_quit_complete = 1, age = 50, survey_year = 2010)
-  result <- suppressMessages(build_cessation_data(r, cfg))
+  result <- suppressMessages(build_cessation_data(r, cfg, TEST_DETAILS))
   expect_equal(sum(result$event), 0L)
   expect_equal(max(result$age), 48L) # quit at 49; the quit year is not observed
   diag <- attr(result, "cessation_diagnostics")
@@ -161,11 +161,11 @@ test_that("build_cessation_data: recent quitter is censored at the quit age with
 
 test_that("build_cessation_data: starting and stopping at the same age is one trial with the event", {
   cfg <- cess_cfg()
-  s <- one_person(cfg, status = 5, age_first = 40, yrs_quit_complete = 10, age = 50, survey_year = 2010)
-  result <- suppressMessages(build_cessation_data(s, cfg))
+  s <- one_person(cfg, status = 5, age_first = 46, yrs_quit_complete = 4, age = 50, survey_year = 2010)
+  result <- suppressMessages(build_cessation_data(s, cfg, TEST_DETAILS))
   expect_equal(nrow(result), 1L)
   expect_equal(result$event, 1L)
-  expect_equal(result$age, 40L)
+  expect_equal(result$age, 46L)
   diag <- attr(result, "cessation_diagnostics")
   expect_equal(sum(diag$n[diag$group == "same_age_quits"]), 1L)
 })
@@ -173,7 +173,7 @@ test_that("build_cessation_data: starting and stopping at the same age is one tr
 test_that("build_cessation_data: missing quit timing (e.g. 2001, NA(c)) is excluded and counted, not reclassified", {
   cfg <- cess_cfg()
   m <- one_person(cfg, status = 4, age_first = 18, yrs_quit_complete = NA, age = 50, survey_year = 2001, cycle = "1")
-  result <- suppressMessages(build_cessation_data(m, cfg))
+  result <- suppressMessages(build_cessation_data(m, cfg, TEST_DETAILS))
   expect_equal(nrow(result), 0L)
   diag <- attr(result, "cessation_diagnostics")
   expect_equal(sum(diag$n[diag$group == "excluded_timing_missing"]), 1L)
@@ -181,8 +181,8 @@ test_that("build_cessation_data: missing quit timing (e.g. 2001, NA(c)) is exclu
 
 test_that("build_cessation_data: a quit before entry is excluded and counted", {
   cfg <- cess_cfg()
-  bad <- one_person(cfg, status = 4, age_first = 45, yrs_quit_complete = 10, age = 50, survey_year = 2010) # quit at 40, before entry at 45
-  result <- suppressMessages(build_cessation_data(bad, cfg))
+  bad <- one_person(cfg, status = 4, age_first = 48, yrs_quit_complete = 4, age = 50, survey_year = 2010) # quit at 46, before entry at 48
+  result <- suppressMessages(build_cessation_data(bad, cfg, TEST_DETAILS))
   expect_equal(nrow(result), 0L)
   diag <- attr(result, "cessation_diagnostics")
   expect_equal(sum(diag$n[diag$group == "excluded_quit_before_entry"]), 1L)
@@ -191,7 +191,7 @@ test_that("build_cessation_data: a quit before entry is excluded and counted", {
 test_that("build_initiation_data: experimental smokers contribute no initiation event", {
   cfg <- cess_cfg()
   exp_smoker <- one_person(cfg, status = 3, smoked_100 = 2, age_first = 15, age = 40, survey_year = 2005)
-  result <- suppressMessages(build_initiation_data(exp_smoker, cfg))
+  result <- suppressMessages(build_initiation_data(exp_smoker, cfg, TEST_DETAILS))
   expect_equal(sum(result$event), 0L)
   expect_true(nrow(result) > 0) # at risk, like a never smoker
 })
@@ -200,8 +200,8 @@ test_that("no missing weight in any output element", {
   cfg <- config::get()
   data <- make_apc_test_data(cfg)
 
-  result_init <- build_initiation_data(data, cfg)
-  result_cess <- build_cessation_data(data, cfg)
+  result_init <- build_initiation_data(data, cfg, TEST_DETAILS)
+  result_cess <- build_cessation_data(data, cfg, TEST_DETAILS)
 
   expect_false(anyNA(result_init$weight))
   expect_false(anyNA(result_cess$weight))
@@ -273,7 +273,7 @@ test_that("assert_correction_applied: a correction may change only the weights",
 test_that("fit_apc_model carries the mortality-correction label and estimand note", {
   cfg <- config::get()
   cfg$apc$mortality_method <- "none"
-  apc_data <- prepare_apc_data(make_apc_test_data(cfg), cfg)
+  apc_data <- prepare_apc_data(make_apc_test_data(cfg), cfg, TEST_DETAILS)
   ds <- apc_data$initiation_men
   expect_identical(attr(ds, "mortality_correction"), "none")
   fit <- fit_apc_model(ds, "initiation", 1, cfg) # sex is coded 1 = men
@@ -298,7 +298,7 @@ test_that("value codes are read from config, not hard-coded", {
   cfg2$survey$smoking_status$pumf$former_codes <- c(4)
   cfg2$survey$smoking_status$pumf$current_codes <- c(1, 2, 3, 5)
   q <- one_person(cfg2, status = 5, age_first = 20, yrs_quit_complete = 10, age = 50, survey_year = 2010)
-  result <- suppressMessages(build_cessation_data(q, cfg2))
+  result <- suppressMessages(build_cessation_data(q, cfg2, TEST_DETAILS))
   # status 5 is now "current": at risk to survey, no event
   expect_equal(sum(result$event), 0L)
   expect_equal(max(result$age), 50L)
@@ -331,28 +331,28 @@ test_that("fit_binomial_apc: fits and reports convergence when events exist", {
 test_that("cessation: risk begins at the person's own entry age, even below the reporting floor", {
   cfg <- cess_cfg()
   early <- one_person(cfg, status = 1, age_first = 8, age = 40, survey_year = 2005)
-  result <- suppressMessages(build_cessation_data(early, cfg))
+  result <- suppressMessages(build_cessation_data(early, cfg, TEST_DETAILS))
   expect_equal(min(result$age), 8L)
-  expect_true(survey_bound(cfg, "age_first_cigarette", "min") > 8)
+  expect_true(initiation_floor(cfg) > 8)
 })
 
 test_that("cessation: a negative or out-of-bounds quit duration is excluded and counted, never post-survey time", {
   cfg <- cess_cfg()
   bad <- one_person(cfg, status = 4, age_first = 18, yrs_quit_complete = -5, age = 50, survey_year = 2010)
-  result <- suppressMessages(build_cessation_data(bad, cfg))
+  result <- suppressMessages(build_cessation_data(bad, cfg, TEST_DETAILS))
   expect_equal(nrow(result), 0L)
   diag <- attr(result, "cessation_diagnostics")
   expect_equal(sum(diag$n[diag$group == "excluded_quit_timing_invalid"]), 1L)
-  big <- one_person(cfg, status = 4, age_first = 18, yrs_quit_complete = 99, age = 50, survey_year = 2010)
-  expect_equal(nrow(suppressMessages(build_cessation_data(big, cfg))), 0L)
+  big <- one_person(cfg, status = 4, age_first = 18, yrs_quit_complete = 99, age = 50, survey_year = 2010) # far beyond any cycle's range
+  expect_equal(nrow(suppressMessages(build_cessation_data(big, cfg, TEST_DETAILS))), 0L)
 })
 
 test_that("cessation and initiation: no person-year after the survey age, none before entry", {
   cfg <- cess_cfg()
   data <- make_apc_test_data(cfg, n = 300, seed = 7)
   age_survey <- data[[survey_var(cfg, "age")]]
-  cess <- suppressMessages(build_cessation_data(data, cfg))
-  init <- suppressMessages(build_initiation_data(data, cfg))
+  cess <- suppressMessages(build_cessation_data(data, cfg, TEST_DETAILS))
+  init <- suppressMessages(build_initiation_data(data, cfg, TEST_DETAILS))
   expect_true(all(cess$age <= max(age_survey)))
   expect_true(all(init$age <= max(age_survey)))
   expect_true(all(cess$age >= min(data[[survey_var(cfg, "age_first_cigarette")]], na.rm = TRUE)))
@@ -363,14 +363,14 @@ test_that("cessation and initiation: no person-year after the survey age, none b
 test_that("initiation: missing status, missing 100-cigarette answer, or invalid entry are excluded, not Never", {
   cfg <- cess_cfg()
   no_crit <- one_person(cfg, status = 1, smoked_100 = NA, age_first = 16, age = 40, survey_year = 2005)
-  r1 <- suppressMessages(build_initiation_data(no_crit, cfg))
+  r1 <- suppressMessages(build_initiation_data(no_crit, cfg, TEST_DETAILS))
   expect_equal(nrow(r1), 0L)
   d1 <- attr(r1, "initiation_diagnostics")
   expect_equal(sum(d1$n[d1$group == "excluded_criterion_missing"]), 1L)
   late <- one_person(cfg, status = 1, age_first = 45, age = 40, survey_year = 2005)
-  expect_equal(nrow(suppressMessages(build_initiation_data(late, cfg))), 0L)
+  expect_equal(nrow(suppressMessages(build_initiation_data(late, cfg, TEST_DETAILS))), 0L)
   no_age <- one_person(cfg, status = 1, age_first = NA, age = 40, survey_year = 2005)
-  r3 <- suppressMessages(build_initiation_data(no_age, cfg))
+  r3 <- suppressMessages(build_initiation_data(no_age, cfg, TEST_DETAILS))
   expect_equal(nrow(r3), 0L)
   d3 <- attr(r3, "initiation_diagnostics")
   expect_equal(sum(d3$n[d3$group == "excluded_missing_entry"]), 1L)
@@ -378,13 +378,13 @@ test_that("initiation: missing status, missing 100-cigarette answer, or invalid 
 
 test_that("initiation: never smokers are at risk from the floor to the survey; initiators have one event", {
   cfg <- cess_cfg()
-  floor_age <- survey_bound(cfg, "age_first_cigarette", "min")
+  floor_age <- initiation_floor(cfg)
   nev <- one_person(cfg, status = 6, smoked_100 = NA, age_first = NA, age = 30, survey_year = 2010)
-  r <- suppressMessages(build_initiation_data(nev, cfg))
+  r <- suppressMessages(build_initiation_data(nev, cfg, TEST_DETAILS))
   expect_equal(sum(r$event), 0L)
   expect_equal(sort(r$age), floor_age:30)
   st <- one_person(cfg, status = 1, age_first = 20, age = 30, survey_year = 2010)
-  r2 <- suppressMessages(build_initiation_data(st, cfg))
+  r2 <- suppressMessages(build_initiation_data(st, cfg, TEST_DETAILS))
   expect_equal(sum(r2$event), 1L)
   expect_equal(r2$age[r2$event == 1L], 20L)
   expect_equal(sort(r2$age[r2$event == 0L]), floor_age:19)
@@ -393,8 +393,49 @@ test_that("initiation: never smokers are at risk from the floor to the survey; i
 test_that("initiation: an established smoker who started below the floor contributes no initiation rows", {
   cfg <- cess_cfg()
   early <- one_person(cfg, status = 1, age_first = 8, age = 40, survey_year = 2005)
-  r <- suppressMessages(build_initiation_data(early, cfg))
+  r <- suppressMessages(build_initiation_data(early, cfg, TEST_DETAILS))
   expect_equal(nrow(r), 0L)
   d <- attr(r, "initiation_diagnostics")
   expect_equal(sum(d$n[d$group == "entered_before_floor"]), 1L)
+})
+
+# ---- ranges come from the variable-details worksheet, not from config ----
+
+test_that("details_range reads copy-rule ranges, midpoint sets, and derived unions per database", {
+  det <- data.frame(
+    variable = c("exact", "exact", "grouped", "grouped", "grouped", "derived", "derived"),
+    databaseStart = c("cchs2001_m", "cchs2001_m", "cchs2001_p, cchs2003_p", "cchs2001_p, cchs2003_p", "cchs2001_p, cchs2003_p", "cchs2001_p", "cchs2001_p"),
+    variableStart = c("cchs2001_m::X", "cchs2001_m::X", "[G]", "[G]", "[G]", "DerivedVar::[grouped, exact]", "DerivedVar::[grouped, exact]"),
+    recEnd = c("copy", "NA::b", "8", "13", "NA::a", "Func::f", "NA::a"),
+    recStart = c("[8,99]", "else", "1", "2", "6", "N/A", "N/A"),
+    stringsAsFactors = FALSE
+  )
+  expect_equal(details_range("exact", "cchs2001_m", det), c(min = 8, max = 99))
+  expect_equal(details_range("grouped", "cchs2003_p", det), c(min = 8, max = 13))
+  expect_equal(details_range("grouped", "cchs2001_m", det), c(min = NA_real_, max = NA_real_))
+  expect_equal(details_range("derived", "cchs2001_p", det), c(min = 8, max = 13)) # 'exact' has no 2001_p rows
+})
+
+test_that("survey_range follows the config pointer to the worksheet; the real sheets give the expected bounds", {
+  cfg <- cess_cfg()
+  r <- survey_range(cfg, "years_since_quit_complete", "cchs2013_2014_p", TEST_DETAILS)
+  expect_equal(r[["min"]], 0.5)
+  # From 2003 the PUMF groups quit duration as <1, 1-2, 2-3, 3+ years: the largest
+  # midpoint is 5, not the 15 the old config comments claimed. Only 2001 reaches 15.
+  expect_equal(r[["max"]], 5)
+  expect_equal(survey_range(cfg, "years_since_quit", "cchs2001_p", TEST_DETAILS)[["max"]], 15)
+  a <- survey_range(cfg, "age_first_cigarette", "cchs2001_p", TEST_DETAILS)
+  expect_equal(a[["min"]], 8)
+  expect_true(a[["max"]] >= 45)
+  expect_null(cfg$survey$age_first_cigarette$pumf$max) # no literal bounds remain in config
+  expect_equal(initiation_floor(cfg), 13)
+})
+
+test_that("cessation: a quit duration above the worksheet top-code for the cycle is excluded", {
+  cfg <- cess_cfg()
+  over <- one_person(cfg, status = 4, age_first = 18, yrs_quit_complete = 6, age = 50, survey_year = 2010, cycle = "7") # above the 2013-14 range (0.5-5)
+  result <- suppressMessages(build_cessation_data(over, cfg, TEST_DETAILS))
+  expect_equal(nrow(result), 0L)
+  diag <- attr(result, "cessation_diagnostics")
+  expect_equal(sum(diag$n[diag$group == "excluded_quit_timing_invalid"]), 1L)
 })

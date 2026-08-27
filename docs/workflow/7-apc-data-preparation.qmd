@@ -29,7 +29,8 @@ Configuration used:
 | `survey$established_smoker` | `config.yml` | 100-cigarette criterion; `yes_code` is the value that includes a person in the smoking models |
 | `survey$smoking_status` `*_codes` | `config.yml` | Which `SMKDSTY_original` codes count as ever, current, former, never |
 | `survey$sex` `*_code` | `config.yml` | Sex codes used to stratify the models |
-| `survey_bound(cfg, "age_first_cigarette", "min")` | `config.yml` | APC floor for initiation age (PUMF: 13, Master: 8) |
+| `apc$initiation_floor_age` | `config.yml` | Initiation floor age, an analysis decision (PUMF 13, Master 8; public issue #5) |
+| `survey$*$range: variable_details` | `config.yml` | Variable ranges are read from the variable-details worksheet rules per cycle (`details_range()`), not stored in config |
 | `apc$cessation_durability_years` | `config.yml` | A quit counts as cessation only after this many years (2) |
 | `apc$age_knots` | `config.yml` | `[10, 15, 20, 50, 60]` |
 | `apc$period_knots` | `config.yml` | `[1940, 1950, 1960, 1970, 1980]` |

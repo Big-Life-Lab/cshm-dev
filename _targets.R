@@ -86,7 +86,7 @@ list(
   # Fitted on imputation 1 (protocol Appendix D documents the upgrade path
   # to per-imputation fits pooled by Rubin's rules).
   tar_target(apc_data,
-    prepare_apc_data(analysis_data$datasets[[1]], cfg)
+    prepare_apc_data(analysis_data$datasets[[1]], cfg, variable_details_sheet)
   ),
 
   # Stage 8: Fit APC models — four independent targets for parallel execution

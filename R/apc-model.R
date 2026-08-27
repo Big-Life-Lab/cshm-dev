@@ -28,19 +28,21 @@
 #'
 #' @param analysis_data Output of impute_data()
 #' @param cfg Config object from config::get()
+#' @param variable_details_sheet Combined variable-details worksheet; the
+#'   reference for variable ranges (survey_range())
 #' @return Named list: initiation_men, initiation_women, cessation_men,
 #'   cessation_women. Each element is a data frame with columns:
 #'   age, cohort, period, event, weight.
-prepare_apc_data <- function(analysis_data, cfg) {
+prepare_apc_data <- function(analysis_data, cfg, variable_details_sheet) {
   data <- derive_survey_year(analysis_data, cfg)
 
   sex <- data[[survey_var(cfg, "sex")]]
   men <- !is.na(sex) & sex == survey_code(cfg, "sex", "men_code")
   women <- !is.na(sex) & sex == survey_code(cfg, "sex", "women_code")
-  init_men <- build_initiation_data(data[men, ], cfg)
-  init_women <- build_initiation_data(data[women, ], cfg)
-  cess_men <- build_cessation_data(data[men, ], cfg)
-  cess_women <- build_cessation_data(data[women, ], cfg)
+  init_men <- build_initiation_data(data[men, ], cfg, variable_details_sheet)
+  init_women <- build_initiation_data(data[women, ], cfg, variable_details_sheet)
+  cess_men <- build_cessation_data(data[men, ], cfg, variable_details_sheet)
+  cess_women <- build_cessation_data(data[women, ], cfg, variable_details_sheet)
 
   list(
     initiation_men   = apply_survival_correction(init_men, cfg),
@@ -108,7 +110,7 @@ derive_survey_year <- function(data, cfg) {
 #' @param cfg Config object
 #' @return Data frame with age, cohort, period, event, weight, plus the attribute
 #'   `initiation_diagnostics` (per-cycle counts, unweighted and weighted)
-build_initiation_data <- function(data, cfg) {
+build_initiation_data <- function(data, cfg, variable_details_sheet) {
   status_col <- survey_var(cfg, "smoking_status")
   init_col <- survey_var(cfg, "age_first_cigarette")
   age_col <- survey_var(cfg, "age")
@@ -118,8 +120,7 @@ build_initiation_data <- function(data, cfg) {
   smoked_100_yes <- survey_code(cfg, "established_smoker", "yes_code")
   ever_codes <- survey_code(cfg, "smoking_status", "ever_codes")
   never_code <- survey_code(cfg, "smoking_status", "never_code")
-  floor_age <- survey_bound(cfg, "age_first_cigarette", "min")
-  init_max <- survey_bound(cfg, "age_first_cigarette", "max")
+  floor_age <- initiation_floor(cfg)
   cohort_min <- cfg$apc$cohort_min
   period_min <- cfg$apc$period_min
   period_max <- cfg$apc$period_max
@@ -132,6 +133,7 @@ build_initiation_data <- function(data, cfg) {
   age_survey <- as.integer(round(data[[age_col]]))
   weight <- data[[weight_col]]
   cycle <- as.character(data[[cycle_col]])
+  init_range <- per_respondent_range(cfg, "age_first_cigarette", cycle, variable_details_sheet)
 
   status_missing <- is.na(smk)
   never <- !status_missing & smk == never_code
@@ -141,7 +143,7 @@ build_initiation_data <- function(data, cfg) {
   established <- ever_status & !is.na(smoked_100) & smoked_100 == smoked_100_yes
   missing_entry <- established & is.na(age_init)
   entry_invalid <- established & !is.na(age_init) &
-    (age_init > age_survey | age_init > init_max | age_init < 0)
+    (age_init > age_survey | outside_range(age_init, init_range))
   entry_before_floor <- established & !is.na(age_init) & !entry_invalid & age_init < floor_age
   initiator <- established & !is.na(age_init) & !entry_invalid & age_init >= floor_age
   at_risk_to_survey <- never | experimental
@@ -194,6 +196,33 @@ build_initiation_data <- function(data, cfg) {
   out <- rbind(numerator, denominator)
   attr(out, "initiation_diagnostics") <- diag
   out
+}
+
+
+#' Per-respondent valid range for a survey variable, by each respondent's cycle
+#'
+#' @param cfg Config object
+#' @param key Survey key (e.g. "age_first_cigarette")
+#' @param cycle Character vector of cycle codes, one per respondent
+#' @param variable_details_sheet Combined variable-details worksheet
+#' @return List with numeric vectors `min` and `max` (NA where unbounded)
+per_respondent_range <- function(cfg, key, cycle, variable_details_sheet) {
+  dbs <- cycle_database(cfg, cycle)
+  known <- unique(dbs[!is.na(dbs)])
+  ranges <- lapply(known, function(db) survey_range(cfg, key, db, variable_details_sheet))
+  names(ranges) <- known
+  idx <- match(dbs, known)
+  list(
+    min = vapply(idx, function(i) if (is.na(i)) NA_real_ else ranges[[i]][["min"]], numeric(1)),
+    max = vapply(idx, function(i) if (is.na(i)) NA_real_ else ranges[[i]][["max"]], numeric(1))
+  )
+}
+
+#' TRUE where a value lies outside its per-respondent range (NA bounds ignored)
+outside_range <- function(x, range) {
+  below <- !is.na(range$min) & x < range$min
+  above <- !is.na(range$max) & x > range$max
+  !is.na(x) & (below | above)
 }
 
 
@@ -295,7 +324,7 @@ expand_denominator <- function(denom_source, period_range, min_age) {
 #' @param cfg Config object
 #' @return Data frame with age, cohort, period, event, weight, plus the attribute
 #'   `cessation_diagnostics` (per-cycle counts, unweighted and weighted)
-build_cessation_data <- function(data, cfg) {
+build_cessation_data <- function(data, cfg, variable_details_sheet) {
   status_col <- survey_var(cfg, "smoking_status")
   smoked_100_col <- survey_var(cfg, "established_smoker")
   smoked_100_yes <- survey_code(cfg, "established_smoker", "yes_code")
@@ -304,11 +333,9 @@ build_cessation_data <- function(data, cfg) {
   age_col <- survey_var(cfg, "age")
   weight_col <- survey_var(cfg, "weight")
   cycle_col <- survey_var(cfg, "cycle")
-  floor_age <- survey_bound(cfg, "age_first_cigarette", "min") # default for expand_denominator only
+  floor_age <- initiation_floor(cfg) # default for expand_denominator only
   durability <- cfg$apc$cessation_durability_years
   if (is.null(durability)) stop("cfg$apc$cessation_durability_years is not set.")
-  quit_min <- survey_bound(cfg, "years_since_quit_complete", "min")
-  quit_max <- survey_bound(cfg, "years_since_quit_complete", "max")
   cohort_min <- cfg$apc$cohort_min
   period_min <- cfg$apc$period_min
   period_max <- cfg$apc$period_max
@@ -332,6 +359,7 @@ build_cessation_data <- function(data, cfg) {
   age_quit <- as.integer(round(age_survey - yrs_quit))
   weight <- d[[weight_col]]
   cycle <- as.character(d[[cycle_col]]) # observed cycles only; avoids NA sums for empty levels
+  quit_range <- per_respondent_range(cfg, "years_since_quit_complete", cycle, variable_details_sheet)
 
   current <- smk %in% current_codes
   former <- smk %in% former_codes
@@ -343,7 +371,7 @@ build_cessation_data <- function(data, cfg) {
   # Quit timing must be finite, within the configured bounds for the source
   # (PUMF top-code, Master ceiling), and place the quit no later than the survey.
   timing_invalid <- former & !is.na(yrs_quit) &
-    (!is.finite(yrs_quit) | yrs_quit < quit_min | yrs_quit > quit_max |
+    (!is.finite(yrs_quit) | outside_range(yrs_quit, quit_range) |
       is.na(age_quit) | age_quit > age_survey | age_quit < 0)
   quit_before_entry <- former & !is.na(age_quit) & !timing_invalid & !missing_entry & age_quit < age_init
   excluded <- missing_entry | entry_after_survey | timing_missing | timing_invalid | quit_before_entry

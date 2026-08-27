@@ -120,7 +120,7 @@ The `variableStart` worksheet column uses cchsflow notation: `cchs2001_p::SMKA_0
 
 **APC model variables (internal):** `age`, `cohort`, `period`, `event`, `weight`
 
-**Value codes are configuration, not code.** Status groupings (`survey.smoking_status.<src>.ever_codes/current_codes/former_codes/never_code`), sex codes (`survey.sex.<src>.men_code/women_code`), the established-smoker criterion (`survey.established_smoker.<src>.yes_code`), and analytic thresholds (`apc.cessation_durability_years`, bounds via `survey_bound()`) live in `config.yml` and are read with `survey_code()` / `survey_bound()`. Do not write literal codes or thresholds into R. Remaining exception, scheduled as plan task 2.6: literal variable names in `R/imputation.R`.
+**Value codes are configuration, not code.** Status groupings (`survey.smoking_status.<src>.ever_codes/current_codes/former_codes/never_code`), sex codes (`survey.sex.<src>.men_code/women_code`), the established-smoker criterion (`survey.established_smoker.<src>.yes_code`), and analytic thresholds (`apc.cessation_durability_years`, `apc.initiation_floor_age`) live in `config.yml` and are read with `survey_code()` / `initiation_floor()`. **Variable ranges (min/max) are not in config at all:** `survey.<key>.<src>.range: variable_details` points at the variable-details worksheet, and `details_range()` / `survey_range()` derive the range from the recoding rules for each cycle. Example of why: the PUMF groups quit duration to "3 or more years" from 2003 (largest midpoint 5), where the old config comments claimed a top-code of 15. Do not write literal codes or thresholds into R. Remaining exception, scheduled as plan task 2.6: literal variable names in `R/imputation.R`.
 
 ### cchsflow dependency
 

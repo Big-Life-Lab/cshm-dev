@@ -22,7 +22,8 @@ make_apc_test_data <- function(cfg, n = 100, seed = 42) {
   # Most ever-smokers pass; some are experimental (2); never smokers are NA(a).
   smoked_100 <- ifelse(smkdsty == 6, NA_real_, ifelse(runif(n) < 0.85, 1, 2))
   # Years since stopped smoking completely: former smokers (4, 5) only.
-  yrs_quit_complete <- ifelse(smkdsty %in% c(4, 5), round(runif(n, 0, 20)), NA_real_)
+  # PUMF 2003+ groups quit duration to a largest midpoint of 5 (worksheet rules)
+  yrs_quit_complete <- ifelse(smkdsty %in% c(4, 5), sample(c(0.5, 1.5, 2.5, 5), n, replace = TRUE), NA_real_)
   # keep quit age at or after the entry age so the base data are internally consistent
   yrs_quit_complete <- pmin(yrs_quit_complete, ages - age_first)
 

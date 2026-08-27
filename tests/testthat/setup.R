@@ -9,8 +9,15 @@ project_root <- normalizePath(file.path(dirname(dirname(getwd()))))
 
 r_files <- list.files(
   file.path(project_root, "R"),
-  pattern  = "\\.R$",
+  pattern = "\\.R$",
   full.names = TRUE,
-  recursive  = FALSE
+  recursive = FALSE
 )
 invisible(lapply(r_files, source))
+
+# The variable-details worksheet is the reference for variable ranges; the APC
+# builders take it as an argument. Load it once for all tests.
+TEST_DETAILS <- as.data.frame(dplyr::bind_rows(
+  read.csv(file.path(project_root, "worksheets", "cchsflow-variable-details.csv")),
+  read.csv(file.path(project_root, "worksheets", "cshm-variable-details.csv"))
+))
