@@ -201,7 +201,7 @@ default:
     # the 2022 PUMF (NA(c)); handled by the imputation path for cycle-level absence.
     years_since_quit_complete:
       pumf:
-        var: time_quit_smoking_complete  # midpoint-estimated; top-coded at 15
+        var: time_quit_smoking_complete  # midpoint-estimated; 2003+ PUMF groups to 3+ years (largest midpoint 5) -- see the worksheet rules
         range: variable_details
       master:
         var: time_quit_smoking_complete  # exact years
@@ -211,7 +211,7 @@ default:
     # daily-smoking sensitivity analysis.
     years_since_quit:
       pumf:
-        var: time_quit_smoking_daily  # Years since stopped daily (midpoint-estimated, top-coded at 15)
+        var: time_quit_smoking_daily  # Years since stopped daily (midpoint-estimated; 2001 reaches 15, 2003+ groups to 3+ years)
         range: variable_details
       master:
         var: time_quit_smoking_daily  # Exact years since quit daily (SMK_09C)
