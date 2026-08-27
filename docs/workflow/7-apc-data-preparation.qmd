@@ -27,6 +27,8 @@ Configuration used:
 | `survey$age_first_cigarette` | `config.yml` | Age at first whole cigarette |
 | `survey$years_since_quit_complete` | `config.yml` | Years since stopping smoking completely (the cessation exit) |
 | `survey$established_smoker` | `config.yml` | 100-cigarette gate; `yes_code` defines the smoking universe |
+| `survey$smoking_status` `*_codes` | `config.yml` | Which `SMKDSTY_original` codes count as ever, current, former, never |
+| `survey$sex` `*_code` | `config.yml` | Sex codes used to stratify the models |
 | `survey_bound(cfg, "age_first_cigarette", "min")` | `config.yml` | APC floor for initiation age (PUMF: 13, Master: 8) |
 | `apc$cessation_durability_years` | `config.yml` | A quit counts as cessation only after this many years (2) |
 | `apc$age_knots` | `config.yml` | `[10, 15, 20, 50, 60]` |

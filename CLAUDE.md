@@ -118,7 +118,9 @@ The `variableStart` worksheet column uses cchsflow notation: `cchs2001_p::SMKA_0
 
 **Deprecated aliases:** `SMK_005` → `SMK_202`; `SMK_030` → `SMK_05D`
 
-**APC model variables (internal):** `age`, `cohort`, `period`, `init`, `weighting`, `ont_id`
+**APC model variables (internal):** `age`, `cohort`, `period`, `event`, `weight`
+
+**Value codes are configuration, not code.** Status groupings (`survey.smoking_status.<src>.ever_codes/current_codes/former_codes/never_code`), sex codes (`survey.sex.<src>.men_code/women_code`), the established-smoker gate (`survey.established_smoker.<src>.yes_code`), and analytic thresholds (`apc.cessation_durability_years`, bounds via `survey_bound()`) live in `config.yml` and are read with `survey_code()` / `survey_bound()`. Do not write literal codes or thresholds into R. Remaining exception, scheduled as plan task 2.6: literal variable names in `R/imputation.R`.
 
 ### cchsflow dependency
 
