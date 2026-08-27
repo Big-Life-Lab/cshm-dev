@@ -108,20 +108,20 @@ one_person <- function(cfg, status, smoked_100 = 1, age_first = 16, yrs_quit_com
   df
 }
 
-test_that("build_cessation_data: universe is established smokers, all ever-smoker statuses", {
+test_that("build_cessation_data: includes established smokers of every ever-smoker status", {
   cfg <- cess_cfg()
   data <- make_apc_test_data(cfg)
   result <- suppressMessages(build_cessation_data(data, cfg))
   diag <- attr(result, "cessation_diagnostics")
   expect_true(is.data.frame(diag))
   established <- sum(diag$n[diag$group == "established"])
-  gate <- data[[survey_var(cfg, "established_smoker")]]
+  smoked_100 <- data[[survey_var(cfg, "established_smoker")]]
   smk <- data[[survey_var(cfg, "smoking_status")]]
-  expect_equal(established, sum(!is.na(gate) & gate == 1 & smk %in% 1:5 & data$cohort >= cfg$apc$cohort_min))
+  expect_equal(established, sum(!is.na(smoked_100) & smoked_100 == 1 & smk %in% 1:5 & data$cohort >= cfg$apc$cohort_min))
   expect_true(all(result$event %in% c(0L, 1L)))
 })
 
-test_that("build_cessation_data: experimental smokers (under 100 cigarettes) are outside the universe", {
+test_that("build_cessation_data: experimental smokers (under 100 cigarettes) are not included", {
   cfg <- cess_cfg()
   exp_smoker <- one_person(cfg, status = 4, smoked_100 = 2, age_first = 15, yrs_quit_complete = 10)
   result <- suppressMessages(build_cessation_data(exp_smoker, cfg))
@@ -291,7 +291,7 @@ test_that("value codes are read from config, not hard-coded", {
   cfg <- cess_cfg()
   expect_equal(survey_code(cfg, "sex", "men_code"), 1)
   expect_equal(survey_code(cfg, "smoking_status", "former_codes"), c(4, 5))
-  # Relabel the former-smoker codes in config and the universe classification follows
+  # Relabel the former-smoker codes in config and the classification follows
   cfg2 <- cfg
   cfg2$survey$smoking_status$pumf$former_codes <- c(4)
   cfg2$survey$smoking_status$pumf$current_codes <- c(1, 2, 3, 5)

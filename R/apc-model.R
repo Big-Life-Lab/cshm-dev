@@ -114,10 +114,10 @@ build_initiation_data <- function(data, cfg) {
   # Established-smoker criterion (estimand specification, section 2): only people who
   # have smoked 100 or more cigarettes enter the smoking states. Experimental
   # smokers (a whole cigarette, fewer than 100) are Never: at risk, no event.
-  gate <- data[[survey_var(cfg, "established_smoker")]]
-  gate_yes <- survey_code(cfg, "established_smoker", "yes_code")
+  smoked_100 <- data[[survey_var(cfg, "established_smoker")]]
+  smoked_100_yes <- survey_code(cfg, "established_smoker", "yes_code")
   ever_codes <- survey_code(cfg, "smoking_status", "ever_codes")
-  ever_smoker <- !is.na(smkdsty) & smkdsty %in% ever_codes & !is.na(gate) & gate == gate_yes
+  ever_smoker <- !is.na(smkdsty) & smkdsty %in% ever_codes & !is.na(smoked_100) & smoked_100 == smoked_100_yes
 
   age_init_raw <- data[[age_col]]
 
@@ -258,8 +258,8 @@ expand_denominator <- function(denom_source, period_range, min_age) {
 #'   `cessation_diagnostics` (per-cycle counts, unweighted and weighted)
 build_cessation_data <- function(data, cfg) {
   status_col <- survey_var(cfg, "smoking_status")
-  gate_col <- survey_var(cfg, "established_smoker")
-  gate_yes <- survey_code(cfg, "established_smoker", "yes_code")
+  smoked_100_col <- survey_var(cfg, "established_smoker")
+  smoked_100_yes <- survey_code(cfg, "established_smoker", "yes_code")
   quit_col <- survey_var(cfg, "years_since_quit_complete")
   init_col <- survey_var(cfg, "age_first_cigarette")
   age_col <- survey_var(cfg, "age")
@@ -279,8 +279,8 @@ build_cessation_data <- function(data, cfg) {
   current_codes <- survey_code(cfg, "smoking_status", "current_codes")
   former_codes <- survey_code(cfg, "smoking_status", "former_codes")
   smk <- data[[status_col]]
-  gate <- data[[gate_col]]
-  established <- !is.na(smk) & smk %in% ever_codes & !is.na(gate) & gate == gate_yes
+  smoked_100 <- data[[smoked_100_col]]
+  established <- !is.na(smk) & smk %in% ever_codes & !is.na(smoked_100) & smoked_100 == smoked_100_yes
   d <- data[established, ]
   smk <- d[[status_col]]
 
