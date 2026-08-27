@@ -124,7 +124,7 @@ python3 ~/github/cchsflow-docs/mcp-server/cli.py compare cchs2013_2014_p cchs201
 
 The `variableStart` worksheet column uses cchsflow notation: `cchs2001_p::SMKA_01A, cchs2007_2008_p::SMK_01A, [SMK_01A]` — `_p` = PUMF, `_m` = Master, `[VAR]` = fallback name.
 
-**Unified variables (preferred):** `age_first_cigarette`, `age_start_smoking`, `time_quit_smoking`
+**Unified variables (preferred):** `age_first_cigarette` (entry), `smoked_100_lifetime` (established-smoker criterion), `time_quit_smoking_complete` (cessation exit, 2003+), `age_start_smoking` and `time_quit_smoking_daily` (daily-smoking attributes)
 
 **Master-only continuous:** `SMK_01C`, `SMK_040`, `SMK_09C` / `SMK_06C` / `SMK_10C`
 
@@ -132,7 +132,9 @@ The `variableStart` worksheet column uses cchsflow notation: `cchs2001_p::SMKA_0
 
 **Deprecated aliases:** `SMK_005` → `SMK_202`; `SMK_030` → `SMK_05D`
 
-**APC model variables (internal):** `age`, `cohort`, `period`, `init`, `weighting`, `ont_id`
+**APC model variables (internal):** `age`, `cohort`, `period`, `event`, `weight`
+
+**Value codes are configuration, not code.** Status groupings (`survey.smoking_status.<src>.ever_codes/current_codes/former_codes/never_code`), sex codes (`survey.sex.<src>.men_code/women_code`), the established-smoker criterion (`survey.established_smoker.<src>.yes_code`), and analytic thresholds (`apc.cessation_durability_years`, `apc.initiation_floor_age`) live in `config.yml` and are read with `survey_code()` / `initiation_floor()`. **Variable ranges (min/max) are not in config at all:** `survey.<key>.<src>.range: variable_details` points at the variable-details worksheet, and `details_range()` / `survey_range()` derive the range from the recoding rules for each cycle. Example of why: the PUMF groups quit duration to "3 or more years" from 2003 (largest midpoint 5), where the old config comments claimed a top-code of 15. Do not write literal codes or thresholds into R. Remaining exception, scheduled as plan task 2.6: literal variable names in `R/imputation.R`.
 
 ### cchsflow dependency
 

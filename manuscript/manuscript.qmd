@@ -96,9 +96,9 @@ We used all available cycles of the CCHS (2001–2022 PUMF; 2001–2023 Master f
 
 We fit two logistic regression models using an age-period-cohort framework:
 
-1. **Initiation model** — annual probability of transitioning from never smoker to current smoker, conditional on being a never smoker at age *a*−1. Probability assumed zero before age `r survey_bound(cfg, "age_first_cigarette", "min")`.
+1. **Initiation model** — annual probability of transitioning from never smoker to current smoker, conditional on being a never smoker at age *a*−1. Initiation is modelled from age `r initiation_floor(cfg)` (PUMF 13; Master 8, section 3.3 of the protocol); the model gives no probability of initiation below that age.
 
-2. **Cessation model** — conditional probability of a current smoker quitting at age *a*. Probability assumed zero before `r survey_bound(cfg, "years_since_quit", "min")` years since quitting.
+2. **Cessation model** — conditional probability of a current smoker quitting at age *a*. Each established smoker is at risk of quitting from their own age at first whole cigarette to the age they stopped completely (event) or the survey age (censored); there is no fixed minimum age for cessation. A quit counts as an event only when it has lasted at least `r cfg$apc$cessation_durability_years` years at the survey.
 
 Both models used constrained natural cubic splines with the knot structure from Holford et al. [-@Holford_AJPM_2014]: age knots `r paste0("[", paste(cfg$apc$age_knots, collapse = ", "), "]")`, period knots `r paste0("[", paste(cfg$apc$period_knots, collapse = ", "), "]")`, and cohort knots `r paste0("[", paste(cfg$apc$cohort_knots, collapse = ", "), "]")`.
 
