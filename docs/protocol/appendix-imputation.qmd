@@ -21,7 +21,7 @@ The CSHM pipeline preserves the reason for missingness throughout, using `haven:
 |-----|---------|-----------|
 | NA(a) | Not applicable (e.g., initiation age for never-smokers) | Structural -- never imputed |
 | NA(b) | Don't know / refused / not stated | Item non-response -- imputed under MAR |
-| NA(c) | Not asked in this survey cycle | Cycle-level absence -- not imputed in the base pipeline; imputing across cycles is evaluated in Phase 4 (delta-adjustment, RDC check) |
+| NA(c) | Not asked in this survey cycle | Not asked in that cycle -- not imputed in the base pipeline. Whether to impute across cycles is tested in Phase 4: imputed values are shifted by set amounts to see whether the results hold, and imputed values are compared with the values observed in the Master files at the RDC |
 
 Three sources of missingness are specific to this study:
 
@@ -137,7 +137,7 @@ For the variables with the highest missingness, compare predictive mean matching
 
 ### 4.3 Sensitivity to MAR for cycle-absent variables
 
-Delta-adjustment analysis for `age_start_smoking` in 2019--20 (and the 2022 smoking block): shift imputed values by ±0.5 SD, refit the APC models, and assess robustness of the initiation-rate trends. Because these cycles never measured the variable in the PUMF, MAR cannot be verified empirically there -- but the **Master files observe these variables**, so the RDC analysis provides a direct external check unavailable to most delta-adjustment settings.
+Sensitivity analysis for `age_start_smoking` in 2019--20 (and the 2022 smoking block), where the PUMF never asked the question. We shift every imputed value up, and separately down, by half a standard deviation, refit the APC models, and check whether the initiation-rate trends hold. Because the PUMF never measured the variable in these cycles, we cannot test there whether the missing values resemble the observed ones. The Master files do record these variables, so the RDC analysis compares the imputed values directly with observed ones -- a check that most sensitivity analyses of this kind cannot make.
 
 ### 4.4 Era-stratified stability
 
@@ -152,4 +152,4 @@ Fit the APC models on (a) cycles where all key variables are observed (2001--201
 -   [x] Retain all *m* completed datasets; average Table 1b across imputations
 -   [ ] Add an imputation-diagnostics target and Quarto report (trace plots, density plots, FMI table)
 -   [ ] Golden-record and tagged-NA preservation tests (cshm-dev issue #4)
--   [ ] Delta-adjustment sensitivity analysis for cycle-absent variables; RDC cross-check at the Master-file stage
+-   [ ] Sensitivity analysis that shifts the imputed values of variables not asked in a cycle; comparison with the observed Master-file values at the RDC
