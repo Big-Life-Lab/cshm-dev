@@ -156,8 +156,9 @@ default:
     age_first_cigarette:
       pumf:
         var: age_first_cigarette  # Age smoked first whole cigarette (midpoint-estimated)
-        min: 13                   # Study floor — NOTE: SMKG01C_cont has a 5-11 category (midpoint 8);
-                                  # 13 excludes it. Lowering to 8 is an open study decision.
+        min: 13                   # Initiation floor (PI decision 2026-08-27, public issue #5): the PUMF
+                                  # 5-11 category (midpoint 8) is too coarse to date initiation events
+                                  # below 13; cessation follow-up still starts at the reported midpoint.
         max: 100
       master:
         var: age_first_cigarette  # Exact age from SMK_01C
@@ -315,7 +316,7 @@ default:
   # Survey year lookup: integer year per SurveyCycle code (1–11)
   # 2-year cycles use midpoint year (e.g. 2008 for 2007-08)
   cycle_survey_years:
-    "1":  2001
+    "1":  2001    # CCHS 1.1 collected Sept 2000 to Nov 2001; assigned 2001 (PI decision 2026-08-27, issue #5)
     "2":  2003
     "3":  2005
     "4":  2008    # 2007-08
