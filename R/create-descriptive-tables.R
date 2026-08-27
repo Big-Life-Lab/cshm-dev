@@ -22,13 +22,15 @@ continuous_predictor_footnote <- paste0(
 format_cat_descriptive_data <- function(descriptive_data_row) {
   if (nrow(descriptive_data_row) == 0 || is.na(descriptive_data_row[1, "n"])) {
     stop("Descriptive table lookup matched no engine row — worksheet/data ",
-         "category mismatch (wiring bug), not an empty stratum.", call. = FALSE)
+      "category mismatch (wiring bug), not an empty stratum.",
+      call. = FALSE
+    )
   }
   if (descriptive_data_row[1, "n"] == 0) {
     return("No data")
   }
   pct <- if ("wtd_percent" %in% colnames(descriptive_data_row) &&
-             !is.na(descriptive_data_row[1, "wtd_percent"])) {
+    !is.na(descriptive_data_row[1, "wtd_percent"])) {
     descriptive_data_row[1, "wtd_percent"]
   } else {
     descriptive_data_row[1, "percent"]
@@ -41,19 +43,30 @@ format_cat_descriptive_data <- function(descriptive_data_row) {
 format_cont_descriptive_data <- function(descriptive_data_row) {
   if (nrow(descriptive_data_row) == 0 || is.na(descriptive_data_row[1, "n"])) {
     stop("Descriptive table lookup matched no engine row — worksheet/data ",
-         "mismatch (wiring bug), not an empty stratum.", call. = FALSE)
+      "mismatch (wiring bug), not an empty stratum.",
+      call. = FALSE
+    )
   }
   if (descriptive_data_row[1, "n"] == 0) {
     return("No data")
   }
   weighted <- "wtd_median" %in% colnames(descriptive_data_row) &&
     !is.na(descriptive_data_row[1, "wtd_median"])
-  med <- if (weighted) descriptive_data_row[1, "wtd_median"]
-         else descriptive_data_row[1, "median"]
-  p25 <- if (weighted) descriptive_data_row[1, "wtd_percentile25"]
-         else descriptive_data_row[1, "percentile25"]
-  p75 <- if (weighted) descriptive_data_row[1, "wtd_percentile75"]
-         else descriptive_data_row[1, "percentile75"]
+  med <- if (weighted) {
+    descriptive_data_row[1, "wtd_median"]
+  } else {
+    descriptive_data_row[1, "median"]
+  }
+  p25 <- if (weighted) {
+    descriptive_data_row[1, "wtd_percentile25"]
+  } else {
+    descriptive_data_row[1, "percentile25"]
+  }
+  p75 <- if (weighted) {
+    descriptive_data_row[1, "wtd_percentile75"]
+  } else {
+    descriptive_data_row[1, "percentile75"]
+  }
   paste0(
     descriptive_data_row[1, "min"], " - ", descriptive_data_row[1, "max"], ",\n",
     med, " (", p25, " - ", p75, ")"
@@ -62,7 +75,7 @@ format_cont_descriptive_data <- function(descriptive_data_row) {
 
 .format_cont_type <- function(variables_sheet_row) {
   stopifnot(is_continuous_variable(variables_sheet_row))
-  units        <- variables_sheet_row$units
+  units <- variables_sheet_row$units
   units_suffix <- ifelse(units != "N/A", paste0("(in ", units, ")"), "")
   paste(variables_sheet_row$variableType, units_suffix)
 }
@@ -102,8 +115,8 @@ create_descriptive_table_missing_rows <- function(
           d <- data_for_variable |>
             dplyr::filter(
               groupBy_1 == sr$variable &
-              groupByValue_1 == sr$recEnd &
-              cat == mc$recEnd
+                groupByValue_1 == sr$recEnd &
+                cat == mc$recEnd
             )
           format_cat_descriptive_data(d[1, ])
         }
@@ -117,8 +130,8 @@ create_descriptive_table_missing_rows <- function(
       d <- data_for_variable |>
         dplyr::filter(
           groupBy_1 == sr$variable &
-          groupByValue_1 == sr$recEnd &
-          cat == "NA::c"
+            groupByValue_1 == sr$recEnd &
+            cat == "NA::c"
         )
       format_cat_descriptive_data(d[1, ])
     }
@@ -134,9 +147,9 @@ create_descriptive_table_missing_rows <- function(
   variable_details_sheet,
   variables,
   column_stratifier = NULL,
-  row_stratifiers   = list(),
-  sections_order    = NULL,
-  include_na        = TRUE
+  row_stratifiers = list(),
+  sections_order = NULL,
+  include_na = TRUE
 ) {
   stratify_config <- row_stratifiers
   if (!is.null(column_stratifier)) {
@@ -144,7 +157,7 @@ create_descriptive_table_missing_rows <- function(
   }
 
   unrounded <- descriptive_data
-  formatted  <- descriptive_data |>
+  formatted <- descriptive_data |>
     dplyr::mutate(dplyr::across(where(is.numeric) & !c(n), ~ signif(.x, 4)))
 
   # Determine sections
@@ -155,10 +168,10 @@ create_descriptive_table_missing_rows <- function(
   }
   if (!is.null(sections_order)) sections_in_table <- sections_order
 
-  stratifier_rows  <- get_unique_rec_end_rows(variable_details_sheet, column_stratifier)
-  table_variables  <- c()
-  table_type       <- c()
-  table_row_types  <- c()
+  stratifier_rows <- get_unique_rec_end_rows(variable_details_sheet, column_stratifier)
+  table_variables <- c()
+  table_type <- c()
+  table_row_types <- c()
   stratify_by_stats <- list()
   for (i in seq_len(nrow(stratifier_rows))) {
     stratify_by_stats[[stratifier_rows[i, "catLabel"]]] <- c()
@@ -166,7 +179,7 @@ create_descriptive_table_missing_rows <- function(
 
   merge_stats <- function(stats) {
     table_variables <<- c(table_variables, stats$variable)
-    table_type      <<- c(table_type,      stats$type)
+    table_type <<- c(table_type, stats$type)
     for (i in seq_len(nrow(stratifier_rows))) {
       cat_label <- stratifier_rows[i, "catLabel"]
       stratify_by_stats[[cat_label]] <<- c(
@@ -177,7 +190,7 @@ create_descriptive_table_missing_rows <- function(
 
   for (section in sections_in_table) {
     table_variables <- c(table_variables, section)
-    table_type      <- c(table_type, "")
+    table_type <- c(table_type, "")
     table_row_types <- c(table_row_types, "section")
     for (i in seq_len(nrow(stratifier_rows))) {
       cat_label <- stratifier_rows[i, "catLabel"]
@@ -193,7 +206,7 @@ create_descriptive_table_missing_rows <- function(
 
       if (vrow[1, ]$variableType == "Categorical") {
         table_variables <- c(table_variables, vrow[1, "label"])
-        table_type      <- c(table_type, "Categorical")
+        table_type <- c(table_type, "Categorical")
         table_row_types <- c(table_row_types, "variable")
         for (i in seq_len(nrow(stratifier_rows))) {
           stratify_by_stats[[stratifier_rows[i, "catLabel"]]] <- c(
@@ -207,26 +220,30 @@ create_descriptive_table_missing_rows <- function(
         # Append NA(c) row
         na_row <- categories[1, , drop = FALSE]
         for (col in colnames(na_row)) {
-          if (is.character(na_row[[col]])) na_row[[col]][1] <- ""
-          else na_row[[col]][1] <- NA
+          if (is.character(na_row[[col]])) {
+            na_row[[col]][1] <- ""
+          } else {
+            na_row[[col]][1] <- NA
+          }
         }
         na_row$variable[1] <- variable
-        na_row$recEnd[1]   <- "NA::c"
+        na_row$recEnd[1] <- "NA::c"
         na_row$catLabel[1] <- NA_c_label
-        na_row$typeEnd[1]  <- "cat"
-        na_row$units[1]    <- "N/A"
+        na_row$typeEnd[1] <- "cat"
+        na_row$units[1] <- "N/A"
         categories <- rbind(categories, na_row)
 
         for (ci in seq_len(nrow(categories))) {
           table_variables <- c(table_variables, categories[ci, "catLabel"])
-          table_type      <- c(table_type, "")
+          table_type <- c(table_type, "")
           table_row_types <- c(table_row_types, "category")
           for (i in seq_len(nrow(stratifier_rows))) {
             sr <- stratifier_rows[i, ]
-            d  <- data_for_var[
+            d <- data_for_var[
               data_for_var$cat == categories[ci, ]$recEnd &
-              data_for_var$groupBy_1 == column_stratifier &
-              data_for_var$groupByValue_1 == sr$recEnd, ]
+                data_for_var$groupBy_1 == column_stratifier &
+                data_for_var$groupByValue_1 == sr$recEnd,
+            ]
             stratify_by_stats[[sr$catLabel]] <- c(
               stratify_by_stats[[sr$catLabel]],
               format_cat_descriptive_data(d)
@@ -240,13 +257,15 @@ create_descriptive_table_missing_rows <- function(
           function(sr) {
             ixs <- which(
               is.na(data_for_var$cat) &
-              data_for_var$groupBy_1 == column_stratifier &
-              data_for_var$groupByValue_1 == sr$recEnd
+                data_for_var$groupBy_1 == column_stratifier &
+                data_for_var$groupByValue_1 == sr$recEnd
             )
-            if (length(ixs) != 1) stop(paste(
-              "Expected 1 continuous row for", variable,
-              "stratifier", sr$recEnd, "- found", length(ixs)
-            ))
+            if (length(ixs) != 1) {
+              stop(paste(
+                "Expected 1 continuous row for", variable,
+                "stratifier", sr$recEnd, "- found", length(ixs)
+              ))
+            }
             format_cont_descriptive_data(data_for_var[ixs, ])
           }
         )
@@ -294,7 +313,8 @@ create_descriptive_table_display <- function(descriptive_table_data) {
   }
 
   data_filtered <- descriptive_table_data[
-    descriptive_table_data$row_type != "section", ]
+    descriptive_table_data$row_type != "section",
+  ]
 
   gt_table <- data_filtered |>
     dplyr::select(-row_type) |>
@@ -347,24 +367,25 @@ create_descriptive_table <- function(
   variable_details_sheet,
   variables,
   column_stratifier = NULL,
-  sections_order    = NULL,
-  include_na        = TRUE
+  sections_order = NULL,
+  include_na = TRUE
 ) {
   descriptive_table <- .build_descriptive_table_data(
     descriptive_data, variables_sheet, variable_details_sheet,
     variables, column_stratifier, list(), sections_order, include_na
   )
 
-  unrounded      <- attr(descriptive_table, "unrounded_data")
+  unrounded <- attr(descriptive_table, "unrounded_data")
   stratifier_rows <- attr(descriptive_table, "stratifier_rows")
 
   header_labels <- list(variable = "Variable", type = "Type")
   for (i in seq_len(nrow(stratifier_rows))) {
     d <- unrounded[
       !is.na(unrounded$groupBy_1) &
-      unrounded$groupBy_1 == column_stratifier &
-      !is.na(unrounded$groupByValue_1) &
-      unrounded$groupByValue_1 == stratifier_rows[i, "recEnd"], ]
+        unrounded$groupBy_1 == column_stratifier &
+        !is.na(unrounded$groupByValue_1) &
+        unrounded$groupByValue_1 == stratifier_rows[i, "recEnd"],
+    ]
     valid <- d[!is.na(d$percent) & d$percent > 0, ]
     total_n <- if (nrow(valid) > 0 && valid[1, "percent"] > 0) {
       round(valid[1, "n"] / valid[1, "percent"])
@@ -414,9 +435,9 @@ create_cycle_specific_descriptive_table <- function(
   cycle_col,
   cycle_labels,
   column_stratifier = NULL,
-  weight_var        = NULL,
-  sections_order    = NULL,
-  include_na        = TRUE
+  weight_var = NULL,
+  sections_order = NULL,
+  include_na = TRUE
 ) {
   cycles <- sort(unique(as.integer(as.character(study_data[[cycle_col]]))))
   cycles <- cycles[!is.na(cycles)]
@@ -427,18 +448,20 @@ create_cycle_specific_descriptive_table <- function(
     stratify_config[["all"]] <- list(column_stratifier)
   }
 
-  cycle_tables    <- list()
+  cycle_tables <- list()
   cycle_data_list <- list()
 
   for (cycle in cycles) {
     cycle_data <- study_data[
-      as.integer(as.character(study_data[[cycle_col]])) == cycle, ]
+      as.integer(as.character(study_data[[cycle_col]])) == cycle,
+    ]
     key <- paste0("Cycle_", cycle)
     cycle_data_list[[key]] <- cycle_data
 
     cycle_desc <- get_descriptive_data(
       cycle_data, variables_sheet, variable_details_sheet,
-      variables, stratify_config, weight_var = weight_var
+      variables, stratify_config,
+      weight_var = weight_var
     )
     cycle_tables[[key]] <- .build_descriptive_table_data(
       cycle_desc, variables_sheet, variable_details_sheet,
@@ -453,8 +476,8 @@ create_cycle_specific_descriptive_table <- function(
     row_type = cycle_tables[[1]]$row_type
   )
   for (cycle in cycles) {
-    key    <- paste0("Cycle_", cycle)
-    ct     <- cycle_tables[[key]]
+    key <- paste0("Cycle_", cycle)
+    ct <- cycle_tables[[key]]
     # Use the catLabel column names from the first cycle's stratifier_rows
     strat_rows <- attr(ct, "stratifier_rows")
     for (i in seq_len(nrow(strat_rows))) {
@@ -470,17 +493,18 @@ create_cycle_specific_descriptive_table <- function(
 
   col_labels <- list(type = "Type")
   for (cycle in cycles) {
-    key        <- paste0("Cycle_", cycle)
+    key <- paste0("Cycle_", cycle)
     cycle_data <- cycle_data_list[[key]]
-    cycle_lbl  <- cycle_labels[as.character(cycle)]
+    cycle_lbl <- cycle_labels[as.character(cycle)]
 
     span_cols <- c()
     for (cat_label in cat_labels_ref) {
-      col_name  <- paste0("Cycle", cycle, "_", cat_label)
+      col_name <- paste0("Cycle", cycle, "_", cat_label)
       strat_val <- strat_rows_ref$recEnd[strat_rows_ref$catLabel == cat_label]
-      n_val     <- nrow(cycle_data[
+      n_val <- nrow(cycle_data[
         !is.na(cycle_data[[column_stratifier]]) &
-        cycle_data[[column_stratifier]] == strat_val, ])
+          cycle_data[[column_stratifier]] == strat_val,
+      ])
       col_labels[[col_name]] <- gt::html(paste0(
         cat_label, " (N = ", format(n_val, big.mark = ","), ")<sup>a</sup>"
       ))

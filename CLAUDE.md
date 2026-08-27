@@ -4,6 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 For project overview, methodology, and architecture see [README.md](README.md) and [docs/development/project-architecture.md](docs/development/project-architecture.md).
 
+Machine-local setup notes, if present, are in `CLAUDE.local.md` (gitignored).
+
 ## Common commands
 
 ```r
@@ -64,8 +66,8 @@ The pipeline follows the DemPoRT-V2-dev pattern (`~/github/DemPoRT-V2-dev`); its
 | [R/smoking-histories.R](R/smoking-histories.R) | Rate table generation (Stage 9, stub) |
 | [R/validation.R](R/validation.R) | Prevalence validation |
 | [docs/results/table-1.qmd](docs/results/table-1.qmd) | Table 1a, 1b, and cycle appendix |
-| [R/legacy/smoking.R](R/legacy/smoking.R) | Interim smoking variables (pre-cchsflow v3) |
-| [R/legacy/process_smoking_initiation.R](R/legacy/process_smoking_initiation.R) | APC data prep (pre-pipeline; superseded by R/apc-model.R) |
+| [resources/legacy-code/R/smoking.R](resources/legacy-code/R/smoking.R) | Interim smoking variables (pre-cchsflow v3; moved out of `R/` so `tar_source()` no longer shadows cchsflow exports) |
+| [resources/legacy-code/R/process_smoking_initiation.R](resources/legacy-code/R/process_smoking_initiation.R) | APC data prep (pre-pipeline; superseded by R/apc-model.R) |
 | [resources/legacy-code/Modeling2013.sas](resources/legacy-code/Modeling2013.sas) | Original SAS implementation (Manuel et al. 2020) |
 | docs/references/Manuel_HR_2020.pdf | Key reference paper (local only; PDFs are gitignored) |
 | [config/statscan.yml.example](config/statscan.yml.example) | RDC config template (copy to `config/statscan.yml`, gitignored) |
@@ -82,7 +84,7 @@ The pipeline follows the DemPoRT-V2-dev pattern (`~/github/DemPoRT-V2-dev`); its
 | [docs/explanation/](docs/explanation/) | Conceptual explanations of APC methodology |
 | [docs/reference/](docs/reference/) | Variable, function, and model reference |
 
-**Development artefacts** (`docs/development/` — gitignored, local only): planning documents, meeting notes, protocol drafts, pipeline progress notes.
+**Development artefacts** (`docs/development/` — tracked, excluded from the rendered site): planning documents, meeting notes, protocol drafts, pipeline progress notes.
 
 `config.yml` profiles (set via `R_CONFIG_ACTIVE`):
 - **default** — PUMF data from `~/github/cchsflow-data/data/sources/rdata/` (renamed via scripts/rename-pumf-objects.R); full sample
@@ -120,7 +122,7 @@ The `variableStart` worksheet column uses cchsflow notation: `cchs2001_p::SMKA_0
 
 ### cchsflow dependency
 
-Branch: `v3` (smoking work merged 2026-04-29, commit bd0df3ac; PR #163 closed in favour of direct merge). The pipeline reads recoding rules from the in-repo snapshot `worksheets/cchsflow-variable-details.csv` (taken from `~/github/cchsflow/inst/extdata/variable_details.csv` with local fixes for cchsflow #184/#185); refresh it when upstream merges the fixes. renv installs the cchsflow *package* from the local `~/github/cchsflow` checkout on `v3` (CRAN 2.1.0 lacks the v3 derivation functions). Key smoking files:
+Branch: upstream `dev` (locally named `v3`; smoking work merged 2026-04-29, PR #163 closed in favour of direct merge). The pipeline reads recoding rules from the in-repo snapshot `worksheets/cchsflow-variable-details.csv` (taken from `~/github/cchsflow/inst/extdata/variable_details.csv` with local fixes for cchsflow #184/#185); refresh it when upstream merges the fixes. renv installs the cchsflow *package* from GitHub, pinned by SHA in `renv.lock` (`Big-Life-Lab/cchsflow@2d3c1cad`, version 3.0.0 — CRAN 2.1.0 lacks the v3 derivation functions); `renv::restore()` needs no local checkout or credentials. Key smoking files:
 `R/smoke-start.R`, `R/smoke-stop.R`, `R/smoke-intensity.R`, `R/smoking-status.R`, `R/smoking-cessation.R`, `R/clean-variables.R`, `R/missing-data-functions.R`
 
 cchsflow must be *attached* (not just `::`-qualified) when calling `rec_with_table()` — v3 derivation functions use unqualified dplyr/rlang helpers that resolve through its `Depends`. `_targets.R` handles this with `tar_option_set(packages = "cchsflow")`.
@@ -150,7 +152,12 @@ Role vocabulary (single source of truth): [schemas/cshm-variables.yaml](schemas/
 
 ## Protocol versioning
 
-The study protocol is prespecified: any change under `docs/protocol/` (including Appendix D) must bump `version-summary.version` in [docs/protocol/full-protocol.qmd](docs/protocol/full-protocol.qmd) and add a dated `version-history` entry describing the change — in the same commit. Enforced on PRs by `.github/workflows/protocol-version.yml`.
+The study protocol is prespecified: any change under `docs/protocol/` must be recorded in a version bump, in the same commit. Two documents version on **independent tracks**:
+
+- [docs/protocol/full-protocol.qmd](docs/protocol/full-protocol.qmd) — bump `version-summary.version` and add a dated `version-history` entry. This is also the version of record for appendices (e.g. `appendix-imputation.qmd`) and any other `docs/protocol/` file without its own stamp.
+- [docs/protocol/study-summary.qmd](docs/protocol/study-summary.qmd) — bump its plain-text `Version X.Y.Z` stamp and add a `## Change log` entry. The summary notes which full-protocol version it corresponds to, but advances on its own track.
+
+Enforced on PRs by `.github/workflows/protocol-version.yml`, which requires each changed document to bump its own version.
 
 ## Code style
 

@@ -33,15 +33,15 @@
 prepare_apc_data <- function(analysis_data, cfg) {
   data <- derive_survey_year(analysis_data, cfg)
 
-  init_men   <- build_initiation_data(data[data[[survey_var(cfg, "sex")]] == 1, ], cfg)
+  init_men <- build_initiation_data(data[data[[survey_var(cfg, "sex")]] == 1, ], cfg)
   init_women <- build_initiation_data(data[data[[survey_var(cfg, "sex")]] == 2, ], cfg)
-  cess_men   <- build_cessation_data(data[data[[survey_var(cfg, "sex")]] == 1, ], cfg)
+  cess_men <- build_cessation_data(data[data[[survey_var(cfg, "sex")]] == 1, ], cfg)
   cess_women <- build_cessation_data(data[data[[survey_var(cfg, "sex")]] == 2, ], cfg)
 
   list(
-    initiation_men   = apply_survival_correction(init_men,   cfg),
+    initiation_men   = apply_survival_correction(init_men, cfg),
     initiation_women = apply_survival_correction(init_women, cfg),
-    cessation_men    = apply_survival_correction(cess_men,   cfg),
+    cessation_men    = apply_survival_correction(cess_men, cfg),
     cessation_women  = apply_survival_correction(cess_women, cfg)
   )
 }
@@ -62,7 +62,7 @@ prepare_apc_data <- function(analysis_data, cfg) {
 #' @return data with survey_year (integer) and cohort (integer) columns added
 derive_survey_year <- function(data, cfg) {
   cycle_col <- survey_var(cfg, "cycle")
-  age_col   <- survey_var(cfg, "age")
+  age_col <- survey_var(cfg, "age")
 
   year_map <- cfg$cycle_survey_years
   cycle_keys <- as.character(data[[cycle_col]])
@@ -80,7 +80,7 @@ derive_survey_year <- function(data, cfg) {
   }
 
   data$survey_year <- as.integer(survey_years)
-  data$cohort      <- data$survey_year - round(data[[age_col]])
+  data$cohort <- data$survey_year - round(data[[age_col]])
   data
 }
 
@@ -92,9 +92,9 @@ derive_survey_year <- function(data, cfg) {
 #' @return Long-format data frame: age, cohort, period, event, weight
 build_initiation_data <- function(data, cfg) {
   status_col <- survey_var(cfg, "smoking_status")
-  age_col    <- survey_var(cfg, "age_first_cigarette")
+  age_col <- survey_var(cfg, "age_first_cigarette")
   weight_col <- survey_var(cfg, "weight")
-  min_age    <- survey_bound(cfg, "age_first_cigarette", "min")
+  min_age <- survey_bound(cfg, "age_first_cigarette", "min")
   cohort_min <- cfg$apc$cohort_min
   period_min <- cfg$apc$period_min
   period_max <- cfg$apc$period_max
@@ -155,18 +155,18 @@ build_initiation_data <- function(data, cfg) {
   # Person attributes needed for expand
   denom_source <- data.frame(
     person_id = seq_len(nrow(data)),
-    cohort    = data$cohort,
-    age_init  = ifelse(valid_init, as.integer(round(age_init_raw)), NA_integer_),
+    cohort = data$cohort,
+    age_init = ifelse(valid_init, as.integer(round(age_init_raw)), NA_integer_),
     # Never-smokers and invalid: treat as still at risk through end of period range
     age_survey = as.integer(round(data[[survey_var(cfg, "age")]])),
-    weight    = data[[weight_col]]
+    weight = data[[weight_col]]
   )
   # For never-smokers (no initiation), denominator runs to survey age (proxy for period_max)
   # For initiators, denominator runs up to (but not including) age_init
   denom_source$age_denom_max <- ifelse(
     is.na(denom_source$age_init),
-    denom_source$age_survey,    # never initiated — at risk through observed age
-    denom_source$age_init - 1L  # initiated — at risk until year before initiation
+    denom_source$age_survey, # never initiated — at risk through observed age
+    denom_source$age_init - 1L # initiated — at risk until year before initiation
   )
 
   period_range <- seq(period_min, period_max)
@@ -189,10 +189,10 @@ expand_denominator <- function(denom_source, period_range, min_age) {
   rows <- vector("list", nrow(denom_source))
 
   for (i in seq_len(nrow(denom_source))) {
-    p  <- denom_source$person_id[i]
+    p <- denom_source$person_id[i]
     co <- denom_source$cohort[i]
     am <- denom_source$age_denom_max[i]
-    w  <- denom_source$weight[i]
+    w <- denom_source$weight[i]
 
     if (is.na(co) || is.na(am)) next
 
@@ -214,8 +214,10 @@ expand_denominator <- function(denom_source, period_range, min_age) {
 
   non_null <- rows[!vapply(rows, is.null, logical(1))]
   if (length(non_null) == 0) {
-    return(data.frame(age = integer(0), cohort = integer(0), period = integer(0),
-                      event = integer(0), weight = numeric(0)))
+    return(data.frame(
+      age = integer(0), cohort = integer(0), period = integer(0),
+      event = integer(0), weight = numeric(0)
+    ))
   }
   do.call(rbind, non_null)
 }
@@ -232,14 +234,14 @@ expand_denominator <- function(denom_source, period_range, min_age) {
 #' @param cfg Config object
 #' @return Long-format data frame: age, cohort, period, event, weight
 build_cessation_data <- function(data, cfg) {
-  status_col  <- survey_var(cfg, "smoking_status")
-  quit_col    <- survey_var(cfg, "years_since_quit")
-  age_col     <- survey_var(cfg, "age")
-  weight_col  <- survey_var(cfg, "weight")
-  min_age     <- survey_bound(cfg, "years_since_quit", "min")
-  cohort_min  <- cfg$apc$cohort_min
-  period_min  <- cfg$apc$period_min
-  period_max  <- cfg$apc$period_max
+  status_col <- survey_var(cfg, "smoking_status")
+  quit_col <- survey_var(cfg, "years_since_quit")
+  age_col <- survey_var(cfg, "age")
+  weight_col <- survey_var(cfg, "weight")
+  min_age <- survey_bound(cfg, "years_since_quit", "min")
+  cohort_min <- cfg$apc$cohort_min
+  period_min <- cfg$apc$period_min
+  period_max <- cfg$apc$period_max
 
   # SMKDSTY_original: 1=daily, 2=occ(fmr daily), 3=always occ, 4=fmr daily, 5=fmr occ, 6=never
   # Cessation scope: ever-daily smokers only (1, 2, 4). Excludes always-occasional (3)
@@ -248,12 +250,12 @@ build_cessation_data <- function(data, cfg) {
   in_scope <- !is.na(smkdsty_raw) & smkdsty_raw %in% c(1, 2, 4) & data$cohort >= cohort_min
   data <- data[in_scope, ]
 
-  smkdsty      <- data[[status_col]]
-  years_quit   <- data[[quit_col]]
-  age_survey   <- data[[age_col]]
+  smkdsty <- data[[status_col]]
+  years_quit <- data[[quit_col]]
+  age_survey <- data[[age_col]]
   age_cessation <- age_survey - years_quit
 
-  former_daily  <- smkdsty == 4
+  former_daily <- smkdsty == 4
   current_daily <- smkdsty %in% c(1, 2)
 
   # Issue 7: plausibility filter for former daily smokers.
@@ -265,8 +267,10 @@ build_cessation_data <- function(data, cfg) {
   )
   n_implausible <- sum(implausible_cess, na.rm = TRUE)
   if (n_implausible > 0) {
-    message("Excluding ", n_implausible,
-            " cessation rows with age_cessation < ", min_age, " or negative.")
+    message(
+      "Excluding ", n_implausible,
+      " cessation rows with age_cessation < ", min_age, " or negative."
+    )
   }
 
   valid_cess <- former_daily & !implausible_cess & !is.na(age_cessation)
@@ -299,7 +303,7 @@ build_cessation_data <- function(data, cfg) {
   )
 
   period_range <- seq(period_min, period_max)
-  denominator  <- expand_denominator(denom_source, period_range, min_age)
+  denominator <- expand_denominator(denom_source, period_range, min_age)
 
   rbind(numerator, denominator)
 }
@@ -353,7 +357,7 @@ apply_survival_correction <- function(apc_data, cfg) {
 #'   spline_type, sex
 fit_apc_model <- function(apc_dataset, model_type, sex, cfg) {
   basis <- build_spline_basis(apc_dataset, model_type, sex, cfg)
-  fit   <- fit_binomial_apc(basis, apc_dataset$event, apc_dataset$weight)
+  fit <- fit_binomial_apc(basis, apc_dataset$event, apc_dataset$weight)
 
   attr(fit, "knots") <- list(
     age    = cfg$apc$age_knots,
@@ -365,9 +369,9 @@ fit_apc_model <- function(apc_dataset, model_type, sex, cfg) {
     cohort_min = cfg$apc$cohort_constraints$initiation_prior_to,
     cohort_max = cfg$apc$cohort_constraints$cessation_from
   )
-  attr(fit, "model_type")  <- model_type
+  attr(fit, "model_type") <- model_type
   attr(fit, "spline_type") <- cfg$apc$spline_type
-  attr(fit, "sex")         <- sex
+  attr(fit, "sex") <- sex
 
   fit
 }
@@ -407,8 +411,8 @@ interior_knots <- function(x, knots) {
 #'   cohort_1...cohort_k (intercept = FALSE in all bases)
 build_spline_basis <- function(apc_dataset, model_type, sex, cfg) {
   period_constraint <- get_period_constraint(model_type, sex, cfg)
-  cohort_prior      <- cfg$apc$cohort_constraints$initiation_prior_to
-  cohort_from       <- cfg$apc$cohort_constraints$cessation_from
+  cohort_prior <- cfg$apc$cohort_constraints$initiation_prior_to
+  cohort_from <- cfg$apc$cohort_constraints$cessation_from
 
   period_clamped <- pmin(apc_dataset$period, period_constraint)
   cohort_clamped <- pmin(pmax(apc_dataset$cohort, cohort_prior), cohort_from)
@@ -418,9 +422,9 @@ build_spline_basis <- function(apc_dataset, model_type, sex, cfg) {
   # outside that range cause an error. This can happen for cessation where the
   # effective period range (1965–2013 after clamping) excludes the early
   # period knots (1940, 1950, 1960) inherited from the full denominator spec.
-  age_knots    <- interior_knots(apc_dataset$age, cfg$apc$age_knots)
-  period_knots <- interior_knots(period_clamped,  cfg$apc$period_knots)
-  cohort_knots <- interior_knots(cohort_clamped,  cfg$apc$cohort_knots)
+  age_knots <- interior_knots(apc_dataset$age, cfg$apc$age_knots)
+  period_knots <- interior_knots(period_clamped, cfg$apc$period_knots)
+  cohort_knots <- interior_knots(cohort_clamped, cfg$apc$cohort_knots)
 
   spline_type <- cfg$apc$spline_type
 
@@ -428,23 +432,21 @@ build_spline_basis <- function(apc_dataset, model_type, sex, cfg) {
     if (!requireNamespace("splines2", quietly = TRUE)) {
       stop("Package 'splines2' required for spline_type = 'nsp'. Install with renv::install('splines2').")
     }
-    age_basis    <- splines2::nsp(apc_dataset$age, knots = age_knots,    intercept = FALSE)
-    period_basis <- splines2::nsp(period_clamped,  knots = period_knots, intercept = FALSE)
-    cohort_basis <- splines2::nsp(cohort_clamped,  knots = cohort_knots, intercept = FALSE)
-
+    age_basis <- splines2::nsp(apc_dataset$age, knots = age_knots, intercept = FALSE)
+    period_basis <- splines2::nsp(period_clamped, knots = period_knots, intercept = FALSE)
+    cohort_basis <- splines2::nsp(cohort_clamped, knots = cohort_knots, intercept = FALSE)
   } else if (spline_type == "rcs") {
     if (!requireNamespace("rms", quietly = TRUE)) {
       stop("Package 'rms' required for spline_type = 'rcs'. Install with renv::install('rms').")
     }
-    age_basis    <- rms::rcs(apc_dataset$age, knots = age_knots)
-    period_basis <- rms::rcs(period_clamped,  knots = period_knots)
-    cohort_basis <- rms::rcs(cohort_clamped,  knots = cohort_knots)
-
+    age_basis <- rms::rcs(apc_dataset$age, knots = age_knots)
+    period_basis <- rms::rcs(period_clamped, knots = period_knots)
+    cohort_basis <- rms::rcs(cohort_clamped, knots = cohort_knots)
   } else {
     stop("Unknown spline_type: '", spline_type, "'. Expected 'nsp' or 'rcs'.")
   }
 
-  colnames(age_basis)    <- paste0("age_",    seq_len(ncol(age_basis)))
+  colnames(age_basis) <- paste0("age_", seq_len(ncol(age_basis)))
   colnames(period_basis) <- paste0("period_", seq_len(ncol(period_basis)))
   colnames(cohort_basis) <- paste0("cohort_", seq_len(ncol(cohort_basis)))
 
@@ -462,8 +464,12 @@ get_period_constraint <- function(model_type, sex, cfg) {
   pc <- cfg$apc$period_constraints
 
   if (model_type == "initiation") {
-    if (sex == 2) return(pc$initiation_women_from)
-    if (sex == 1) return(pc$initiation_men_from)
+    if (sex == 2) {
+      return(pc$initiation_women_from)
+    }
+    if (sex == 1) {
+      return(pc$initiation_men_from)
+    }
     stop("sex must be 1 or 2, got: ", sex)
   }
 
@@ -493,15 +499,15 @@ get_period_constraint <- function(model_type, sex, cfg) {
 fit_binomial_apc <- function(basis_matrix, event, weight) {
   # Aggregate to unique basis rows (= unique age-period-cohort cells after clamping)
   df <- as.data.frame(basis_matrix)
-  df$.event  <- event
+  df$.event <- event
   df$.weight <- weight
 
   # Sum weighted events (d) and weighted person-years (pop) per unique cell
-  agg_key  <- do.call(paste, c(df[, !names(df) %in% c(".event", ".weight"), drop = FALSE], sep = "|"))
+  agg_key <- do.call(paste, c(df[, !names(df) %in% c(".event", ".weight"), drop = FALSE], sep = "|"))
   cell_ids <- match(agg_key, unique(agg_key))
-  n_cells  <- max(cell_ids)
+  n_cells <- max(cell_ids)
 
-  d   <- vapply(seq_len(n_cells), function(i) sum(df$.weight[cell_ids == i & df$.event == 1]), numeric(1))
+  d <- vapply(seq_len(n_cells), function(i) sum(df$.weight[cell_ids == i & df$.event == 1]), numeric(1))
   pop <- vapply(seq_len(n_cells), function(i) sum(df$.weight[cell_ids == i]), numeric(1))
 
   # Extract one basis row per unique cell
@@ -509,10 +515,12 @@ fit_binomial_apc <- function(basis_matrix, event, weight) {
   basis_agg <- basis_matrix[cell_rows, , drop = FALSE]
 
   cell_df <- as.data.frame(basis_agg)
-  cell_df$.d   <- d
+  cell_df$.d <- d
   cell_df$.pop <- pop
 
-  glm(cbind(.d, .pop - .d) ~ . - .d - .pop, data = cell_df,
-      family = binomial(),
-      control = glm.control(maxit = 100, epsilon = 1e-8))
+  glm(cbind(.d, .pop - .d) ~ . - .d - .pop,
+    data = cell_df,
+    family = binomial(),
+    control = glm.control(maxit = 100, epsilon = 1e-8)
+  )
 }

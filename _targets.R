@@ -17,11 +17,15 @@ list(
   tar_target(variables_sheet,
     read.csv(cfg$worksheets$variables)
   ),
+  # The CSHM extension carries additional review/versioning columns beyond
+  # cchsflow's 16; bind_rows() aligns by name and fills the base sheet's
+  # missing columns with NA (plain rbind() requires identical shapes and
+  # breaks on every upstream snapshot refresh).
   tar_target(variable_details_sheet,
-    rbind(
+    as.data.frame(dplyr::bind_rows(
       read.csv(cfg$worksheets$cchsflow_variable_details),
       read.csv(cfg$worksheets$cshm_variable_details)
-    )
+    ))
   ),
 
   # Stage 0: Pre-flight validation — verify variable coverage before loading data

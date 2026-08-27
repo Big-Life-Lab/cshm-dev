@@ -42,11 +42,11 @@ load_study_data <- function(cfg, variables_sheet, variable_details_sheet,
   # The cycle variable (survey_var(cfg, "cycle")) is derived manually — rec_with_table cannot derive it
   study_vars <- variables_sheet[
     variables_sheet$variable != survey_var(cfg, "cycle") &
-    variables_sheet$source %in% c(cfg$data_source, "both"),
+      variables_sheet$source %in% c(cfg$data_source, "both"),
   ]
 
   harmonized <- NULL
-  data_env   <- new.env()
+  data_env <- new.env()
 
   for (cycle in cfg$cchs_cycles) {
     # Support raw_data_file_map (cchsflow-data naming) or default cchs*_p.RData naming
@@ -80,11 +80,11 @@ load_study_data <- function(cfg, variables_sheet, variable_details_sheet,
     raw_data <- as.data.frame(raw_data)
 
     cycle_data <- cchsflow::rec_with_table(
-      data          = raw_data,
-      variables     = study_vars,
+      data = raw_data,
+      variables = study_vars,
       database_name = cycle,
       variable_details = variable_details_sheet,
-      notes         = FALSE
+      notes = FALSE
     )
 
     cycle_data[[survey_var(cfg, "cycle")]] <- survey_cycle_code(cycle)

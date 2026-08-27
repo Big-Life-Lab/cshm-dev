@@ -1,0 +1,150 @@
+---
+title: "Canadian Smoking Histories Model: Background and context"
+author: "Doug Manuel"
+date: last-modified
+format:
+  html:
+    toc: true
+    toc-depth: 3
+---
+
+## Introduction
+
+The Canadian Smoking Histories Model (CSHM) is a collaborative project to generate synthetic smoking histories for the Canadian population. The project replicates and extends methodology developed for the Ontario Smoking Histories Model (Ontario SHGM) to the national level, leveraging partnerships with Statistics Canada, CISNET investigators, and academic collaborators.
+
+This document provides background and context for the CSHM development, including the scientific foundations, prior work, and collaboration structure.
+
+## Scientific foundation
+
+### Age-Period-Cohort modelling
+
+Smoking behaviour varies systematically by age, historical period, and birth cohort. Age-Period-Cohort (APC) models decompose observed smoking patterns into these three temporal dimensions:
+
+- **Age effects**: Biological and life-stage factors (e.g., initiation peaks in adolescence)
+- **Period effects**: Events affecting all ages simultaneously (e.g., tobacco control policies, price changes)
+- **Cohort effects**: Shared experiences of birth cohorts (e.g., generations exposed to different marketing environments)
+
+The APC methodology used in this project was pioneered by Ted Holford (Yale) and has been applied extensively in cancer epidemiology and tobacco control research.
+
+### CISNET Smoking History Generator
+
+The Cancer Intervention and Surveillance Modeling Network (CISNET) developed the Smoking History Generator (SHG) to simulate detailed smoking trajectories for individuals based on demographic characteristics. The SHG uses calibrated probability tables for:
+
+- **Initiation**: Probability of starting smoking by age, sex, race, and birth cohort
+- **Cessation**: Probability of quitting by age, sex, race, and birth cohort
+- **Intensity**: Cigarettes per day distributions
+- **Mortality**: Competing risks from causes other than lung cancer
+
+The SHG has been used extensively for US lung cancer modelling and policy analysis. An R implementation (shg-rcpp) provides programmatic access to the simulation engine.
+
+## Prior work
+
+### Ontario Smoking Histories Model
+
+The Ontario SHGM (Manuel et al., 2020) demonstrated that Canadian smoking histories could be generated using:
+
+1. **Canadian Community Health Survey (CCHS)** data for observed smoking patterns
+2. **APC modelling** to estimate initiation and cessation probabilities
+3. **Simulation** to generate individual smoking trajectories
+
+Key findings from the Ontario study:
+
+- [To be completed: key methodological findings]
+- [To be completed: validation results]
+- [To be completed: limitations and lessons learned]
+
+**Reference:** Manuel DG, et al. Health Reports. 2020. [Full citation to be added]
+
+### CCHS smoking variable harmonisation
+
+The cchsflow R package provides harmonised variables across CCHS cycles (2001-present). A comprehensive smoking variable update (cchsflow PR #163) adds:
+
+- Six-category smoking status classification
+- Age of smoking initiation
+- Time since cessation
+- Cigarettes per day
+- Pack-years (derived)
+
+This harmonisation work provides the foundation for consistent data extraction across survey cycles.
+
+## Current project
+
+### Objectives
+
+1. **Replicate** the Ontario SHGM methodology at the national level using full CCHS samples
+2. **Integrate** with the CISNET Smoking History Generator for simulation
+3. **Extend** to support additional research applications (e.g., dementia risk modelling)
+4. **Document** methodology for reproducibility and collaboration
+
+### Collaboration structure
+
+The CSHM is a collaboration between:
+
+| Collaborator | Contribution |
+|--------------|--------------|
+| Doug Manuel (Ottawa) | Project lead, Canadian implementation, APC calibration |
+| Rafael Meza (BCCDC, Vancouver) | CISNET methodology, simulation approaches |
+| Ted Holford (Yale) | APC methodology expertise |
+| Statistics Canada | Data access, secure computing environment |
+| CISNET | Smoking History Generator engine |
+
+### Technical architecture
+
+The project integrates three components:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Data layer                                │
+│  cchsflow (PR #163) → Harmonised CCHS smoking variables         │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                     Calibration layer                            │
+│  CSHM → APC models to estimate Canadian probabilities          │
+│        → Generate probability tables for Canadian population     │
+└─────────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                     Simulation layer                             │
+│  shg-rcpp (CISNET) → Generate individual smoking histories      │
+│                    → Using Canadian-calibrated probability tables│
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Scope
+
+**In scope:**
+
+- APC modelling to estimate Canadian initiation/cessation probabilities
+- Generation of Canadian probability tables compatible with shg-rcpp
+- Validation of generated histories against observed CCHS data
+- Integration workflows connecting cchsflow → CSHM → shg-rcpp
+- Documentation for reproducibility
+
+**Out of scope (handled by other packages):**
+
+- CCHS variable harmonisation (cchsflow)
+- Core simulation engine (shg-rcpp)
+
+## Open questions
+
+The following questions require resolution during development:
+
+1. **CISNET probability table format**: What is the exact specification for shg-rcpp input files? Can Canadian tables replace US tables?
+
+2. **Race/ethnicity mapping**: The CISNET SHG uses US race categories. How should Canadian ethnicity/Indigenous status be handled?
+
+3. **Validation approach**: What benchmarks should be used to validate Canadian-calibrated simulations?
+
+4. **Secure computing**: How will the workflow operate within Statistics Canada's Regional Data Centres?
+
+## Next steps
+
+- [ ] Complete Ontario SHGM summary (key findings, lessons learned)
+- [ ] Document CISNET SHG probability table specifications
+- [ ] Define APC modelling workflow for Canadian data
+- [ ] Establish validation framework
+
+## References
+
+[To be completed]
