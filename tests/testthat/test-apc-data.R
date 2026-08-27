@@ -82,18 +82,116 @@ test_that("build_initiation_data: denominator period within [period_min, period_
   expect_true(all(denom$period <= cfg$apc$period_max))
 })
 
-test_that("build_cessation_data: only ever-daily smokers in cessation data", {
+cess_cfg <- function() {
   cfg <- config::get()
-  data <- make_apc_test_data(cfg)
+  cfg$apc$mortality_method <- "none"
+  cfg
+}
 
-  # build_cessation_data accepts current daily (1), occ former daily (2), and former daily (4)
-  # smoking_status category 3 (always occasional) and 5 (former occasional) are excluded
-  result <- build_cessation_data(data, cfg)
-  # Cessation events (event=1) come from former daily smokers — we can't check
-  # smoking_status directly from the output, but we can verify the function runs without error
-  # and produces a valid data frame
-  expect_true(is.data.frame(result))
-  expect_true(all(c("age", "cohort", "period", "event", "weight") %in% names(result)))
+# One-row respondent data frame with config-resolved column names
+one_person <- function(cfg, status, smoked_100 = 1, age_first = 16, yrs_quit_complete = NA,
+                       age = 50, survey_year = 2010, weight = 100, cycle = "5") {
+  df <- data.frame(
+    cycle = factor(cycle, levels = as.character(1:11)), sex = 1L, age = age,
+    province = 35L, weight = weight, smoking_status = status,
+    age_first_cigarette = age_first, years_since_quit = NA_real_,
+    established_smoker = smoked_100, years_since_quit_complete = yrs_quit_complete,
+    survey_year = survey_year, cohort = survey_year - age
+  )
+  colnames(df) <- c(
+    survey_var(cfg, "cycle"), survey_var(cfg, "sex"), survey_var(cfg, "age"),
+    survey_var(cfg, "province"), survey_var(cfg, "weight"),
+    survey_var(cfg, "smoking_status"), survey_var(cfg, "age_first_cigarette"),
+    survey_var(cfg, "years_since_quit"), survey_var(cfg, "established_smoker"),
+    survey_var(cfg, "years_since_quit_complete"), "survey_year", "cohort"
+  )
+  df
+}
+
+test_that("build_cessation_data: universe is established smokers, all ever-smoker statuses", {
+  cfg <- cess_cfg()
+  data <- make_apc_test_data(cfg)
+  result <- suppressMessages(build_cessation_data(data, cfg))
+  diag <- attr(result, "cessation_diagnostics")
+  expect_true(is.data.frame(diag))
+  established <- sum(diag$n[diag$group == "established"])
+  gate <- data[[survey_var(cfg, "established_smoker")]]
+  smk <- data[[survey_var(cfg, "smoking_status")]]
+  expect_equal(established, sum(!is.na(gate) & gate == 1 & smk %in% 1:5 & data$cohort >= cfg$apc$cohort_min))
+  expect_true(all(result$event %in% c(0L, 1L)))
+})
+
+test_that("build_cessation_data: experimental smokers (under 100 cigarettes) are outside the universe", {
+  cfg <- cess_cfg()
+  exp_smoker <- one_person(cfg, status = 4, smoked_100 = 2, age_first = 15, yrs_quit_complete = 10)
+  result <- suppressMessages(build_cessation_data(exp_smoker, cfg))
+  expect_equal(nrow(result), 0)
+})
+
+test_that("build_cessation_data: no person-year precedes the person's own entry age", {
+  cfg <- cess_cfg()
+  cur <- one_person(cfg, status = 1, age_first = 22, age = 40, survey_year = 2005)
+  result <- suppressMessages(build_cessation_data(cur, cfg))
+  expect_true(all(result$age >= 22))
+  # at risk from entry through the survey year, inclusive
+  expect_equal(sort(result$age), 22:40)
+  expect_true(all(result$event == 0L))
+})
+
+test_that("build_cessation_data: durable quitter has one event at the quit age and risk rows before it", {
+  cfg <- cess_cfg()
+  q <- one_person(cfg, status = 4, age_first = 18, yrs_quit_complete = 10, age = 50, survey_year = 2010)
+  result <- suppressMessages(build_cessation_data(q, cfg))
+  expect_equal(sum(result$event), 1L)
+  expect_equal(result$age[result$event == 1L], 40L)
+  expect_equal(sort(result$age[result$event == 0L]), 18:39)
+})
+
+test_that("build_cessation_data: recent quitter is censored at the quit age with no event", {
+  cfg <- cess_cfg()
+  r <- one_person(cfg, status = 4, age_first = 18, yrs_quit_complete = 1, age = 50, survey_year = 2010)
+  result <- suppressMessages(build_cessation_data(r, cfg))
+  expect_equal(sum(result$event), 0L)
+  expect_equal(max(result$age), 48L) # quit at 49; the quit year is not observed
+  diag <- attr(result, "cessation_diagnostics")
+  expect_equal(sum(diag$n[diag$group == "recent_quitters_censored"]), 1L)
+})
+
+test_that("build_cessation_data: same-age initiation and cessation is one trial with the event", {
+  cfg <- cess_cfg()
+  s <- one_person(cfg, status = 5, age_first = 30, yrs_quit_complete = 20, age = 50, survey_year = 2010)
+  result <- suppressMessages(build_cessation_data(s, cfg))
+  expect_equal(nrow(result), 1L)
+  expect_equal(result$event, 1L)
+  expect_equal(result$age, 30L)
+  diag <- attr(result, "cessation_diagnostics")
+  expect_equal(sum(diag$n[diag$group == "same_age_spells"]), 1L)
+})
+
+test_that("build_cessation_data: missing quit timing (e.g. 2001, NA(c)) is excluded and counted, not reclassified", {
+  cfg <- cess_cfg()
+  m <- one_person(cfg, status = 4, age_first = 18, yrs_quit_complete = NA, age = 50, survey_year = 2001, cycle = "1")
+  result <- suppressMessages(build_cessation_data(m, cfg))
+  expect_equal(nrow(result), 0L)
+  diag <- attr(result, "cessation_diagnostics")
+  expect_equal(sum(diag$n[diag$group == "excluded_timing_missing"]), 1L)
+})
+
+test_that("build_cessation_data: a quit before entry is excluded and counted", {
+  cfg <- cess_cfg()
+  bad <- one_person(cfg, status = 4, age_first = 30, yrs_quit_complete = 30, age = 50, survey_year = 2010)
+  result <- suppressMessages(build_cessation_data(bad, cfg))
+  expect_equal(nrow(result), 0L)
+  diag <- attr(result, "cessation_diagnostics")
+  expect_equal(sum(diag$n[diag$group == "excluded_quit_before_entry"]), 1L)
+})
+
+test_that("build_initiation_data: experimental smokers contribute no initiation event", {
+  cfg <- cess_cfg()
+  exp_smoker <- one_person(cfg, status = 3, smoked_100 = 2, age_first = 15, age = 40, survey_year = 2005)
+  result <- suppressMessages(build_initiation_data(exp_smoker, cfg))
+  expect_equal(sum(result$event), 0L)
+  expect_true(nrow(result) > 0) # at risk, like a never smoker
 })
 
 test_that("no missing weight in any output element", {

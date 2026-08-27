@@ -173,6 +173,31 @@ default:
         var: age_start_smoking    # Exact age from SMK_040
         min: 8
         max: 100
+    # Established-smoker gate (estimand specification, section 2): at least 100
+    # cigarettes in lifetime. Experimental smokers (fewer than 100) are Never.
+    # `yes_code` is the value meaning "smoked 100 or more" (CCHS SMK_01A: 1 = yes, 2 = no).
+    established_smoker:
+      pumf:
+        var: smoked_100_lifetime
+        yes_code: 1
+      master:
+        var: smoked_100_lifetime
+        yes_code: 1
+    # Cessation exit: years since stopped smoking COMPLETELY (estimand specification,
+    # section 3). Derived from questions first asked in 2003; in 2001 it is not asked
+    # (NA(c)) and is handled by the imputation path for cycle-level absence.
+    years_since_quit_complete:
+      pumf:
+        var: time_quit_smoking_complete  # midpoint-estimated; top-coded at 15
+        min: 0
+        max: 15                   # PUMF top-code
+      master:
+        var: time_quit_smoking_complete  # exact years
+        min: 0
+        max: 80
+    # Years since stopped DAILY smoking. No longer the cessation exit (that is
+    # complete cessation, above); retained for the intensity model and for the
+    # daily-smoking sensitivity analysis.
     years_since_quit:
       pumf:
         var: time_quit_smoking_daily  # Years since stopped daily (midpoint-estimated, top-coded at 15)
@@ -238,6 +263,10 @@ default:
     period_max: 2022            # statscan profile overrides to 2023
     projection_max: 2050        # rate tables and smoking histories projected to this year
     cohort_min: 1920
+    # A quit counts as cessation only if it has lasted this many years at the
+    # survey; more recent quitters are current at survey and censored at the
+    # quit age (estimand specification, section 4; Holford et al. 2014).
+    cessation_durability_years: 2
     # Spline implementation
     # Primary: "nsp" (natural splines via splines2::nsp())
     # Sensitivity: "rcs" (restricted cubic splines via rms::rcs())

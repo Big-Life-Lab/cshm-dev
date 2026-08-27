@@ -110,7 +110,7 @@ python3 ~/github/cchsflow-docs/mcp-server/cli.py compare cchs2013_2014_p cchs201
 
 The `variableStart` worksheet column uses cchsflow notation: `cchs2001_p::SMKA_01A, cchs2007_2008_p::SMK_01A, [SMK_01A]` — `_p` = PUMF, `_m` = Master, `[VAR]` = fallback name.
 
-**Unified variables (preferred):** `age_first_cigarette`, `age_start_smoking`, `time_quit_smoking`
+**Unified variables (preferred):** `age_first_cigarette` (entry), `smoked_100_lifetime` (established-smoker gate), `time_quit_smoking_complete` (cessation exit, 2003+), `age_start_smoking` and `time_quit_smoking_daily` (daily-smoking attributes)
 
 **Master-only continuous:** `SMK_01C`, `SMK_040`, `SMK_09C` / `SMK_06C` / `SMK_10C`
 

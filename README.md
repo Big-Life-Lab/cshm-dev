@@ -65,7 +65,8 @@ Variables are harmonized across CCHS cycles using the [cchsflow](https://github.
 
 - `age_first_cigarette` — age first smoked whole cigarette (Master: exact; PUMF: midpoint estimate)
 - `age_start_smoking` — age started smoking daily (Master: exact; PUMF: midpoint ±3 years)
-- `time_quit_smoking` — years since quit smoking
+- `time_quit_smoking_complete` — years since stopped smoking completely (the cessation event; 2003 onward)
+- `smoked_100_lifetime` — smoked 100 or more cigarettes (defines who is a smoker in the model)
 
 ## Pipeline
 

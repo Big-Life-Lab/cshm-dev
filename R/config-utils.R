@@ -22,6 +22,20 @@ survey_var <- function(cfg, key) {
 
 # Access a bound (min/max) for the active data source.
 # e.g. survey_bound(cfg, "age_first_cigarette", "min") → 13 (pumf) or 8 (master)
+# Access a value code for the active data source, e.g.
+# survey_code(cfg, "established_smoker", "yes_code") -> 1
+# (keys are named *_code because bare YAML keys such as `yes` parse as booleans)
+survey_code <- function(cfg, key, code) {
+  entry <- cfg$survey[[key]]
+  if (is.null(entry)) stop("survey_code: unknown key '", key, "'")
+  src <- cfg$data_source %||% "pumf"
+  src_entry <- entry[[src]]
+  if (is.null(src_entry)) stop("survey_code: no '", src, "' entry for key '", key, "'")
+  val <- if (is.list(src_entry)) src_entry[[code]] else NULL
+  if (is.null(val)) stop("survey_code: no code '", code, "' for key '", key, "' source '", src, "'")
+  val
+}
+
 survey_bound <- function(cfg, key, bound) {
   entry <- cfg$survey[[key]]
   if (is.null(entry)) stop("survey_bound: unknown key '", key, "'")

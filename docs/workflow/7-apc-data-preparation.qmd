@@ -25,9 +25,10 @@ Configuration used:
 | `survey$weight` | `config.yml` | Sampling weight |
 | `survey$smoking_status` | `config.yml` | 6-category smoking status |
 | `survey$age_first_cigarette` | `config.yml` | Age at first whole cigarette |
-| `survey$years_since_quit` | `config.yml` | Years since quitting (former daily smokers) |
+| `survey$years_since_quit_complete` | `config.yml` | Years since stopping smoking completely (the cessation exit) |
+| `survey$established_smoker` | `config.yml` | 100-cigarette gate; `yes_code` defines the smoking universe |
 | `survey_bound(cfg, "age_first_cigarette", "min")` | `config.yml` | APC floor for initiation age (PUMF: 13, Master: 8) |
-| `survey_bound(cfg, "years_since_quit", "min")` | `config.yml` | APC floor for cessation years since quit (0) |
+| `apc$cessation_durability_years` | `config.yml` | A quit counts as cessation only after this many years (2) |
 | `apc$age_knots` | `config.yml` | `[10, 15, 20, 50, 60]` |
 | `apc$period_knots` | `config.yml` | `[1940, 1950, 1960, 1970, 1980]` |
 | `apc$cohort_knots` | `config.yml` | `[1930, 1940, 1945, 1950, 1955, 1960, 1965, 1970, 1975, 1980]` |
@@ -87,7 +88,7 @@ The spline basis columns are built in Stage 8 (`build_spline_basis()`), not stor
 
 **Mortality adjustment.** Ever-smokers are less likely to survive to survey date than never-smokers, creating survival bias. No correction is applied yet: `cfg$apc$mortality_method` is `"none"`, the `weighting` column holds the survey weight alone, and the datasets carry an `estimand_note` attribute stating that results describe respondents who survived to be surveyed. MPoRT (primary) and Peto (sensitivity) are not yet implemented (protocol section 3.4.5).
 
-**APC floor ages.** Initiation probability is assumed zero before `survey_bound(cfg, "age_first_cigarette", "min")` (PUMF: 13, Master: 8). Cessation probability is assumed zero before `survey_bound(cfg, "years_since_quit", "min")` (0). In PUMF data, the practical floor for observed initiation is ~13 due to midpoint imputation of grouped categories. The Master analytical floor of 8 captures genuine early initiations.
+**Who is in the cessation model, and when the clock starts.** The universe is established smokers (100 or more cigarettes in their lifetime, `smoked_100_lifetime`), whatever their current pattern. The event is stopping smoking completely, dated by `time_quit_smoking_complete`. Each person is at risk from their own age at first whole cigarette; the study floor age (`survey_bound(cfg, "age_first_cigarette", "min")`) is a reporting boundary only. A quit that has lasted fewer than `cfg$apc$cessation_durability_years` (2) years at the survey does not count: the person is current at survey and censored at the quit age. A quit at the entry age is a one-year spell. People with missing entry age or quit timing (including the whole 2001 cycle, where the stopped-completely questions were not asked) are excluded here and counted in the `cessation_diagnostics` attribute; imputation (task 1.8c) will supply their values. See `docs/development/estimand-specification.md`.
 
 **Four separate data frames, not one.** Men and women are modelled separately (consistent with Manuel et al. 2020). Initiation and cessation are separate models. Keeping four data frames lets Stage 8 fit all four models in parallel using `{targets}` branching.
 
