@@ -301,3 +301,25 @@ test_that("value codes are read from config, not hard-coded", {
   expect_equal(sum(result$event), 0L)
   expect_equal(max(result$age), 50L)
 })
+
+test_that("fit_binomial_apc: refuses to fit a model with no events", {
+  basis <- matrix(c(1, 2, 3, 4, 5, 6), ncol = 1, dimnames = list(NULL, "x"))
+  expect_error(
+    fit_binomial_apc(basis, event = rep(0L, 6), weight = rep(100, 6)),
+    "numerator is empty"
+  )
+  expect_error(
+    fit_binomial_apc(basis[0, , drop = FALSE], event = integer(0), weight = numeric(0)),
+    "no person-year rows"
+  )
+})
+
+test_that("fit_binomial_apc: fits and reports convergence when events exist", {
+  set.seed(1)
+  x <- rep(seq(-1, 1, length.out = 20), each = 5)
+  basis <- matrix(x, ncol = 1, dimnames = list(NULL, "x"))
+  event <- as.integer(runif(length(x)) < plogis(-1 + x))
+  fit <- fit_binomial_apc(basis, event = event, weight = rep(10, length(x)))
+  expect_true(isTRUE(fit$converged))
+  expect_s3_class(fit, "glm")
+})

@@ -640,6 +640,9 @@ get_period_constraint <- function(model_type, sex, cfg) {
 #' @param weight Numeric vector of survey weights
 #' @return Fitted glm object (family = binomial)
 fit_binomial_apc <- function(basis_matrix, event, weight) {
+  if (length(event) == 0) {
+    stop("fit_binomial_apc: no person-year rows to fit.")
+  }
   # Aggregate to unique basis rows (= unique age-period-cohort cells after clamping)
   df <- as.data.frame(basis_matrix)
   df$.event <- event
@@ -661,9 +664,29 @@ fit_binomial_apc <- function(basis_matrix, event, weight) {
   cell_df$.d <- d
   cell_df$.pop <- pop
 
-  glm(cbind(.d, .pop - .d) ~ . - .d - .pop,
+  # Guards (public issue #3, items 4 and 7): a model fitted to no events, or that
+  # did not converge, must fail loudly rather than return a plausible-looking fit.
+  if (sum(event == 1) == 0 || sum(d) <= 0) {
+    stop(
+      "fit_binomial_apc: the numerator is empty (", sum(event == 1), " event rows, ",
+      "weighted events = ", sum(d), "). A model with no events would encode ",
+      "'nobody ever made this transition'."
+    )
+  }
+  if (any(pop <= 0) || any(d > pop)) {
+    stop("fit_binomial_apc: a cell has non-positive person-years or more events than person-years.")
+  }
+
+  fit <- glm(cbind(.d, .pop - .d) ~ . - .d - .pop,
     data = cell_df,
     family = binomial(),
     control = glm.control(maxit = 100, epsilon = 1e-8)
   )
+  if (!isTRUE(fit$converged)) {
+    stop("fit_binomial_apc: glm did not converge (", fit$iter, " iterations).")
+  }
+  if (isTRUE(fit$boundary)) {
+    warning("fit_binomial_apc: glm stopped at the boundary of the parameter space; inspect the fit.")
+  }
+  fit
 }
