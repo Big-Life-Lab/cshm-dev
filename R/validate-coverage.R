@@ -154,3 +154,47 @@ validate_cycle_coverage <- function(variables_sheet,
 
   invisible(list(declared = declared_gaps, critical = critical_gaps))
 }
+
+
+#' Check that every derived study variable has all of its feeders in the sheet
+#'
+#' cchsflow derives a variable only when every input listed in its
+#' `DerivedVar::[...]` rule is present. A missing feeder makes rec_with_table()
+#' skip the derived variable without an error, and the gap is noticed only when a
+#' later stage looks for the column (in the first CI run of task 1.3, after 56
+#' minutes). This check reads the derivation rules from the variable-details
+#' sheet and stops at Stage 1 if a feeder is absent from the variables sheet.
+#'
+#' @param variables_sheet Study variables worksheet (data frame)
+#' @param variable_details_sheet Combined variable-details worksheet (data frame)
+#' @return Invisibly, a data frame of (variable, missing_feeder) pairs; stops if
+#'   any row exists
+check_feeder_closure <- function(variables_sheet, variable_details_sheet) {
+  study <- unique(variables_sheet$variable)
+  det <- variable_details_sheet[variable_details_sheet$variable %in% study, c("variable", "variableStart")]
+  rules <- det[grepl("DerivedVar::\\[", det$variableStart), ]
+  gaps <- list()
+  for (i in seq_len(nrow(rules))) {
+    inner <- sub(".*DerivedVar::\\[([^]]*)\\].*", "\\1", rules$variableStart[i])
+    feeders <- trimws(strsplit(inner, ",")[[1]])
+    missing <- setdiff(feeders, study)
+    if (length(missing)) {
+      gaps[[length(gaps) + 1]] <- data.frame(
+        variable = rules$variable[i], missing_feeder = missing, stringsAsFactors = FALSE
+      )
+    }
+  }
+  gaps <- if (length(gaps)) {
+    unique(do.call(rbind, gaps))
+  } else {
+    data.frame(variable = character(0), missing_feeder = character(0))
+  }
+  if (nrow(gaps) > 0) {
+    stop(
+      "Derived study variables with feeders missing from worksheets/cshm-variables.csv: ",
+      paste(unique(paste0(gaps$variable, " needs ", gaps$missing_feeder)), collapse = "; "),
+      ". Add the feeders as intermediate rows; cchsflow skips the derivation silently otherwise."
+    )
+  }
+  invisible(gaps)
+}
