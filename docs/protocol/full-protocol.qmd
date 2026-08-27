@@ -35,6 +35,12 @@ version-history:
 [{{< meta version-summary.date >}}]{.date} \| Version: [{{< meta version-summary.version >}}]{.version}
 :::
 
+<!-- Author plate: names and affiliations come from `authors:` in _quarto.yml.
+     The author list and its order are TBA -- more authors will be added. -->
+
+::: author-plate
+:::
+
 # Abstract
 
 > STROBE: Clear summary of study components; ISPOR-SMDM: Overview of model purpose

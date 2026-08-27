@@ -491,6 +491,61 @@
           "date-parts": [["2021"]]
         }
       }
+    },
+    "Holford_SM_2006": {
+      "itemData": {
+        "id": 99907,
+        "type": "article-journal",
+        "citation-key": "Holford_SM_2006",
+        "DOI": "10.1002/sim.2253",
+        "author": [
+          {"family": "Holford", "given": "Theodore R."}
+        ],
+        "container-title": "Statistics in Medicine",
+        "issue": "6",
+        "issued": {
+          "date-parts": [[2006]]
+        },
+        "page": "977-993",
+        "title": "Approaches to fitting age-period-cohort models with unequal intervals",
+        "volume": "25"
+      }
+    },
+    "Rao_SM_1992": {
+      "itemData": {
+        "id": 99908,
+        "type": "article-journal",
+        "citation-key": "Rao_SM_1992",
+        "author": [
+          {"family": "Rao", "given": "J. N. K."},
+          {"family": "Wu", "given": "C. F. J."},
+          {"family": "Yue", "given": "K."}
+        ],
+        "container-title": "Survey Methodology",
+        "issue": "2",
+        "issued": {
+          "date-parts": [[1992]]
+        },
+        "page": "209-217",
+        "title": "Some recent work on resampling methods for complex surveys",
+        "volume": "18"
+      }
+    },
+    "StatCan_CCHS_UserGuide_2022": {
+      "itemData": {
+        "id": 99909,
+        "type": "report",
+        "citation-key": "StatCan_CCHS_UserGuide_2022",
+        "author": [
+          {"literal": "Statistics Canada"}
+        ],
+        "issued": {
+          "date-parts": [[2023]]
+        },
+        "publisher": "Statistics Canada",
+        "publisher-place": "Ottawa",
+        "title": "Canadian community health survey (CCHS) – annual component: User guide, 2022 microdata file"
+      }
     }
   }
 }
