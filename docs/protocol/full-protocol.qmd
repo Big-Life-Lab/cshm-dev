@@ -261,7 +261,7 @@ Specific outputs include:
 
 > GATHER: Access to data and analytics; STRESS: Implementation details
 
-5.  **Interactive online platform:** A web-based dashboard (built using R Shiny) will allow users to visualize smoking trends by province and cohort, download rate tables, and explore different projection scenarios.
+5.  **Interactive online platform:** A web-based dashboard (built using R Shiny) will allow users to visualize smoking trends by province and cohort, download rate tables, and compare projection scenarios.
 
 > GATHER: Results publication; ISPOR-SMDM: Reporting
 
