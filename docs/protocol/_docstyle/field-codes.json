@@ -64,7 +64,8 @@
         "issued": {
           "date-parts": [["2015", "6"]]
         }
-      }
+      },
+      "uris": ["http://zotero.org/users/6858935/items/VVX5CUHD"]
     },
     "hennessy2015": {
       "itemData": {
@@ -527,7 +528,8 @@
         "page": "977-993",
         "title": "Approaches to fitting age-period-cohort models with unequal intervals",
         "volume": "25"
-      }
+      },
+      "uris": ["http://zotero.org/users/6858935/items/C3C6KJD2"]
     },
     "Rao_SM_1992": {
       "itemData": {
@@ -564,7 +566,8 @@
         "publisher": "Statistics Canada",
         "publisher-place": "Ottawa",
         "title": "Canadian community health survey (CCHS) – annual component: User guide, 2022 microdata file"
-      }
+      },
+      "uris": ["http://zotero.org/users/6858935/items/E49I6Q3W"]
     }
   }
 }

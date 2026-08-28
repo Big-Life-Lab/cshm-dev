@@ -18,8 +18,8 @@
       "field_code_payload": {
         "type": "section",
         "version": 2,
-        "class": "section-body",
-        "line-numbers": "continuous"
+        "line-numbers": "continuous",
+        "class": "section-body"
       }
     },
     {
@@ -31,8 +31,8 @@
       "field_code_payload": {
         "type": "section",
         "version": 2,
-        "class": "section-body-end",
-        "line-numbers": "continuous"
+        "line-numbers": "continuous",
+        "class": "section-body-end"
       }
     },
     {
@@ -44,8 +44,8 @@
       "field_code_payload": {
         "type": "section",
         "version": 2,
-        "class": "section-body",
-        "page-break": true
+        "page-break": true,
+        "class": "section-body"
       }
     },
     {
@@ -69,8 +69,8 @@
       "field_code_payload": {
         "type": "section",
         "version": 2,
-        "class": "section-body",
-        "page-break": true
+        "page-break": true,
+        "class": "section-body"
       }
     },
     {
@@ -94,8 +94,8 @@
       "field_code_payload": {
         "type": "section",
         "version": 2,
-        "class": "section-body",
-        "page-break": true
+        "page-break": true,
+        "class": "section-body"
       }
     },
     {
@@ -119,8 +119,8 @@
       "field_code_payload": {
         "type": "section",
         "version": 2,
-        "class": "section-body",
-        "page-break": true
+        "page-break": true,
+        "class": "section-body"
       }
     },
     {
