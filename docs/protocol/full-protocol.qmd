@@ -75,7 +75,7 @@ This study will develop a Canadian Smoking Histories Model (CSHM) that describes
 > Note: the starting date (1965) may need revision based on model performance.
 
 1.  **Estimate historical and current smoking parameters:** Reconstruct rates of smoking initiation, cessation, and intensity (cigarettes per day) by birth cohort (1890--2030) for each province and territory.
-2.  **Examine regional and temporal variations:** Analyze how smoking patterns have evolved across Canadian jurisdictions in response to differing policy environments and social trends.
+2.  **Examine regional and temporal variations:** Analyse how smoking patterns have evolved across Canadian jurisdictions in response to differing policy environments and social trends.
 3.  **Project future smoking prevalence:** Model future trends in smoking prevalence and related parameters through 2050 under status quo policy conditions.
 4.  **Develop an open-access model:** Create a publicly-accessible, reproducible R-based model that can be used and updated by researchers, policy analysts, and health system planners.
 
