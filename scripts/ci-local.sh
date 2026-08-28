@@ -9,6 +9,7 @@
 # Exit code: 0 all selected checks passed; 1 a check failed; 2 bad argument.
 # In a worktree without its own renv library set RENV_PATHS_LIBRARY=<main checkout>/renv/library.
 set -u
+if [ "$#" -gt 1 ]; then echo "Expected at most one argument, got $#: $*" >&2; exit 2; fi
 what="${1:-all}"
 case "$what" in
   tests|style|pipeline|render|all|protocol-docx) ;;
@@ -24,7 +25,9 @@ if [[ "$what" == "style" || "$what" == "all" ]]; then
   run style Rscript -e 'if (!requireNamespace("styler", quietly = TRUE)) stop("styler is not installed (renv::repair() or install into a scratch library)"); r <- styler::style_dir("R", dry = "on"); bad <- r$file[r$changed]; if (length(bad)) { cat("Not styler-clean:", paste(bad, collapse = ", "), "\n"); quit(status = 1) }; cat("R/ is styler-clean\n")'
 fi
 if [[ "$what" == "pipeline" || "$what" == "all" ]]; then
-  run pipeline env R_CONFIG_ACTIVE=ci Rscript -e 'suppressPackageStartupMessages(library(targets)); tar_make(reporter = "summary"); m <- tar_meta(fields = c("name", "error")); err <- m$name[!is.na(m$error) & m$error != ""]; if (length(err)) { cat("Errored targets:", paste(err, collapse = ", "), "\n"); quit(status = 1) }; cat("pipeline ok:", nrow(m), "targets\n")'
+  # Same assertions as the hosted pipeline job: no target errored, and every target is
+  # completed or skipped (tar_progress()).
+  run pipeline env R_CONFIG_ACTIVE=ci Rscript -e 'suppressPackageStartupMessages(library(targets)); tar_make(reporter = "balanced"); m <- tar_meta(fields = c("name", "error")); err <- m$name[!is.na(m$error) & m$error != ""]; if (length(err)) { cat("Errored targets:", paste(err, collapse = ", "), "\n"); quit(status = 1) }; p <- tar_progress(); cat(nrow(p), "targets;", sum(p$progress == "completed"), "completed\n"); stopifnot(nrow(p) > 0, all(p$progress %in% c("completed", "skipped"))); cat("pipeline ok\n")'
 fi
 if [[ "$what" == "render" || "$what" == "all" ]]; then
   # Same as the hosted render job: whole site, ci profile (no R execution), then the
@@ -33,9 +36,15 @@ if [[ "$what" == "render" || "$what" == "all" ]]; then
 fi
 if [[ "$what" == "protocol-docx" ]]; then
   # Word render of the protocol (docstyle subproject). docstyle rewrites
-  # docs/protocol/_docstyle/section-map.json with keys reordered; restore it so the
-  # check leaves the worktree clean.
-  run protocol-docx bash -c 'quarto render docs/protocol/full-protocol.qmd && test -f docs/protocol/output/full-protocol.docx; rc=$?; git checkout -q -- docs/protocol/_docstyle/section-map.json 2>/dev/null; exit $rc'
+  # docs/protocol/_docstyle/section-map.json (keys reordered). The pre-render file, in
+  # whatever state it is in, is saved first and put back afterwards, so a user's edits to
+  # it survive and the check leaves the worktree as it found it.
+  run protocol-docx bash -c '
+    map=docs/protocol/_docstyle/section-map.json
+    bak=$(mktemp) && cp "$map" "$bak" || exit 1
+    quarto render docs/protocol/full-protocol.qmd && test -f docs/protocol/output/full-protocol.docx; rc=$?
+    cp "$bak" "$map"; rm -f "$bak"
+    exit $rc'
 fi
 echo; [ $status -eq 0 ] && echo "ALL SELECTED CHECKS PASSED" || echo "SOME CHECKS FAILED"
 exit $status
