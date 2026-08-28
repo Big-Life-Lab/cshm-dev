@@ -271,6 +271,12 @@ default:
     # risk in the same cells (task 1.2). Rate tables and reported histories start at
     # report_period_min.
     report_period_min: 1965
+    # Reporting limits for rate tables and histories (protocol v0.4.2, section 3.4.1):
+    # cessation rates are reported from age 15 for comparison with Manuel et al. (2020),
+    # although cessation risk is estimated from each person's own entry age; rates for ages
+    # above max_age are held at the max_age values (Holford et al. 2014). Stage 9 consumes these.
+    report_cessation_min_age: 15
+    max_age: 85
     period_max: 2022            # statscan profile overrides to 2023
     projection_max: 2050        # rate tables and smoking histories projected to this year
     cohort_min: 1920

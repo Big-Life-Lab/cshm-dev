@@ -1,6 +1,6 @@
 # Age and duration ranges: what the protocol says, what the references used, what the worksheet gives
 
-Working note, 2026-08-28. Written so the protocol can be made explicit about minimum and maximum ages for initiation and cessation, and so the cchsflow variable-details rules can be checked against those conventions. Nothing here is a decision; the decisions are marked as open.
+Working note, 2026-08-28. Written so the protocol can be made explicit about minimum and maximum ages for initiation and cessation, and so the cchsflow variable-details rules can be checked against those conventions. Update, later the same day: protocol v0.4.2 (section 3.4.1, PR #9) resolves the open items in section 3 as follows: cessation risk stays person-specific and is reported from age 15; the PUMF initiation floor of 13 is stated as a data limit against the reference value of 8; the maximum modelled age is 85 with rates held at the age-85 values above it; reported-value ranges are stated to come from the cchsflow recoding rules. `apc.report_cessation_min_age` and `apc.max_age` were added to `config.yml` for Stage 9. Items 4 (maximum initiation age: left to the data) and 5 (quit-duration grouping: cchsflow fix, task 1.10) remain.
 
 ## 1. Where the numbers come from today
 
