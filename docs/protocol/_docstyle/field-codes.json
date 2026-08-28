@@ -12,17 +12,13 @@
         "title": "Smoking and mortality",
         "URL": "https://www.canada.ca/en/health-canada/services/health-concerns/tobacco/legislation/tobacco-product-labelling/smoking-mortality.html",
         "author": [
-          {
-            "literal": "Health Canada"
-          }
+          {"literal": "Health Canada"}
         ],
         "issued": {
           "date-parts": [["2024"]]
         }
       },
-      "uris": [
-        "http://zotero.org/users/6858935/items/BIVEE78X"
-      ]
+      "uris": ["http://zotero.org/users/6858935/items/BIVEE78X"]
     },
     "CSUCH_2023": {
       "itemData": {
@@ -243,10 +239,13 @@
         "id": 2357,
         "type": "article-journal",
         "citation-key": "Holford_AJPM_2014",
-        "container-title": "American Journal of Preventive Medicine",
+        "abstract": "BACKGROUND: Characterizing the smoking patterns for different birth cohorts is essential for evaluating the impact of tobacco control interventions and predicting smoking-related mortality, but the process of estimating birth cohort smoking histories has received limited attention. PURPOSE: Smoking history summaries were estimated beginning with the 1890 birth cohort in order to provide fundamental parameters that can be used in studies of cigarette smoking intervention strategies. METHODS: U.S. National Health Interview Surveys conducted from 1965 to 2009 were used to obtain cross-sectional information on current smoking behavior. Surveys that provided additional detail on history for smokers including age at initiation and cessation and smoking intensity were used to construct smoking histories for participants up to the date of survey. After incorporating survival differences by smoking status, age-period-cohort models with constrained natural splines were used to estimate the prevalence of current, former, and never smokers in cohorts beginning in 1890. This approach was then used to obtain yearly estimates of initiation, cessation, and smoking intensity for the age-specific distribution for each birth cohort. These rates were projected forward through 2050 based on recent trends. RESULTS: This summary of smoking history shows clear trends by gender, cohort, and age over time. If current patterns persist, a slow decline in smoking prevalence is projected from 2010 through 2040. CONCLUSIONS: A novel method of generating smoking histories has been applied to develop smoking histories that can be used in micro-simulation models, and has been incorporated in the National Cancer Institute's Smoking History Generator. These aggregate estimates developed by age, gender, and cohort will provide a complete source of smoking data over time.",
+        "container-title": "Am J Prev Med",
         "DOI": "10.1016/j.amepre.2013.10.022",
+        "ISSN": "1873-2607 (Electronic) 0749-3797 (Linking)",
         "issue": "2",
         "page": "e31-7",
+        "PMCID": "PMC3951759",
         "title": "Patterns of birth cohort-specific smoking histories, 1965-2009",
         "volume": "46",
         "author": [
@@ -261,9 +260,10 @@
           {"family": "Feuer", "given": "E. J."}
         ],
         "issued": {
-          "date-parts": [["2014"]]
+          "date-parts": [["2014", 2]]
         }
-      }
+      },
+      "uris": ["http://zotero.org/users/6858935/items/ATK94TD6"]
     },
     "Manuel_HR_2020": {
       "itemData": {
@@ -275,6 +275,7 @@
         "ISSN": "0840-6529",
         "issue": "11",
         "page": "16-31",
+        "PMCID": "PMC3951759",
         "title": "Smoking patterns based on birth-cohort-specific histories from 1965 to 2013, with projections to 2041",
         "URL": "https://www150.statcan.gc.ca/n1/pub/82-003-x/2020011/article/00002-eng.htm",
         "volume": "31",
@@ -290,9 +291,7 @@
           "date-parts": [["2020"]]
         }
       },
-      "uris": [
-        "http://zotero.org/users/6858935/items/BIVEE78X"
-      ]
+      "uris": ["http://zotero.org/users/6858935/items/K5TKC5RV"]
     },
     "Tam_AJPM_2023": {
       "itemData": {
@@ -301,9 +300,14 @@
         "citation-key": "Tam_AJPM_2023",
         "container-title": "American Journal of Preventive Medicine",
         "DOI": "10.1016/j.amepre.2022.12.002",
+        "ISSN": "07493797",
         "issue": "4",
+        "journalAbbreviation": "Am. J. Prev. Med.",
+        "language": "en",
         "page": "S63-S71",
-        "title": "Patterns of birth cohort-specific smoking histories in Brazil",
+        "source": "DOI.org (Crossref)",
+        "title": "Patterns of birth cohort‒specific smoking histories in Brazil",
+        "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0749379722005530",
         "volume": "64",
         "author": [
           {"family": "Tam", "given": "Jamie"},
@@ -318,10 +322,14 @@
           {"family": "Sánchez-Romero", "given": "Luz M."},
           {"family": "Meza", "given": "Rafael"}
         ],
+        "accessed": {
+          "date-parts": [["2025", 6, 20]]
+        },
         "issued": {
-          "date-parts": [["2023"]]
+          "date-parts": [["2023", 4]]
         }
-      }
+      },
+      "uris": ["http://zotero.org/users/6858935/items/TZBN3JTZ"]
     },
     "gagne2017": {
       "itemData": {
@@ -468,9 +476,15 @@
         "citation-key": "Meza_J_2021",
         "container-title": "JAMA",
         "DOI": "10.1001/jama.2021.1077",
+        "ISSN": "0098-7484",
         "issue": "10",
+        "journalAbbreviation": "JAMA",
+        "language": "en",
         "page": "988",
+        "source": "DOI.org (Crossref)",
         "title": "Evaluation of the benefits and harms of lung cancer screening with low-dose computed tomography: modeling study for the US preventive services task force",
+        "title-short": "Evaluation of the benefits and harms of lung cancer screening with low-dose computed tomography",
+        "URL": "https://jamanetwork.com/journals/jama/fullarticle/2777243",
         "volume": "325",
         "author": [
           {"family": "Meza", "given": "Rafael"},
@@ -487,10 +501,14 @@
           {"family": "De Koning", "given": "Harry J."},
           {"family": "Kong", "given": "Chung Yin"}
         ],
+        "accessed": {
+          "date-parts": [["2026", 2, 20]]
+        },
         "issued": {
-          "date-parts": [["2021"]]
+          "date-parts": [["2021", 3, 9]]
         }
-      }
+      },
+      "uris": ["http://zotero.org/users/6858935/items/NUDAXFIV"]
     },
     "Holford_SM_2006": {
       "itemData": {
@@ -516,20 +534,21 @@
         "id": 99908,
         "type": "article-journal",
         "citation-key": "Rao_SM_1992",
+        "container-title": "Survey Methodology",
+        "issue": "2",
+        "page": "209-217",
+        "title": "Some recent work on resampling methods for complex surveys",
+        "volume": "18",
         "author": [
           {"family": "Rao", "given": "J. N. K."},
           {"family": "Wu", "given": "C. F. J."},
           {"family": "Yue", "given": "K."}
         ],
-        "container-title": "Survey Methodology",
-        "issue": "2",
         "issued": {
-          "date-parts": [[1992]]
-        },
-        "page": "209-217",
-        "title": "Some recent work on resampling methods for complex surveys",
-        "volume": "18"
-      }
+          "date-parts": [["1992"]]
+        }
+      },
+      "uris": ["http://zotero.org/users/6858935/items/T3J86DHU"]
     },
     "StatCan_CCHS_UserGuide_2022": {
       "itemData": {
