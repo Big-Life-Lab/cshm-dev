@@ -42,9 +42,17 @@ if [[ "$what" == "protocol-docx" ]]; then
   run protocol-docx bash -c '
     map=docs/protocol/_docstyle/section-map.json
     bak=$(mktemp) && cp "$map" "$bak" || exit 1
-    quarto render docs/protocol/full-protocol.qmd && test -f docs/protocol/output/full-protocol.docx; rc=$?
-    cp "$bak" "$map"; rm -f "$bak"
-    exit $rc'
+    # Restoration is attached to process exit, so an interrupted render (Ctrl-C, TERM, HUP)
+    # still puts the pre-render file back; a failed restoration fails the check and keeps
+    # the backup for the user.
+    restore () {
+      if cp "$bak" "$map"; then rm -f "$bak"; return 0; fi
+      echo "Could not restore $map; your pre-render copy is at $bak" >&2; return 1
+    }
+    trap "rc=\$?; restore || rc=1; exit \$rc" EXIT
+    trap "exit 130" INT
+    trap "exit 143" TERM HUP
+    quarto render docs/protocol/full-protocol.qmd && test -f docs/protocol/output/full-protocol.docx'
 fi
 echo; [ $status -eq 0 ] && echo "ALL SELECTED CHECKS PASSED" || echo "SOME CHECKS FAILED"
 exit $status
