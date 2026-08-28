@@ -63,3 +63,10 @@ manuscript/.quarto/
 
 # Protocol rendered Word output (docstyle)
 docs/protocol/output/
+
+# Word documents are not versioned here (rendered outputs, PI edit copies). Keep them
+# on disk or attach them to a GitHub release. The docstyle reference templates are the
+# exception: they are part of the rendering toolchain.
+*.docx
+!**/_docstyle/reference.docx
+!**/_extensions/docstyle/reference.docx
