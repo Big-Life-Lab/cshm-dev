@@ -122,7 +122,7 @@ build_initiation_data <- function(data, cfg, variable_details_sheet) {
   never_code <- survey_code(cfg, "smoking_status", "never_code")
   floor_age <- initiation_floor(cfg)
   cohort_min <- cfg$apc$cohort_min
-  period_min <- cfg$apc$period_min
+  period_min <- apc_period_min(cfg)
   period_max <- cfg$apc$period_max
 
   data <- data[!is.na(data$cohort) & data$cohort >= cohort_min, ]
@@ -192,6 +192,16 @@ build_initiation_data <- function(data, cfg, variable_details_sheet) {
   )
   period_range <- seq(period_min, period_max)
   denominator <- expand_denominator(denom_source, period_range, floor_age)
+  # Task 1.2 invariant: every event lies inside the estimation window, so its cell has
+  # person-years at risk (initiators contribute their own risk years from the floor).
+  outside <- numerator$period < period_min | numerator$period > period_max
+  if (any(outside)) {
+    stop(
+      sum(outside), " initiation event(s) fall outside the estimation window [",
+      period_min, ", ", period_max, "] (period range ", min(numerator$period), "-",
+      max(numerator$period), "). Check cohort_min, initiation_floor_age and period_max."
+    )
+  }
 
   out <- rbind(numerator, denominator)
   attr(out, "initiation_diagnostics") <- diag
@@ -358,7 +368,7 @@ build_cessation_data <- function(data, cfg, variable_details_sheet) {
   durability <- cfg$apc$cessation_durability_years
   if (is.null(durability)) stop("cfg$apc$cessation_durability_years is not set.")
   cohort_min <- cfg$apc$cohort_min
-  period_min <- cfg$apc$period_min
+  period_min <- as.integer(cohort_min) # cessation: bounded by entry age and cohort_min only
   period_max <- cfg$apc$period_max
 
   data <- data[!is.na(data$cohort) & data$cohort >= cohort_min, ]
