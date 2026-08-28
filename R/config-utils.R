@@ -85,3 +85,23 @@ survey_bound <- function(cfg, key, bound) {
   if (is.null(val)) stop("survey_bound: no '", bound, "' for key '", key, "' source '", src, "'")
   val
 }
+
+#' First calendar year of the APC estimation window
+#'
+#' The window starts when the earliest cohort (`cfg$apc$cohort_min`) reaches the
+#' initiation floor (`initiation_floor(cfg)`), so every initiation event has person-years
+#' at risk in the same age-period-cohort cells (remediation task 1.2). The reporting
+#' start for rate tables (`cfg$apc$report_period_min`, 1965) is a separate, later year.
+#'
+#' @param cfg Config list
+#' @return Integer calendar year
+apc_period_min <- function(cfg) {
+  if (!is.null(cfg$apc$period_min)) {
+    stop(
+      "cfg$apc$period_min is set (", cfg$apc$period_min, "). The estimation window start is ",
+      "derived as cohort_min + initiation_floor_age; remove the key (see config.yml)."
+    )
+  }
+  if (is.null(cfg$apc$cohort_min)) stop("cfg$apc$cohort_min is not set.")
+  as.integer(cfg$apc$cohort_min + initiation_floor(cfg))
+}

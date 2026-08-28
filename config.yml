@@ -264,7 +264,13 @@ default:
     # Period and cohort range for denominator construction
     # period_max is the last observed CCHS cycle year (PUMF: 2022; Master: 2023 via statscan profile)
     # projection_max is the final projection year for rate tables and smoking histories
-    period_min: 1965
+    # period_min is not set here: the estimation window starts in the calendar year the
+    # earliest cohort (cohort_min) reaches the initiation floor, apc_period_min(cfg) =
+    # cohort_min + initiation_floor_age (PUMF 1933, Master 1928). Setting it later than
+    # that (the former 1965) left initiation events before 1965 with no person-years at
+    # risk in the same cells (task 1.2). Rate tables and reported histories start at
+    # report_period_min.
+    report_period_min: 1965
     period_max: 2022            # statscan profile overrides to 2023
     projection_max: 2050        # rate tables and smoking histories projected to this year
     cohort_min: 1920

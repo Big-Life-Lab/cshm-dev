@@ -78,9 +78,38 @@ test_that("build_initiation_data: denominator period within [period_min, period_
   result <- build_initiation_data(data[data[[sex_col]] == 1, ], cfg, TEST_DETAILS)
   denom <- result[result$event == 0, ]
 
-  expect_true(all(denom$period >= cfg$apc$period_min))
+  expect_true(all(denom$period >= apc_period_min(cfg)))
   expect_true(all(denom$period <= cfg$apc$period_max))
 })
+
+test_that("apc_period_min: cohort_min + initiation floor; a configured period_min is an error", {
+  cfg <- config::get()
+  expect_equal(apc_period_min(cfg), cfg$apc$cohort_min + initiation_floor(cfg))
+  cfg$apc$period_min <- 1965
+  expect_error(apc_period_min(cfg), "period_min is set")
+})
+
+test_that("initiation (task 1.2): no event cell without person-years at risk; 0 <= events <= population", {
+  cfg <- config::get()
+  data <- make_apc_test_data(cfg)
+  sex_col <- survey_var(cfg, "sex")
+  result <- build_initiation_data(data[data[[sex_col]] == 1, ], cfg, TEST_DETAILS)
+  floor_age <- initiation_floor(cfg)
+  # Every event at an age above the floor has the same cohort at risk in the years before it
+  events <- result[result$event == 1 & result$age > floor_age, ]
+  denom <- result[result$event == 0, ]
+  has_support <- mapply(function(co, a) any(denom$cohort == co & denom$age == a - 1L), events$cohort, events$age)
+  expect_true(all(has_support))
+  # Aggregated cells: weighted events never exceed weighted population (the event row is a trial)
+  key <- paste(result$age, result$cohort)
+  d <- tapply(result$weight * result$event, key, sum)
+  pop <- tapply(result$weight, key, sum)
+  expect_true(all(d >= 0 & d <= pop))
+  # Nothing before the window; the window starts when cohort_min reaches the floor
+  expect_true(all(result$period >= apc_period_min(cfg)))
+  expect_equal(apc_period_min(cfg), cfg$apc$cohort_min + floor_age)
+})
+
 
 cess_cfg <- function() {
   cfg <- config::get()
@@ -485,4 +514,14 @@ test_that("per_respondent_range fails closed on unknown cycle codes and unresolv
   expect_false(outside_range(NA_real_, per_respondent_range(cfg, "age_first_cigarette", "5", no_rows)))
   # ... but a non-missing value with no worksheet range is an error, not a pass.
   expect_error(outside_range(c(16, NA), rng), "no range in the variable-details worksheet")
+})
+
+test_that("initiation (task 1.2): an early-cohort initiation before 1965 keeps its risk years", {
+  cfg <- config::get()
+  # Born 1925, first cigarette at 15 (1940), surveyed 2005 at 80
+  p <- one_person(cfg, status = 1, age_first = 15, age = 80, survey_year = 2005)
+  out <- build_initiation_data(p, cfg, TEST_DETAILS)
+  expect_equal(out$period[out$event == 1], 1940)
+  expect_equal(sort(out$age[out$event == 0]), seq(initiation_floor(cfg), 14))
+  expect_true(all(out$period >= apc_period_min(cfg)))
 })
