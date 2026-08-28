@@ -34,6 +34,10 @@ renv::snapshot()
 ```
 
 ```bash
+# CI checks locally (hosted runners are used only on the public repository)
+scripts/ci-local.sh            # tests, style, ci-profile pipeline, protocol render
+scripts/ci-local.sh tests      # one check
+
 # Preview / build documentation website
 quarto preview
 quarto render
