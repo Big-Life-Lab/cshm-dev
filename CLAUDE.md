@@ -34,9 +34,12 @@ renv::snapshot()
 ```
 
 ```bash
-# CI checks locally (hosted runners are used only on the public repository)
-scripts/ci-local.sh            # tests, style, ci-profile pipeline, protocol render
-scripts/ci-local.sh tests      # one check
+# CI checks locally. Hosted CI runs automatically only on the public repository
+# (Big-Life-Lab/cshm-dev); on the private mirror it runs only when started by hand
+# (workflow_dispatch). Same commands and assertions as .github/workflows/ci.yml.
+scripts/ci-local.sh              # tests, style, ci-profile pipeline, site render (ci profile)
+scripts/ci-local.sh tests        # one check; also style | pipeline | render
+scripts/ci-local.sh protocol-docx  # Word render of the protocol (not a hosted job)
 
 # Preview / build documentation website
 quarto preview
