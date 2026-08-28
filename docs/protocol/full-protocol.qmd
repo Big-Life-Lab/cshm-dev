@@ -7,7 +7,7 @@ version-summary:
 version-history:
   - version: "0.4.2"
     date: "2026-08-28"
-    description: "Estimation window start derived from the data (remediation task 1.2). The APC models are estimated on person-years from the calendar year in which the earliest birth cohort (1920) reaches the initiation floor (1933 in the PUMF; 1928 in the Master files) to the last survey year. Previously the person-years at risk began in 1965 while initiation events before 1965 were kept, so those cells held events and no one at risk who had not yet started. Reported rates and reconstructed histories still start in 1965. Section 3.4.1 now states the age and time ranges: the conventions of Holford et al. (2014) and Manuel et al. (2020) (initiation from age 8, cessation from age 15, two-year durability, age-85 ceiling); the two places this study differs (a PUMF initiation floor of 13, which is a data limit, and cessation risk from each person's own entry age, reported from age 15); and the source of reported-value ranges (the cchsflow recoding rules), which are separate from analysis limits. Wording throughout replaced with plain verbs (uses, records, imputes, harmonizes) in place of operates, ensures, enables, handles and captures."
+    description: "Estimation window start derived from the data (remediation task 1.2). The APC models are estimated on person-years from the calendar year in which the earliest birth cohort (1920) reaches the initiation floor (1933 in the PUMF; 1928 in the Master files) to the last survey year. Previously the person-years at risk began in 1965 while initiation events before 1965 were kept, so those cells held events and no one at risk who had not yet started. Reported rates and reconstructed histories still start in 1965. Section 3.4.1 now states the age and time ranges: the conventions of Holford et al. (2014) and Manuel et al. (2020) (initiation from age 8, cessation from age 15, two-year durability, age-85 ceiling); the two places this study differs (a PUMF initiation floor of 13, which is a data limit, and cessation risk from each person's own entry age, reported from age 15); and the source of reported-value ranges (the cchsflow recoding rules), which are separate from analysis limits. A to-do section for the study team added after the version history. Wording throughout replaced with plain verbs (uses, records, imputes, harmonizes) in place of operates, ensures, enables, handles and captures."
   - version: "0.4.1"
     date: "2026-08-27"
     description: "Two previously open study decisions ratified (public issue #5). The PUMF initiation-age floor stays at 13: the lowest PUMF category (ages 5 to 11, midpoint 8) is too coarse to date initiation events below that age, so initiation is modelled from 13 in the PUMF, while an established smoker who reports starting below 13 is still followed for cessation from the category midpoint of 8; Master files use exact ages with a floor of 8 (section 3.3). The first CCHS cycle is assigned survey year 2001 for cohort assignment (section 3.2). Editorial revisions from PI review of the Word render (wording and plain-language edits throughout; no methodological change). Ethics statement rewritten to describe secondary analysis of de-identified data and the Statistics Canada Open Licence. Study team updated (co-led with BC Cancer Research Institute; Canadian Partnership Against Cancer named among knowledge users). Fixed NHIS typo. Document production: Word rendering restored as a docstyle subproject (docs/protocol/_quarto.yml) with protocol-specific spacing; reporting-guideline placeholder moved so the sensitivity-analysis list renders as a list; redundant page break before Background removed; the three references previously rendered by citeproc (Holford 2006; Rao, Wu and Yue 1992; Statistics Canada 2023) added to the Zotero citation store so the reference list is complete and in one place."
@@ -396,3 +396,18 @@ The detailed missing-data specification -- the tagged-NA taxonomy, the `where`-m
 
 ::::
 
+:::: {.section-body page-break="true"}
+
+# To do
+
+Open items for the study team. Each is closed by a version bump that records the decision.
+
+1.  **Confirm authors and author order.** The author plate is not rendered until the list is confirmed.
+2.  **Agree the publication route.** Proposed: post the protocol as a preprint on medRxiv, then submit to a journal to be chosen (the protocol has no target journal yet).
+3.  **Immigration and the PUMF (task 1.9).** The PUMF does not report the year of immigration, so pre-immigration years cannot be excluded in the public-use analysis; state this in section 3.3 and describe the Master-file method.
+4.  **Years since quitting in the PUMF (task 1.10).** State how the "3 or more years" group is refined with the finer CCHS variables (2007--2014 and 2015--2022) and how the open-ended "11 or more years" group is treated (section 3.3).
+5.  **APC identification (task 1.4b).** Amend section 3.4.3 with the estimable-functions parameterization, the declared allocation of the linear drift, and the validation gate.
+6.  **Mortality adjustment (task 1.7b).** Record the estimator and where it enters the calculation (section 3.4.5) once reviewed.
+7.  **Reporting guidelines.** Replace the STROBE and ISPOR-SMDM placeholders with the completed checklist references.
+
+::::
