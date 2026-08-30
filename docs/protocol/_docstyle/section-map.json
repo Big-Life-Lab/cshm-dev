@@ -12,7 +12,7 @@
     {
       "index": 1,
       "section_class": "section-body",
-      "para_position": 201,
+      "para_position": 202,
       "is_closing": true,
       "line_numbers": "continuous",
       "field_code_payload": {
@@ -25,7 +25,7 @@
     {
       "index": 2,
       "section_class": "section-body",
-      "para_position": 201,
+      "para_position": 202,
       "is_closing": false,
       "line_numbers": "none",
       "field_code_payload": {
@@ -38,7 +38,7 @@
     {
       "index": 3,
       "section_class": "section-body",
-      "para_position": 245,
+      "para_position": 246,
       "is_closing": true,
       "line_numbers": "none",
       "field_code_payload": {
@@ -51,7 +51,7 @@
     {
       "index": 4,
       "section_class": "section-body",
-      "para_position": 245,
+      "para_position": 246,
       "is_closing": false,
       "line_numbers": "none",
       "field_code_payload": {
@@ -63,7 +63,7 @@
     {
       "index": 5,
       "section_class": "section-body",
-      "para_position": 251,
+      "para_position": 252,
       "is_closing": true,
       "line_numbers": "none",
       "field_code_payload": {
@@ -76,7 +76,7 @@
     {
       "index": 6,
       "section_class": "section-body",
-      "para_position": 251,
+      "para_position": 252,
       "is_closing": false,
       "line_numbers": "none",
       "field_code_payload": {
@@ -88,7 +88,7 @@
     {
       "index": 7,
       "section_class": "section-body",
-      "para_position": 256,
+      "para_position": 257,
       "is_closing": true,
       "line_numbers": "none",
       "field_code_payload": {
@@ -100,6 +100,31 @@
     },
     {
       "index": 8,
+      "section_class": "section-body",
+      "para_position": 257,
+      "is_closing": false,
+      "line_numbers": "none",
+      "field_code_payload": {
+        "type": "section",
+        "version": 2,
+        "class": "section-body-end"
+      }
+    },
+    {
+      "index": 9,
+      "section_class": "section-body",
+      "para_position": 270,
+      "is_closing": true,
+      "line_numbers": "none",
+      "field_code_payload": {
+        "type": "section",
+        "version": 2,
+        "page-break": true,
+        "class": "section-body"
+      }
+    },
+    {
+      "index": 10,
       "section_class": "final-cascade",
       "para_position": null,
       "is_closing": true,
