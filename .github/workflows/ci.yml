@@ -3,6 +3,11 @@
 # (0.4, advisory until the repo is restyled), and a site render check (0.5).
 name: CI
 
+# Hosted-runner minutes are billed to the repository owner. The jobs below run only on the
+# public repository (Big-Life-Lab/cshm-dev, organization plan) or when started by hand; on
+# the private mirror the workflow is skipped. Run the same checks locally with
+# scripts/ci-local.sh before opening a PR.
+
 on:
   push:
   pull_request:
@@ -10,6 +15,7 @@ on:
 
 jobs:
   tests:
+    if: github.repository == 'Big-Life-Lab/cshm-dev' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     env:
       # Posit Package Manager serves Linux binaries; without this, renv builds
@@ -47,7 +53,9 @@ jobs:
     # End-to-end run on the committed fixtures under the ci profile (task 0.6).
     # ~1h of runner compute, so it gates pull requests and manual dispatches
     # rather than every push.
-    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    if: >-
+      (github.repository == 'Big-Life-Lab/cshm-dev' && github.event_name == 'pull_request')
+      || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 150
     env:
@@ -93,6 +101,7 @@ jobs:
     # no project library. Quarto still requires R with knitr/rmarkdown present
     # to process .qmd files even when chunks are not evaluated. Catches
     # render-list and site-config breaks like 0.7.
+    if: github.repository == 'Big-Life-Lab/cshm-dev' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -120,6 +129,7 @@ jobs:
   style:
     # Blocking: R/ was restyled in Phase 0 and must stay styler-clean
     # (CONTRIBUTING.md mandates styler formatting).
+    if: github.repository == 'Big-Life-Lab/cshm-dev' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
