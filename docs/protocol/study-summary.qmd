@@ -1,43 +1,38 @@
-# A Canadian Smoking Histories Model: a study protocol
+# A Canadian Smoking Histories Model: A Study Protocol
 
-Version 0.3.0
+Version 0.3.2
 
-Date: 2026-08-07
+Date: 2026-09-22
 
-Corresponds to full protocol v0.4.0. This one-page summary is versioned on its own track; see [the full protocol](full-protocol.qmd) for the detailed version history.
+Corresponds to full protocol v0.4.5. This summary is versioned independently.
 
-## Background
+## Purpose
 
-Understanding the patterns of smoking behaviour across different birth cohorts is important for evaluating tobacco control policies and predicting smoking-related health outcomes in Canada. The Canadian Smoking Histories Model (CSHM) developed by the National Cancer Institute in the US has been instrumental in cancer risk modelling. The approach was replicated in Ontario, but a comprehensive Canadian equivalent covering all provinces has not yet been developed. Given Canada's distinct tobacco control policies and smoking patterns, developing a Canadian Smoking Histories Model helps inform future public health planning, evaluate past interventions, and project the smoking-attributable disease burden nationwide.
+The Canadian Smoking Histories Model (CSHM) will describe smoking patterns by birth cohort, sex and province or territory, with historical reporting planned for 1965--2024 and status quo projections to 2050. It extends the US smoking-history approach and its Ontario adaptation to support Canadian population health modelling, including OncoSim and POHEM.
 
-## Objectives
+## Data
 
-This study will develop a Canadian Smoking Histories Model that characterizes smoking patterns by birth cohort, sex, and province from 1965 to 2023, with projections to 2050. Specifically, this study will:
-
-1)  Estimate historical and current smoking prevalence, initiation, cessation, and intensity by birth cohort for each province and territory;
-2)  Examine regional and temporal differences in smoking patterns across Canada;
-3)  Project future smoking prevalence and related parameters under status quo conditions; and
-4)  Create a publicly-accessible open model that policy actors, researchers, and others can use and update.
+The study plans to use Canadian Community Health Survey (CCHS) cycles from 2001--2024, subject to source-specific availability and analysis eligibility. Development and independently reproducible public-data analyses use public-use microdata files (PUMFs) through 2022. The 2019--2020 and 2022 PUMFs contribute cross-sectional prevalence only because their age groups are too broad for annual history reconstruction. Definitive estimates use Master files in authorized environments at Statistics Canada headquarters or Research Data Centres. Master files retain more detail where it was collected, but do not always provide exact smoking-history timing.
 
 ## Methods
 
-### Data Sources
+Following Holford et al. [@Holford_AJPM_2014] and Manuel et al. [@Manuel_HR_2020], sex-specific age-period-cohort models will estimate initiation and cessation. The three smoking states are never, current and former. Among respondents who have smoked at least 100 cigarettes, initiation is dated at the first whole cigarette. Cessation means stopping completely for at least two years at survey; a one-year definition is a sensitivity analysis. Daily and occasional smoking remain descriptive and intensity characteristics within this framework.
 
-The primary data source will be the Canadian Community Health Survey (CCHS) conducted from 2001 to 2023, which provides nationally representative cross-sectional information on smoking behaviours. We will use all available cycles of the CCHS, with a combined sample size of approximately 1.4 million respondents. From these surveys, we will ascertain current smoking status, age at smoking initiation, age at cessation, and smoking intensity (cigarettes per day).
+The cchsflow package will harmonize inputs. Item non-response will be handled by chained-equations multiple imputation. Observed grouped complete-cessation durations will use interval-constrained multiple imputation, deriving smoking state, quit timing and risk history consistently within each completed dataset. Distributions, feasible bounds and uncertainty pooling require specification and validation before use. PUMF imputation will not be calibrated using Master data.
 
-### Exposure ascertainment
+Canadian risk time begins at arrival, subject to age and risk-set rules; earlier smoking exposure remains relevant to lifetime dose. The reviewed Master questions record arrival through 2014, landed-immigrant year in 2015--2021, and both in 2022--2023. PUMF residence durations are grouped; status categories include non-permanent residents from 2015--2016. Direct arrival will be used where available; the treatment of observations without it remains a specific analytical decision. Racial-group predictors for imputation must respect changes in the underlying classifications.
 
-The `cchsflow` library will harmonize smoking variables in the CCHS across all survey cycles. Appendix A of the full protocol has harmonization details (variables and variable details).
+MPoRT is the planned primary mortality adjustment, with a Peto-method sensitivity analysis. Mortality inputs may come from either Statistics Canada or the Canadian Human Mortality Database. The adjustment estimator and selected source coverage will be recorded before analysis. Until implemented and validated, unadjusted outputs describe survey survivors.
 
-### Analytical approach
+## Validation and outputs
 
-Following the approach developed by Holford et al. [@Holford_AJPM_2014] and adapted in Canada by Manuel et al. [@Manuel_HR_2020], we will use an age-period-cohort modelling framework to generate smoking histories. The model estimates transitions between three smoking states -- never, current, and former -- where initiation is the age at first whole cigarette and cessation means stopping smoking completely; daily smoking and intensity are modelled as attributes of current smoking. We will first construct retrospective smoking histories for each respondent up to the survey date based on their reported age of initiation and cessation. To address survival bias (whereby smokers are less likely to survive to be interviewed), we will apply mortality adjustments using the Mortality Population Risk Tool (MPoRT), which accounts for differential mortality by smoking status. Age-period-cohort models with natural splines, identified through an explicitly declared parameterization, will be fitted to estimate smoking initiation and cessation probabilities by birth cohort, age, sex, and province. Additional models will estimate smoking intensity distribution. Uncertainty is quantified with the CCHS bootstrap replicate weights in the Master-file analysis (approximate methods in public-use analyses). The models will be validated against observed CCHS prevalence -- including survey cycles held out from fitting -- and then used to project future smoking prevalence through 2050 under status quo conditions.
-
-## Expected Outcomes
-
-The primary outcome will be a Canadian Smoking Histories Model capable of producing detailed smoking histories by birth cohort, age, sex, and region. The model will provide annual estimates of smoking prevalence, initiation rates, cessation rates, and smoking intensity, both historically (1965-2023) and projected forward (2024-2050). This model will be made available through an online interactive platform and open-source code repository, enabling researchers and policymakers to access detailed smoking parameters for health economic modelling, policy evaluation, and public health planning. The CSHM will support various policy planning models, such as OncoSim and POHEM, designed to evaluate the impact of tobacco control policies and predict smoking-attributable disease burden, including cancer, cardiovascular disease, and dementia. By providing Canada-specific smoking parameters at both national and provincial levels, the model will enable a more precise estimation of the health and economic impacts in the Canadian context and support evidence-based tobacco control strategies.
+Validation will include CCHS cycles held out from fitting. Uncertainty will combine imputation and survey variation, using CCHS bootstrap weights for Master analyses and explicitly approximate methods for PUMFs. Planned outputs include rate tables, synthetic smoking histories, an open-source implementation and an interactive platform. The protocol remains a review draft: APC settings, intensity methods, immigration timing, national aggregation and selected sensitivity analyses require further decisions before final analysis.
 
 ## Change log
+
+Version 0.3.2. Date: 2026-09-22. Corresponds to full protocol v0.4.5: replaces broad exposure-source audit placeholders with documented immigration definitions and complete-cessation routing. Distinguishes source validation from the remaining migration and event-time imputation decisions.
+
+Version 0.3.1. Date: 2026-09-22. Corresponds to full protocol v0.4.4: updates planned coverage through 2024, grouped quit-duration imputation, independent PUMF execution, source-specific eligibility, immigration and racial-group limitations, secure analysis locations and the choice of mortality source. Corrects the earlier attribution of the Canadian model to the US National Cancer Institute.
 
 Version 0.3.0. Date: 2026-08-07. Corresponds to full protocol v0.4.0 (methodological amendments following external review and adjudication): named the three smoking states and transition definitions (initiation at first whole cigarette; cessation as stopping completely); identified APC parameterization stated explicitly; uncertainty via CCHS bootstrap replicate weights in the Master-file analysis; validation language corrected from cross-survey calibration to within-CCHS validation with held-out cycles.
 
