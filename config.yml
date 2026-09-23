@@ -144,12 +144,32 @@ default:
       pumf:
         var: SDCGCGT              # Explicit White category; source-specific other category, 2001-2018
       master:
-        var: SDCDCGT_cat7         # Earlier Master classification, through 2018; not pooled with SDCDVVM
+        var: null                # Source classifications retained as intermediates; pooled predictor not specified
     immigration_status:
       pumf:
-        var: SDCFIMM              # Immigration status, not birthplace; includes NPRs in later sources
+        var: SDCFIMM              # Source-specific proxy; earlier flags also fail to distinguish NPRs
       master:
         var: SDCFIMM
+    landed_status:
+      pumf:
+        var: null
+      master:
+        var: landed_immigrant_status  # 2015-2021 question; No alone does not identify NPRs
+    detailed_immigration_status:
+      pumf:
+        var: null
+      master:
+        var: immigration_status_detailed  # 2022-2023 source retains separate NPR category
+    cultural_racial_group:
+      pumf:
+        var: null
+      master:
+        var: SDCDCGT_cat7         # Intermediate, verified 2003-2018 eras; 2001 unverified
+    cultural_racial_group_2015:
+      pumf:
+        var: null
+      master:
+        var: SDCDCGT_2015plus      # Detailed 2015-2018 source classification
     immigration_duration:
       pumf:
         var: SDCGRES             # Observed groups, not exact years
@@ -172,7 +192,7 @@ default:
         var: SDCDVVM              # 2019 onward; residual category is not White
     education:
       pumf:
-        var: EDUDR03              # Education: 1=<HS, 2=HS grad, 3=postsecondary grad
+        var: EDUDR03              # 2 includes incomplete postsecondary; unavailable in 2022 PUMF
       master:
         var: EDUDR03              # Protocol three-category classification
 
@@ -257,6 +277,9 @@ default:
 
   # Validation
   strict_validation: false    # TRUE = stop on critical coverage gaps; FALSE = warn only
+  # These configured inputs need recoding rules in every active cycle.
+  # Optional/partially observed covariates retain source-specific coverage.
+  required_survey_keys: [sex, age, province, weight, immigration_status]
 
   # Data cleaning parameters
   age_exclusion_min: 18           # Exclude respondents younger than this (drops 12-17 year olds)
