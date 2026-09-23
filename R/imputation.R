@@ -34,6 +34,11 @@
 #'     \item{logged_events}{mice loggedEvents data frame (NULL if none)}
 #'   }
 impute_data <- function(cleaned_data, variables_sheet, cfg) {
+  if ("source" %in% names(variables_sheet)) {
+    variables_sheet <- variables_sheet[
+      variables_sheet$source %in% c(cfg$data_source %||% "pumf", "both"),
+    ]
+  }
   impute_vars <- select_vars_by_role("imputation-predictor", variables_sheet)
   missing_from_data <- setdiff(impute_vars, colnames(cleaned_data))
   if (length(missing_from_data) > 0) {

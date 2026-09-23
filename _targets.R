@@ -9,7 +9,7 @@ tar_option_set(packages = "cchsflow")
 tar_source("R/")
 
 # Configuration
-cfg <- config::get()
+cfg <- load_study_config()
 
 list(
   # Stage 1: Load variable metadata worksheets

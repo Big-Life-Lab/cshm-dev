@@ -5,28 +5,18 @@
 #' Survey cycle numeric code from dataset name
 #'
 #' @param data_name cchsflow dataset name (e.g. "cchs2001_p")
-#' @return Integer cycle code (1 = 2001, ..., 11 = 2022)
-survey_cycle_code <- function(data_name) {
-  codes <- c(
-    cchs2001_p      = 1L,
-    cchs2003_p      = 2L,
-    cchs2005_p      = 3L,
-    cchs2007_2008_p = 4L,
-    cchs2009_2010_p = 5L,
-    cchs2011_2012_p = 6L,
-    cchs2013_2014_p = 7L,
-    cchs2015_2016_p = 8L,
-    cchs2017_2018_p = 9L,
-    cchs2019_2020_p = 10L,
-    cchs2022_p      = 11L
-  )
-  if (!data_name %in% names(codes)) {
-    stop("Unknown CCHS dataset name: ", data_name)
+#' @param cfg Resolved configuration containing the stable cycle_codes registry
+#' @return Integer cycle code from the registry
+survey_cycle_code <- function(data_name, cfg) {
+  code <- cfg$cycle_codes[[data_name]]
+  if (is.null(code) || length(code) != 1L || is.na(code) ||
+    code < 1 || code != as.integer(code)) {
+    stop("Unknown or invalid CCHS dataset code: ", data_name)
   }
-  codes[[data_name]]
+  as.integer(code)
 }
 
-#' Load and harmonize CCHS PUMF cycles
+#' Load and harmonize configured CCHS cycles
 #'
 #' Reads all configured CCHS cycles from raw_data_dir, harmonizes variables
 #' using cchsflow worksheets, adds SurveyCycle, and combines into a single
@@ -87,7 +77,7 @@ load_study_data <- function(cfg, variables_sheet, variable_details_sheet,
       notes = FALSE
     )
 
-    cycle_data[[survey_var(cfg, "cycle")]] <- survey_cycle_code(cycle)
+    cycle_data[[survey_var(cfg, "cycle")]] <- survey_cycle_code(cycle, cfg)
 
     if (is.null(harmonized)) {
       harmonized <- cycle_data
