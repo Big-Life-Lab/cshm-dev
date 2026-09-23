@@ -36,13 +36,29 @@ survey_code <- function(cfg, key, code) {
   val
 }
 
-# Database name for a survey-cycle code (1-based position in cfg$cchs_cycles).
+# Resolve source selection before any pipeline target consumes configuration.
+load_study_config <- function(file = "config.yml",
+                              profile = Sys.getenv("R_CONFIG_ACTIVE", "default"),
+                              local_file = NULL) {
+  cfg <- config::get(file = file, config = profile, use_parent = FALSE)
+  if (identical(profile, "statscan")) {
+    path <- local_file %||% file.path(dirname(file), cfg$local_config_file)
+    if (!file.exists(path)) stop("Master configuration not found: ", path)
+    overrides <- config::get(file = path, config = "default", use_parent = FALSE)
+    cfg <- utils::modifyList(cfg, overrides)
+    if (!identical(cfg$data_source, "master")) stop("statscan requires data_source: master")
+    if (any(!grepl("_m$", unlist(cfg$cchs_cycles)))) stop("statscan requires master cycle IDs")
+  }
+  cfg
+}
+
+# Reverse lookup uses stable configured IDs, including when cycles are subsetted.
 cycle_database <- function(cfg, cycle_code) {
   code <- suppressWarnings(as.integer(as.character(cycle_code)))
-  out <- rep(NA_character_, length(code))
-  ok <- !is.na(code) & code >= 1 & code <= length(cfg$cchs_cycles)
-  out[ok] <- unlist(cfg$cchs_cycles)[code[ok]]
-  out
+  cycles <- unlist(cfg$cchs_cycles, use.names = FALSE)
+  ids <- vapply(cycles, survey_cycle_code, integer(1), cfg = cfg)
+  if (anyDuplicated(ids)) stop("Duplicate survey cycle codes in configured cycles")
+  cycles[match(code, ids)]
 }
 
 # Valid range of a survey variable for one database. config.yml declares

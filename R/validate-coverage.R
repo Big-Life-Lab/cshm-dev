@@ -57,6 +57,16 @@ validate_cycle_coverage <- function(variables_sheet,
 
   # Roles that must have complete pipeline coverage
   critical_roles <- c("design", "model-stratifier", "apc-numerator", "apc-denominator")
+  required_keys <- unlist(cfg$required_survey_keys, use.names = FALSE)
+  required_vars <- unique(unlist(lapply(required_keys, function(key) survey_var(cfg, key))))
+  missing_required <- setdiff(required_vars, active_vars$variable)
+  if (length(missing_required)) {
+    msg <- paste(
+      "Required configured variables missing from the active study list:",
+      paste(missing_required, collapse = ", ")
+    )
+    if (strict) stop(msg, call. = FALSE) else warning(msg, call. = FALSE)
+  }
 
   declared_gaps <- data.frame(
     variable = character(0), cycle = character(0), role = character(0),
@@ -96,7 +106,7 @@ validate_cycle_coverage <- function(variables_sheet,
 
     # --- Check 2: Critical coverage ---
     roles <- trimws(unlist(strsplit(var_role, ",")))
-    is_critical <- any(roles %in% critical_roles)
+    is_critical <- any(roles %in% critical_roles) || var_name %in% required_vars
 
     if (is_critical) {
       for (cycle in pipeline_cycles) {

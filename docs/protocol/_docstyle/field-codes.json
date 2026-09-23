@@ -546,6 +546,137 @@
         "publisher-place": "Ottawa",
         "title": "Canadian community health survey (CCHS) – annual component: User guide, 2022 microdata file"
       }
+    },
+    "Meza_AJPM_2023": {
+      "itemData": {
+        "id": "Meza_AJPM_2023",
+        "type": "article-journal",
+        "citation-key": "Meza_AJPM_2023",
+        "container-title": "American Journal of Preventive Medicine",
+        "DOI": "10.1016/j.amepre.2022.06.022",
+        "ISSN": "07493797",
+        "issue": "4",
+        "journalAbbreviation": "Am. J. Prev. Med.",
+        "language": "en",
+        "page": "S11-S21",
+        "source": "DOI.org (Crossref)",
+        "title": "Patterns of birth cohort-specific smoking histories by race and ethnicity in the U.S",
+        "URL": "https://linkinghub.elsevier.com/retrieve/pii/S0749379722004603",
+        "volume": "64",
+        "author": [
+          {
+            "family": "Meza",
+            "given": "Rafael"
+          },
+          {
+            "family": "Cao",
+            "given": "Pianpian"
+          },
+          {
+            "family": "Jeon",
+            "given": "Jihyoun"
+          },
+          {
+            "family": "Fleischer",
+            "given": "Nancy L."
+          },
+          {
+            "family": "Holford",
+            "given": "Theodore R."
+          },
+          {
+            "family": "Levy",
+            "given": "David T."
+          },
+          {
+            "family": "Tam",
+            "given": "Jamie"
+          }
+        ],
+        "accessed": {
+          "date-parts": [
+            [
+              "2026",
+              2,
+              20
+            ]
+          ]
+        },
+        "issued": {
+          "date-parts": [
+            [
+              "2023",
+              4
+            ]
+          ]
+        }
+      },
+      "uris": [
+        "http://zotero.org/users/6858935/items/9LGL8F9F"
+      ]
+    },
+    "Salgado_LRHA_2024": {
+      "itemData": {
+        "id": "Salgado_LRHA_2024",
+        "type": "article-journal",
+        "citation-key": "Salgado_LRHA_2024",
+        "container-title": "The Lancet Regional Health - Americas",
+        "DOI": "10.1016/j.lana.2024.100823",
+        "page": "100823",
+        "title": "Smoking patterns by birth cohort in Argentina: an age-period-cohort population-based modeling study",
+        "URL": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11246057/",
+        "volume": "36",
+        "author": [
+          {
+            "family": "Salgado",
+            "given": "M Victoria"
+          },
+          {
+            "family": "Mok",
+            "given": "Yoonseo"
+          },
+          {
+            "family": "Jeon",
+            "given": "Jihyoun"
+          },
+          {
+            "family": "Jaffri",
+            "given": "Mohammed"
+          },
+          {
+            "family": "Tam",
+            "given": "Jamie"
+          },
+          {
+            "family": "Holford",
+            "given": "Theodore R"
+          },
+          {
+            "family": "Sánchez-Romero",
+            "given": "Luz M"
+          },
+          {
+            "family": "Meza",
+            "given": "Rafael"
+          },
+          {
+            "family": "Mejia",
+            "given": "Raul"
+          }
+        ],
+        "issued": {
+          "date-parts": [
+            [
+              "2024",
+              6,
+              21
+            ]
+          ]
+        }
+      },
+      "uris": [
+        "http://zotero.org/users/6858935/items/CUX773B4"
+      ]
     }
   }
 }

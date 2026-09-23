@@ -422,7 +422,7 @@ create_descriptive_table <- function(
 #' @param variable_details_sheet Variable details worksheet data frame
 #' @param variables Character vector of variables to include
 #' @param cycle_col Name of the survey cycle column (from config)
-#' @param cycle_labels Named vector mapping integer cycle codes to display labels
+#' @param cycle_labels Named vector mapping integer cycle codes to labels starting with survey year
 #' @param column_stratifier Variable for column stratification (from config)
 #' @param sections_order Optional character vector to order sections
 #' @param include_na Whether to show missing categories
@@ -439,8 +439,7 @@ create_cycle_specific_descriptive_table <- function(
   sections_order = NULL,
   include_na = TRUE
 ) {
-  cycles <- sort(unique(as.integer(as.character(study_data[[cycle_col]]))))
-  cycles <- cycles[!is.na(cycles)]
+  cycles <- order_cycle_codes(study_data[[cycle_col]], cycle_labels)
   if (length(cycles) == 0) stop("No valid cycle values found in study_data[[\"", cycle_col, "\"]]")
 
   stratify_config <- list()
@@ -532,4 +531,14 @@ create_cycle_specific_descriptive_table <- function(
     gt::tab_footnote(
       footnote = "Abbreviations: IQR, interquartile range; N, number"
     )
+}
+
+# Stable dataset IDs are not chronological (2021 was added after 2022).
+# Labels start with the first survey year; unmatched labels follow in ID order.
+order_cycle_codes <- function(codes, cycle_labels) {
+  codes <- unique(as.integer(as.character(codes)))
+  codes <- codes[!is.na(codes)]
+  labels <- as.character(unlist(cycle_labels)[match(as.character(codes), names(cycle_labels))])
+  years <- suppressWarnings(as.integer(substr(labels, 1, 4)))
+  codes[order(years, codes, na.last = TRUE)]
 }

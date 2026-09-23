@@ -46,10 +46,11 @@ default:
     variables: !expr file.path(getwd(), "worksheets/cshm-variables.csv")
     # cchsflow base variable details — in-repo snapshot of cchsflow v3
     # inst/extdata/variable_details.csv (with local fixes; see cchsflow #184/#185).
-    # Keeps the repo runnable without a sibling cchsflow checkout. Refresh from
-    # ~/github/cchsflow when upstream merges the fixes.
+    # Selective exposure refresh from upstream 047401e (2026-09-22).
+    # SDCDRES chronology is corrected locally from source dictionaries.
+    # Other blocks retain the previous snapshot; see worksheets/README.md.
     cchsflow_variable_details: !expr file.path(getwd(), "worksheets/cchsflow-variable-details.csv")
-    # CSHM extensions: GEOGPRV and WTS_M for 2019-20 and 2022 (not yet in cchsflow v3)
+    # CSHM extensions: delivery-specific geography/weight mappings and direct immigration years.
     cshm_variable_details: !expr file.path(getwd(), "worksheets/cshm-variable-details.csv")
 
   # Derived data file paths (reserved for exporting pipeline targets; the
@@ -93,6 +94,8 @@ default:
     "9":  "2017–18"
     "10": "2019–20"
     "11": "2022"
+    "12": "2021"
+    "13": "2023"
 
   # Survey variable names
   # Maps conceptual roles to actual variable names in the harmonized data, separately for
@@ -139,19 +142,59 @@ default:
     # PUMF: binary/categorical; Master: more granular (see protocol §3.3)
     ethnicity:
       pumf:
-        var: SDCGCGT              # Cultural/racial origin (PUMF: 1=white, 2=non-white; 2007-2014 only)
+        var: SDCGCGT              # Explicit White category; source-specific other category, 2001-2018
       master:
-        var: SDCGCGT              # Master granular recode TBD (protocol §3.3)
+        var: null                # Source classifications retained as intermediates; pooled predictor not specified
     immigration_status:
       pumf:
-        var: SDCFIMM              # Born in Canada vs. immigrant
+        var: SDCFIMM              # Source-specific proxy; earlier flags also fail to distinguish NPRs
       master:
         var: SDCFIMM
+    landed_status:
+      pumf:
+        var: null
+      master:
+        var: landed_immigrant_status  # 2015-2021 question; No alone does not identify NPRs
+    detailed_immigration_status:
+      pumf:
+        var: null
+      master:
+        var: immigration_status_detailed  # 2022-2023 source retains separate NPR category
+    cultural_racial_group:
+      pumf:
+        var: null
+      master:
+        var: SDCDCGT_cat7         # Intermediate, verified 2003-2018 eras; 2001 unverified
+    cultural_racial_group_2015:
+      pumf:
+        var: null
+      master:
+        var: SDCDCGT_2015plus      # Detailed 2015-2018 source classification
+    immigration_duration:
+      pumf:
+        var: SDCGRES             # Observed groups, not exact years
+      master:
+        var: SDCDRES             # Arrival-based before 2015; landed-year-based thereafter
+    arrival_year:
+      pumf:
+        var: null                # No exact PUMF arrival mapping declared
+      master:
+        var: arrival_year        # Source-observed only; no proxy for 2015-2021
+    landed_year:
+      pumf:
+        var: null
+      master:
+        var: landed_immigrant_year
+    visible_minority_group:
+      pumf:
+        var: null
+      master:
+        var: SDCDVVM              # 2019 onward; residual category is not White
     education:
       pumf:
-        var: EDUDR03              # Education: 1=<HS, 2=HS grad, 3=postsecondary grad
+        var: EDUDR03              # 2 includes incomplete postsecondary; unavailable in 2022 PUMF
       master:
-        var: EDUDR04              # 4-category education
+        var: EDUDR03              # Protocol three-category classification
 
     # Smoking history (unified cchsflow v3 variables)
     # SMKDSTY_original: 1 = daily, 2 = occasional (formerly daily), 3 = occasional
@@ -175,7 +218,6 @@ default:
       pumf:
         var: age_first_cigarette  # Age smoked first whole cigarette (midpoint-estimated)
         range: variable_details
-                                  # 13 excludes it. Lowering to 8 is an open study decision.
       master:
         var: age_first_cigarette  # Exact age from SMK_01C
         range: variable_details
@@ -198,13 +240,15 @@ default:
         yes_code: 1
     # Cessation exit: years since stopped smoking COMPLETELY (estimand specification,
     # section 3). Derived from questions first asked in 2003; not available in 2001 or
-    # the 2022 PUMF (NA(c)); handled by the imputation path for cycle-level absence.
+    # the 2022 PUMF (NA(c)); cycle absence is not imputed in the primary analysis.
+    # This legacy continuous output is not the protocol interval procedure.
+    # Raw categories and finer timing are retained in the worksheet for implementation.
     years_since_quit_complete:
       pumf:
         var: time_quit_smoking_complete  # midpoint-estimated; 2003+ PUMF groups to 3+ years (largest midpoint 5) -- see the worksheet rules
         range: variable_details
       master:
-        var: time_quit_smoking_complete  # exact years
+        var: time_quit_smoking_complete  # Legacy grouped substitutes; not uniformly exact
         range: variable_details
     # Years since stopped DAILY smoking. No longer the cessation exit (that is
     # complete cessation, above); retained for the intensity model and for the
@@ -233,6 +277,9 @@ default:
 
   # Validation
   strict_validation: false    # TRUE = stop on critical coverage gaps; FALSE = warn only
+  # These configured inputs need recoding rules in every active cycle.
+  # Optional/partially observed covariates retain source-specific coverage.
+  required_survey_keys: [sex, age, province, weight, immigration_status]
 
   # Data cleaning parameters
   age_exclusion_min: 18           # Exclude respondents younger than this (drops 12-17 year olds)
@@ -367,8 +414,35 @@ default:
         smoking), or common liability (shared underlying propensity).
       note: "Applied to projection scenarios only; does not affect historical APC estimates."
 
-  # Survey year lookup: integer year per SurveyCycle code (1–11)
-  # 2-year cycles use midpoint year (e.g. 2008 for 2007-08)
+  # Stable dataset codes; shared PUMF/Master periods use the same code.
+  # These codes do not depend on the order of cchs_cycles.
+  cycle_codes:
+    cchs2001_p: 1
+    cchs2003_p: 2
+    cchs2005_p: 3
+    cchs2007_2008_p: 4
+    cchs2009_2010_p: 5
+    cchs2011_2012_p: 6
+    cchs2013_2014_p: 7
+    cchs2015_2016_p: 8
+    cchs2017_2018_p: 9
+    cchs2019_2020_p: 10
+    cchs2022_p: 11
+    cchs2001_m: 1
+    cchs2003_m: 2
+    cchs2005_m: 3
+    cchs2007_2008_m: 4
+    cchs2009_2010_m: 5
+    cchs2011_2012_m: 6
+    cchs2013_2014_m: 7
+    cchs2015_2016_m: 8
+    cchs2017_2018_m: 9
+    cchs2019_2020_m: 10
+    cchs2022_m: 11
+    cchs2021_m: 12
+    cchs2023_m: 13
+
+  # Assigned survey year, not observed interview year. Biennial files use the final year.
   cycle_survey_years:
     "1":  2001
     "2":  2003
@@ -381,6 +455,8 @@ default:
     "9":  2018    # 2017-18
     "10": 2020    # 2019-20
     "11": 2022
+    "12": 2021
+    "13": 2023
 
 ci:
   # Committed 200-row fixtures (data/dev/, canonical cchs*_p.RData naming) so a
@@ -438,12 +514,13 @@ prod:
     analysis_data: !expr file.path(getwd(), "data/analysis_data.rds")
 
 statscan:
-  # Delegates to a local config file with RDC-specific paths.
+  # load_study_config() merges local overrides at the top level.
+  data_source: master
   # config/statscan.yml is gitignored — never commit.
   # Copy config/statscan.yml.example → config/statscan.yml and fill in paths.
   # Usage: Sys.setenv(R_CONFIG_ACTIVE = "statscan")
   strict_validation: true
-  local_config: !expr config::get(file = file.path(getwd(), "config/statscan.yml"))
+  local_config_file: "config/statscan.yml"
   apc:
     period_max: 2023            # Master files include 2023 cycle
     projection_max: 2050        # same projection horizon as PUMF
